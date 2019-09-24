@@ -66,8 +66,8 @@ ipest1 <- function(resp,m,r,G=9,eta,eps =1e-3,max.tol=1e-7)
   #gra=rbind(gra.res,gra.ran)
   
   ##### starting values for after the first eta
-  grd=est3.82.new$est[,4]
-  gra=est3.82.new$est[,1:3]
+  grd=est3.27.new$est[,4]
+  gra=est3.27.new$est[,1:3]
   
   #grd=grd.t#for check E step
   #gra=gra.t
@@ -296,10 +296,10 @@ resp = simdata(as.matrix(gra.t),as.matrix(grd.t),itemtype = "dich",Theta=theta)
 
 #item parameter estimation using the ipest function
 set.seed(1)
-est3.30.new <- ipest1(resp,m,r,G=9,eta=30,eps =1e-3,max.tol=1e-7)
-est3.30.new
-apply(est3.120.new$est2-grip,2,sum)[4]/30
-sqrt(apply((grip-est3.120.new$est2)^2,2,sum)[4]/30)
+est3.28.new <- ipest1(resp,m,r,G=9,eta=28,eps =1e-3,max.tol=1e-7)
+est3.28.new
+apply(est3.28.new$est2-grip,2,sum)[1:3]/10
+sqrt(apply((grip-est3.28.new$est2)^2,2,sum)[1:3]/10)
 set.seed(1)
 est3.50 <- ipest1(resp,m,r,G=9,eta=50,eps =1e-3,max.tol=1e-7)
 est3.10
@@ -313,8 +313,8 @@ sum(est3.11$est==0)
 
 ######### BIC
 
-est.d=est3.120.new$est2[,4]
-est.a=est3.120.new$est2[,1:3]
+est.d=est3.28.new$est2[,4]
+est.a=est3.28.new$est2[,1:3]
 
 
 if(min(resp)==0)
