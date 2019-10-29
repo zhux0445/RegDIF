@@ -72,7 +72,7 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7)
   {
     aold <- gra
     dold <- grd
-    Sigold <- Sig
+    Sig.old <- Sig
     A=dmvnorm(X,rep(0,r),Sig)
     
     #calculation of n_g 
