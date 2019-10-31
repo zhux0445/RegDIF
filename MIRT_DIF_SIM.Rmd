@@ -1,0 +1,419 @@
+---
+title: "MIRT DIF Simulation Design"
+author: "Ruoyi Zhu"
+date: "10/19/2019"
+output: pdf_document
+---
+
+# Estimated Item Parameters 
+
+In PROMIS data, the estimated item paramaters (for sex group 1 and 2 together) by *mirt* are
+
+item | a1 | a2 | d1 | d2 | d3 | d4 |
+---------| ---------|---------|---------|---------|---------|---------|
+var1_dep | 3.46 | 0 | -1.446 | -3.1 | -5.874 | -8.745 |
+var2_dep | 4.17 | 0 | -1.771 | -3.8 | -6.998 | -10.04 |
+var3_dep | 3.84 | 0 | -1.355 | -3.25| -6.184 | -9.057 |
+var4_dep | 3.95 | 0 | 0.88  | -1.643 | -5.295 | -8.613|
+var5_dep | 4.215 | 0 | -2.069 |-4.238 |-7.248| -10.021|
+var6_dep | 4.488 | 0 | -0.226| -2.716 |-6.329| -9.686 |
+var7_dep | 4.377 | 0 | 0.599 | -2.241 |-6.341| -10.005|
+var8_dep | 5.929 | 0 | -2.604| -5.508 |-9.427 |-13.48|
+var9_dep | 3.787 | 0 |-0.365| -2.558| -5.618| -8.355|
+var10_dep|3.324 | 0 |-0.821 |-2.735 |-5.319 |-7.892|
+var1_anx |0 | 2.981 |-0.356 |-2.263|-5.128 |-7.398|
+var2_anx |0 |3.628| 0.354 |-1.973 |-5.329 |-8.364|
+var3_anx |0 |3.721| 1.593| -1.034| -4.578| -7.407|
+var4_anx |0 | 4.444 |-1.503 |-4.384 |-7.584 |-10.745|
+var5_anx |0 |4.331 |-0.021 |-2.852 |-6.782 |-9.952|
+var6_anx |0 |4.917 |0.018 |-3.292 |-7.654 |-11.17|
+var7_anx |0 |4.152 |0.371 |-2.407 |-6.172 |-9.669|
+var8_anx | 0 |4.177 |-1.076 |-3.463 |-6.685 |-9.499|
+var9_anx | 0 |3.894 |-1.825 |-3.838 |-6.542 |-8.739|
+var10_anx| 0 |3.407 |0.283 |-2.069| -4.893 |-7.138|
+var11_anx|0 |3.556 |-1.275 |-3.703 |-6.445 |-8.806 |
+
+Trait | MEAN_1 | MEAN_2 | COV_11 | COV_21 |COV_22 |
+---------| ---------|---------|---------|---------|---------|
+par    |  0    |  0   |   1  | 0.901    |  1 |
+
+For Sex group 1
+
+item | a1 | a2 | d1 | d2 | d3 | d4 |
+---------| ---------|---------|---------|---------|---------|---------|
+var1_dep | 3.473 | 0| -2.338 |-4.009 |-6.884 |-9.765|
+var2_dep | 4.349 | 0 |-2.984 |-5.089 |-8.461 |-11.599|
+var3_dep | 3.939 | 0 |-2.69 |-4.583 |-7.476 |-10.287|
+var4_dep | 4.161 | 0 |-0.699 |-3.371 |-7.184 |-10.411|
+var5_dep | 4.394 | 0 |-3.256| -5.409 |-8.583 |-11.576|
+var6_dep | 4.566 | 0 |-1.699 |-4.252| -7.919 |-11.683|
+var7_dep | 4.26  |0 |-0.604| -3.53 |-7.446| -11.422|
+var8_dep | 5.74  |0 |-4.158| -6.897| -10.668| -14.977|
+var9_dep | 3.726  |0 |-1.204 |-3.464| -6.523 |-9.599|
+var10_dep|3.277  |0 |-1.593 |-3.586 |-6.22 |-9.015|
+var1_anx | 0 |3.147 |-1.584| -3.688 |-6.771 |-9.007|
+var2_anx | 0 |3.336 |-0.832 |-3.114 |-6.358| -9.277|
+var3_anx |0 |3.607 |0.328| -2.355 |-5.919 |-8.68|
+var4_anx |0 |4.579| -2.814| -5.862 |-9.3 |-12.72|
+var5_anx |0 |4.16| -1.326| -4.194| -8.149| -11.14|
+var6_anx |0| 4.752 |-1.151 |-4.701| -9.149| -12.681|
+var7_anx |0 |4.028 |-0.869 |-3.83| -7.689 |-11.18|
+var8_anx | 0 |3.822 |-2.343 |-4.663 |-7.654 |-10.252|
+var9_anx | 0 |3.929| -3.019 |-5.184 |-8.03 |-10.365|
+var10_anx| 0| 3.188| -0.718 |-3.141 |-5.803 |-8.086|
+var11_anx|0| 3.465 |-2.196 |-4.481 |-7.23 |-9.716|
+
+Trait | MEAN_1 | MEAN_2 | COV_11 | COV_21 |COV_22 |
+---------| ---------|---------|---------|---------|---------|
+par    |  0    |  0   |   1  | 0.907    |  1 |
+
+For Sex group 2
+
+item | a1 | a2 | d1 | d2 | d3 | d4 |
+---------| ---------|---------|---------|---------|---------|---------|
+var1_dep|3.351  |0 |-1.312 |-2.952| -5.664 |-8.53|
+var2_dep |3.979  |0 |-1.567 |-3.576 |-6.669 |-9.683|
+var3_dep |3.701  |0 |-1.021 |-2.923 |-5.896 |-8.805|
+var4_dep |3.737  |0 |1.38 |-1.128 |-4.747 |-8.09|
+var5_dep |4.038  |0 |-1.894 |-4.08 |-7.023 |-9.702|
+var6_dep |4.255  |0 |0.138 |-2.307 |-5.862| -8.996|
+var7_dep |4.274  |0 |0.858 |-1.933 |-6.111 |-9.596|
+var8_dep |5.944  |0 |-2.362 |-5.381 |-9.427 |-13.399|
+var9_dep |3.719  |0 |-0.284 |-2.446 |-5.501| -8.066|
+var10_dep |3.252  |0| -0.732 |-2.598 |-5.15| -7.612|
+var1_anx |0 |2.792 |0.005 |-1.823 |-4.609 |-6.879|
+var2_anx  |0 |3.636 |0.73| -1.631| -5.053 |-8.143|
+var3_anx |0 |3.597| 1.97 |-0.63 |-4.147| -6.984|
+var4_anx |0 |4.253| -1.276 |-4.07 |-7.161 |-10.209|
+var5_anx| 0 |4.252| 0.307 |-2.499 |-6.414 |-9.654|
+var6_anx |0 |4.875| 0.186 |-3 |-7.349 |-10.878|
+var7_anx |0 |4.038| 0.673 |-1.994 |-5.708| -9.194|
+var8_anx  |0| 4.224 |-0.712 |-3.148| -6.503 |-9.424|
+var9_anx |0 |3.768 |-1.582 |-3.52 |-6.168 |-8.31|
+var10_anx  |0 |3.388 |0.546 |-1.764 |-4.67 |-6.89|
+var11_anx  |0 |3.565 |-1.138 |-3.688 |-6.463 |-8.788|
+
+Trait | MEAN_1 | MEAN_2 | COV_11 | COV_21 |COV_22 |
+---------| ---------|---------|---------|---------|---------|
+par    |  0    |  0   |   1  | 0.891    |  1 |
+
+
+
+
+
+# Generated Item Parameters 
+
+Based on the estimated data, we can generate simulate data as follows.
+
+DIF items: (3,4,5,6,11,12,13,14)
+
+(3,5,6,11,13,14) have non-uniform DIF, and (4,12) have uniform DIF.
+
+The numbers in parenthesis are the parameters for the focal group.
+
+item | a1 | a2 | d1 | d2 | d3 | d4 |
+---------| ---------|---------|---------|---------|---------|---------|
+var1_dep | 3.46 | 0 | -1.446 | -3.1 | -5.874 | -8.745 |
+var2_dep | 4.17 | 0 | -1.771 | -3.8 | -6.998 | -10.04 |
+var3_dep | 3.84 (2.5)| 0 | -1.355 | -3.25| -6.184 | -9.057 |
+var4_dep | 3.95 | 0 | 0.88 (1.5)| -1.643 (-1.1)| -5.295 (-4.2)| -8.613 (-7.4)|
+var5_dep | 4.215 (2.9) | 0 | -2.069 (-1.4)|-4.238 (-3.5)|-7.248 (-6.1)| -10.021 (-9.1)|
+var6_dep | 4.488 (3.1)| 0 | -0.226 (0.15)| -2.716 (-1.6)|-6.329 (-5.1)| -9.686 (-8.7)|
+var7_dep | 4.377 | 0 | 0.599 | -2.241 |-6.341| -10.005|
+var8_dep | 5.929 | 0 | -2.604| -5.508 |-9.427 |-13.48|
+var9_dep | 3.787 | 0 |-0.365| -2.558| -5.618| -8.355|
+var10_dep|3.324 | 0 |-0.821 |-2.735 |-5.319 |-7.892|
+var1_anx |0 | 2.981 (2.1)|-0.356 |-2.263|-5.128 |-7.398|
+var2_anx |0 |3.628| 0.354 (1.2)|-1.973 (-0.7)|-5.329 (-4.5)|-8.364 (-7.2)|
+var3_anx |0 |3.721 (2.9)| 1.593 (2.6)| -1.034 (-0.1)| -4.578 (-3.4)| -7.407 (-6.1)|
+var4_anx |0 | 4.444 (3.3)|-1.503 (-0.2)|-4.384 (-3)|-7.584 (-6)|-10.745 (-8)|
+var5_anx |0 |4.331 |-0.021 |-2.852 |-6.782 |-9.952|
+var6_anx |0 |4.917 |0.018 |-3.292 |-7.654 |-11.17|
+var7_anx |0 |4.152 |0.371 |-2.407 |-6.172 |-9.669|
+var8_anx | 0 |4.177 |-1.076 |-3.463 |-6.685 |-9.499|
+var9_anx | 0 |3.894 |-1.825 |-3.838 |-6.542 |-8.739|
+var10_anx| 0 |3.407 |0.283 |-2.069| -4.893 |-7.138|
+var11_anx|0 |3.556 |-1.275 |-3.703 |-6.445 |-8.806 |
+
+No impact between groups. $\theta_{g=1},\theta_{g=2} \sim N(0,\Sigma)$, where
+
+We randomly generate 1000 simulees. 400 for group 1 and 600 for group 2.
+
+$$\Sigma =\begin{pmatrix}
+1 & 0.85\\
+0.85 & 1\\
+\end{pmatrix}$$
+
+```{r eval=FALSE}
+library(mirt)
+A11=c(3.460135, 4.174196, 3.847674, 3.956384, 4.215083, 4.487671, 4.376844, 5.928666, 3.787288, 3.324409,rep(0,11))
+A12=A11
+A12[3]=2.5
+A12[5]=2.9
+A12[6]=3.1
+A21=c(rep(0,10),2.981155, 3.628184, 3.721183, 4.443708, 4.330909, 4.916926, 4.152413, 4.177336, 3.893794, 3.407345, 3.556382)
+A22=A21
+A22[11]=2.1
+A22[13]=2.9
+A22[14]=3.3
+D11=c(-1.44646345, -1.77092532, -1.35468893,  0.87973075, -2.06890184, -0.22564895,  0.59878990, -2.60385350, -0.36514094, -0.82084068,-0.35619785,  0.35392082,  1.59298159, -1.50283497, -0.02102176,  0.01833211,  0.37138315, -1.07588596, -1.82495514,  0.28345230, -1.27525659)
+D12=D11
+D12[4]=1.5
+D12[5]=-1.4
+D12[6]=0.15
+D12[12]=1.2
+D12[13]=2.6
+D12[14]=-0.2
+D21=c(-3.099514, -3.812084, -3.245615, -1.643213, -4.237575, -2.715905, -2.241482, -5.508355, -2.558306, -2.734753, -2.262620, -1.973416, -1.033807, -4.384359, -2.851679, -3.292223, -2.406539, -3.463177, -3.838065, -2.068834, -3.702948)
+D22=D21
+D22[4]=-1.1
+D22[5]=-3.5
+D22[6]=-1.6
+D22[12]=-0.7
+D22[13]=-0.1
+D22[14]=-3
+D31=c(-5.873878, -6.998182, -6.183954, -5.294642, -7.247619, -6.328744, -6.341445, -9.426981, -5.618346, -5.319002, -5.127775, -5.328924, -4.578474, -7.583793, -6.781695, -7.653836, -6.172215, -6.684529, -6.542238, -4.892717, -6.445034)
+D32=D31
+D32[4]=-4.2
+D32[5]=-6.1
+D32[6]=-5.1
+D32[12]=-4.5
+D32[13]=-3.4
+D32[14]=-6
+D41=c(-8.744740, -10.043853,  -9.056667,  -8.612718, -10.021149,  -9.686078, -10.005080, -13.479619,  -8.354574,  -7.891565,  -7.397529, -8.364242,  -7.406955, -10.745009 , -9.951541, -11.169612,  -9.668841,  -9.499227,  -8.739423,  -7.137604,  -8.805564)
+D42=D41
+D42[4]=-7.4
+D42[5]=-9.1
+D42[6]=-8.7
+D42[12]=-7.2
+D42[13]=-6.1
+D42[14]=-8
+Amat1=cbind(A11,A21)
+Amat2=cbind(A12,A22)
+Dmat1=cbind(D11,D21,D31,D41)
+Dmat2=cbind(D12,D22,D32,D42)
+Group=c(rep('F', 400), rep('M', 600))
+model1 <- 'F1 = 1-10'
+model2 <- 'F1 = 1-11'
+model3 <- '
+F1 = 1-10
+F2 = 11-21
+COV = F1*F2'
+```
+
+
+```{r eval=FALSE}
+# scheme=add, wald test
+#loop for simulation type I error and power 
+p.va3=matrix(0,20,19)
+p.va4=matrix(0,20,19)
+bias=matrix(0,20,12)
+for (k in 1:10){
+  set.seed(runif(1, min = 1, max = 1000000))
+  Theta=mvrnorm(n=1000,mu=c(0,0),Sigma = matrix(c(1,0.85,0.85,1),2,2))
+  Theta1=Theta[1:400,]
+  Theta2=Theta[401:1000,]
+  datasetf=simdata(Amat1,Dmat1,itemtype = "graded",Theta=Theta1)
+  datasetm=simdata(Amat2,Dmat2,itemtype = "graded",Theta=Theta2)
+  dat=rbind(datasetf,datasetm)
+  dat1=dat[,1:10]
+  dat2=dat[,11:21]
+  
+  # Group effect on Factor1
+  ## equal multiplegroup function
+#   itemname1 <- colnames(dat1)
+#  refmod.noncon1 <- multipleGroup(dat1, model1, group = Group, SE=TRUE,invariance=c('free_means', 'free_var', itemname1[1]))
+   # loop over items 
+#estmodels1 <- vector('list', ncol(dat1)-1)
+#for(i in 1:(ncol(dat1)-1))
+#  estmodels1[[i]] <- multipleGroup(dat1, model1, group = Group, verbose = FALSE, calcNull=FALSE,invariance=c('free_means', 'free_var', itemname1[c(1,i+1)]))
+# (anovas <- lapply(estmodels1, anova, object2=refmod.noncon1, verbose=FALSE)) 
+# family-wise error control
+# p <- do.call(rbind, lapply(anovas, function(x) x[2, 'p']))
+# p.adjust(p, method = 'BH')
+# which(p.adjust(p, method = 'BH')<0.05)+1
+
+
+  itemname1 <- colnames(dat1)
+  refmod.noncon1 <- multipleGroup(dat1, model1, group = Group, SE=TRUE,invariance=c('free_means', 'free_var', itemname1[1]))
+  DIF1=DIF(refmod.noncon1 , which.par = c('a1', 'd1','d2','d3','d4'), p.adjust = 'fdr',scheme ='add',items2test=c(2:10))
+  p.va3[k,1:9]=DIF1$adj_pvals
+  anchoritem1=which(DIF1$adj_pvals>0.05)+1
+  refitmodel1=multipleGroup(dat1, model1, group = Group, SE=TRUE,invariance=c('free_means', 'free_var', itemname1[c(1,anchoritem1)]))
+  coef(refitmodel1)$cov
+  
+  # Group effect on Factor2
+  itemname2 <- colnames(dat2)
+  refmod.noncon2 <- multipleGroup(dat2, model2, group = Group, SE=TRUE,invariance=c('free_means', 'free_var', itemname2[11]))
+  DIF2=DIF(refmod.noncon2 , which.par = c('a1', 'd1','d2','d3','d4'), p.adjust = 'fdr',scheme ='add',items2test=c(1:10))
+  p.va3[k,10:19]=DIF2$adj_pvals
+  anchoritem2=which(DIF2$adj_pvals>0.05)
+  refitmodel2=multipleGroup(dat2, model2, group = Group, SE=TRUE,invariance=c('free_means', 'free_var', itemname2[c(anchoritem2,11)]))
+  coef(refitmodel2)$cov
+ 
+  
+  # Group effect on Factor1 and Factor2
+  itemname3 <- colnames(dat)
+  refmod.noncon3 <- multipleGroup(dat, model3, group = Group, SE=TRUE,invariance=c('free_means', 'free_var', itemname3[c(1,21)]))
+  # loop over items 
+  estmodels <- vector('list', ncol(dat)-2)
+  for(i in 1:(ncol(dat)-2))
+    estmodels[[i]] <- multipleGroup(dat, model3, group = Group, verbose = FALSE,calcNull=FALSE,invariance=c('free_means', 'free_var', itemname3[c(1,i+1,21)]))
+  (anovas <- lapply(estmodels, anova, object2=refmod.noncon3, verbose=FALSE)) 
+  # family-wise error control
+  p <- do.call(rbind, lapply(anovas, function(x) x[2, 'p']))
+  p.va4[k,]= p.adjust(p, method = 'BH')
+  anchoritem3=which(p.adjust(p, method = 'BH')>0.05)+1
+  refitmodel3=multipleGroup(dat, model3, group = Group, SE=TRUE,invariance=c('free_means', 'free_var', itemname3[c(1,anchoritem3,21)]))
+  coef(refitmodel3)$cov
+}
+```
+
+```{r eval=FALSE}
+#loop for simulation type I error and power
+p.va1=matrix(0,25,21)
+p.va2=matrix(0,25,21)
+for (k in 1:25){
+  set.seed(runif(1, min = 1, max = 1000000))
+  Theta=mvrnorm(n=1000,mu=c(0,0),Sigma = matrix(c(1,0.85,0.85,1),2,2))
+  Theta1=Theta[1:400,]
+  Theta2=Theta[401:1000,]
+  datasetf=simdata(Amat1,Dmat1,itemtype = "graded",Theta=Theta1)
+  datasetm=simdata(Amat2,Dmat2,itemtype = "graded",Theta=Theta2)
+  dat=rbind(datasetf,datasetm)
+  dat1=dat[,1:10]
+  dat2=dat[,11:21]
+  
+  # Group effect on Factor1
+  itemname1 <- colnames(dat1)
+  refmodel1 <- multipleGroup(dat1, model1, group = Group, SE=TRUE,invariance=c('free_means', 'free_var', itemname1))
+  DIF1=DIF(refmodel1, which.par = c('a1', 'd1','d2','d3','d4'), p.adjust = 'fdr',scheme = 'drop') 
+  p.va1[k,1:10]=DIF1$adj_pvals
+  
+  # Group effect on Factor2
+  itemname2 <- colnames(dat2)
+  refmodel2 <- multipleGroup(dat2, model2, group = Group, SE=TRUE,invariance=c('free_means', 'free_var', itemname2))
+  DIF2=DIF(refmodel2, which.par = c('a1', 'd1','d2','d3','d4'), p.adjust = 'fdr',scheme = 'drop') 
+  p.va1[k,11:21]=DIF2$adj_pvals
+  
+  # Group effect on Factor1 and Factor2
+  itemname3 <- colnames(dat)
+  refmodel3 <- multipleGroup(dat, model3, group = Group, SE=TRUE,invariance=c('free_means', 'free_var', itemname3))
+  DIF3=DIF(refmodel3, which.par = c('a1', 'a2','d1','d2','d3','d4'), p.adjust = 'fdr',scheme = 'drop')
+  p.va2[k,]=DIF3$adj_pvals
+  
+}
+```
+
+```{r eval=FALSE}
+#loop for simulation type I error and power
+power1=0
+typeI1=0
+power2=0
+typeI2=0
+for (k in 1:20){
+  set.seed(runif(1, min = 1, max = 1000000))
+  Theta=mvrnorm(n=1000,mu=c(0,0),Sigma = matrix(c(1,0.85,0.85,1),2,2))
+  Theta1=Theta[1:400,]
+  Theta2=Theta[401:1000,]
+  datasetf=simdata(Amat1,Dmat1,itemtype = "graded",Theta=Theta1)
+  datasetm=simdata(Amat2,Dmat2,itemtype = "graded",Theta=Theta2)
+  dat=rbind(datasetf,datasetm)
+  dat1=dat[,1:10]
+  dat2=dat[,11:21]
+  
+  # Group effect on Factor1
+  itemname1 <- colnames(dat1)
+  refmodel1 <- multipleGroup(dat1, model1, group = Group, SE=TRUE,invariance=c('free_means', 'free_var', itemname1))
+  DIF1=DIF(refmodel1, which.par = c('a1', 'd1','d2','d3','d4'), p.adjust = 'fdr',scheme = 'drop_sequential')
+  row.names( DIF1)
+  for (j in 1:length(row.names( DIF1))){
+    power1=power1+(row.names( DIF1)[j]=="Item_3")+(row.names( DIF1)[j]=="Item_4")+(row.names( DIF1)[j]=="Item_5")+(row.names( DIF1)[j]=="Item_6")
+    typeI1=typeI1+(row.names( DIF1)[j]=="Item_1")+(row.names( DIF1)[j]=="Item_2")+(row.names( DIF1)[j]=="Item_7")+(row.names( DIF1)[j]=="Item_8")+(row.names( DIF1)[j]=="Item_9")+(row.names( DIF1)[j]=="Item_10")
+  }
+  
+  # Group effect on Factor2
+  itemname2 <- colnames(dat2)
+  refmodel2 <- multipleGroup(dat2, model2, group = Group, SE=TRUE,invariance=c('free_means', 'free_var', itemname2))
+  DIF2=DIF(refmodel2, which.par = c('a1', 'd1','d2','d3','d4'), p.adjust = 'fdr',scheme = 'drop_sequential') 
+  row.names( DIF2)
+  for (j in 1:length(row.names( DIF2))){
+    power1=power1+(row.names( DIF2)[j]=="Item_11")+(row.names( DIF2)[j]=="Item_12")+(row.names( DIF2)[j]=="Item_13")+(row.names( DIF2)[j]=="Item_14")
+    typeI1=typeI1+(row.names( DIF2)[j]=="Item_15")+(row.names( DIF2)[j]=="Item_16")+(row.names( DIF2)[j]=="Item_17")+(row.names( DIF2)[j]=="Item_18")+(row.names( DIF2)[j]=="Item_19")+(row.names( DIF2)[j]=="Item_20")+(row.names( DIF2)[j]=="Item_21")
+  }
+  
+  # Group effect on Factor1 and Factor2
+  itemname3 <- colnames(dat)
+  refmodel3 <- multipleGroup(dat, model3, group = Group, SE=TRUE,invariance=c('free_means', 'free_var', itemname3))
+  DIF3=DIF(refmodel3, which.par = c('a1', 'a2','d1','d2','d3','d4'), p.adjust = 'fdr',scheme = 'drop_sequential')
+  for (j in 1:length(row.names( DIF3))){
+    power2=power2+(row.names( DIF3)[j]=="Item_11")+(row.names( DIF3)[j]=="Item_12")+(row.names( DIF3)[j]=="Item_13")+(row.names( DIF3)[j]=="Item_14")+(row.names( DIF3)[j]=="Item_3")+(row.names( DIF3)[j]=="Item_4")+(row.names( DIF3)[j]=="Item_5")+(row.names( DIF3)[j]=="Item_6")
+    typeI2=typeI2+(row.names( DIF3)[j]=="Item_15")+(row.names( DIF3)[j]=="Item_16")+(row.names( DIF3)[j]=="Item_17")+(row.names( DIF3)[j]=="Item_18")+(row.names( DIF3)[j]=="Item_19")+(row.names( DIF3)[j]=="Item_20")+(row.names( DIF3)[j]=="Item_21")+(row.names( DIF3)[j]=="Item_1")+(row.names( DIF3)[j]=="Item_2")+(row.names( DIF3)[j]=="Item_7")+(row.names( DIF3)[j]=="Item_8")+(row.names( DIF3)[j]=="Item_9")+(row.names( DIF3)[j]=="Item_10")
+  }
+}
+```
+
+```{r eval=FALSE}
+#Type I error & power
+#column 3,4,5,6,11,12,13,14 are powers
+#column 1,2,7,8,9,10,15,16,17,18,19,20,21 are Type I error
+Type1error11=sum(p.va1[,c(1,2,7:10,15:21)]<0.01)/(13*20)
+Type1error12=sum(p.va1[,c(1,2,7:10,15:21)]<0.05)/(13*20)
+Type1error21=sum(p.va2[,c(1,2,7:10,15:21)]<0.01)/(13*20)
+Type1error22=sum(p.va2[,c(1,2,7:10,15:21)]<0.05)/(13*20)
+
+Power11=sum(p.va1[,c(3:6,11:14)]<0.01)/(8*20)
+Power12=sum(p.va1[,c(3:6,11:14)]<0.05)/(8*20)
+Power21=sum(p.va2[,c(3:6,11:14)]<0.01)/(8*20)
+Power22=sum(p.va2[,c(3:6,11:14)]<0.05)/(8*20)
+```
+
+
+
+# Type I error and Power
+
+scheme=drop
+
+Method | Uirt | Mirt | 
+---------| ---------|---------|
+Type I error (0.01)|0.09615385  |0.09230769 |
+Type I error (0.05)|0.1653846  |0.1615385 |
+
+Method | Uirt | Mirt | 
+---------| ---------|---------|
+Power (0.01)|0.8375  |0.84375 |
+Power (0.05)|0.925 |0.91875 |
+
+
+
+I ran simulation 20 times. Mirt appears to have lower Type I error. The power of two methods look to be same.
+
+scheme=drop_sequential
+
+Method | Uirt | Mirt | 
+---------| ---------|---------|
+Type I error (0.01)|-  |0.0538 |
+Power (0.01)|- |0.625 |
+
+The results are the average of 20 replications. The drop_sequential scheme is time consuming and has lower power than the drop scheme. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

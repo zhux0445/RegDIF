@@ -308,8 +308,8 @@ ipest2 <- function(resp,m,r,G,eta,eps =1e-3,max.tol=1e-7)
   diag(COV)=FALSE
   cmodel=mirt.model(sparsity,COV=COV)
   md <- mirt(resp,cmodel,itemtype = "graded")
-  estmirt=matrix(0,j,m+r-1)
-  for(i in 1:j){
+  estmirt=matrix(0,J,m+r-1)
+  for(i in 1:J){
     estmirt[i,]=coef(md)[[i]]
   }
   gramirt=estmirt[,1:r]
