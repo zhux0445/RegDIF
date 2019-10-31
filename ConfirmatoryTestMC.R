@@ -378,7 +378,7 @@ G=100
   }
   
   
-  colSums(gra-gra.t)/15
+    colSums(gra-gra.t)/15
   sqrt(colSums((gra.t-gra)^2)/15)
   colSums(grd-grd.t)/30
   sqrt(colSums((grd.t-grd)^2)/30)
