@@ -43,6 +43,7 @@ Sig0=coef(md0,simplify=T)$cov
 ##############################################
 #  starting values at eta=0 for later eta's  #
 ##############################################
+eta=0
 eps =1e-3
 max.tol=1e-7
 NonUniform=F
