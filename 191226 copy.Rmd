@@ -1,0 +1,1636 @@
+---
+title: "DIF Detection via Regularization"
+author: "Ruoyi Zhu"
+date: "1/6/2020"
+output:  bookdown::pdf_document2
+---
+# Graded Response Model with DIF
+
+For a polytomously scored item *j*, the probability that examinee *i* with ability vector $\boldsymbol\theta_i$ reaching level *k* or higher on item *j* is
+\begin{equation}
+\begin{aligned}
+P_{ijk}^*  = \frac{1}{1+e^{-({\textbf a_j}{\boldsymbol\theta_i}+d_{jk}+(\boldsymbol y_i\boldsymbol\gamma_j)\boldsymbol \theta_i+\boldsymbol y_i\boldsymbol\beta_{jk})}}  (i=1,...,N; j=1,2,...,m; k=1,2,...,p-1).
+\end{aligned}
+\end{equation}
+
+$\boldsymbol y_i$ is a group indicator including all the grouping information related to DIF. $\boldsymbol y_i=(0,0)$ if examinee *i* is in the reference group, $\boldsymbol y_i=(1,0)$ if examinee *i* is in the first focal group and $\boldsymbol y_i=(0,1)$ if examinee *i* is in the second focal group.
+
+\begin{equation}
+\begin{aligned}
+P_{ijk} = P_{ij,k-1}^* - P_{ijk}^*
+\end{aligned}
+\end{equation}
+
+is the probability of an examinee *i* with ability vector $\boldsymbol\theta_i$ reaching response level *k* on item *j*.
+
+Assume a total sample size *N* and test length *m*. The ability vector of the $i$th examinee is $\boldsymbol\theta_{i}$ = ($\theta_{i1}$,$\theta_{i2}$,...,$\theta_{ir}$,...,$\theta_{iq}$$)^T$ (i=1,...,N; r=1,2,...,q), and the item parameter matrices are
+
+discrimination parameter
+$$\textbf A = (\textbf a_{1},\textbf a_{2},...,\textbf a_{j},...,\textbf a_{m})^T=\begin{pmatrix}
+a_{11} & a_{12} & ... &a_{1r}&...& a_{1q}\\
+a_{21} & a_{22} & ... &a_{2r}&...& a_{2q}\\
+\vdots &\vdots & \ddots &\vdots&\ddots& \vdots\\
+a_{j1} & a_{j2} & ... &a_{jr}&...& a_{jq}\\
+\vdots & \vdots & \ddots & \vdots&\ddots& \vdots\\
+a_{m1} & a_{m2} & ... &a_{mr}&... & a_{mq}\\
+\end{pmatrix}(j=1,2,...,m;r=1,...,q),$$
+
+boundary parameter
+$$\textbf D =  (\textbf d_{1},\textbf d_{2},...,\textbf d_{j},...,\textbf d_{m})^T=\begin{pmatrix}
+d_{11} & d_{12} & ... &d_{1k}&...& d_{1,p-1}\\
+d_{21} & d_{22} & ... &d_{2k}&...& d_{2,p-1}\\
+\vdots &\vdots & \ddots &\vdots&\ddots& \vdots\\
+d_{j1} & d_{j2} & ... &d_{jk}&...& d_{j,p-1}\\
+\vdots & \vdots & \ddots & \vdots&\ddots& \vdots\\
+d_{m1} & d_{m2} & ... &d_{mk}&... & d_{m,p-1}\\
+\end{pmatrix}(j=1,2,...,m;k=1,...,p-1),$$
+
+non-uniform DIF parameter
+$$\boldsymbol \Gamma = (\boldsymbol \gamma_{1},\boldsymbol \gamma_{2},...,\boldsymbol \gamma_{j},...,\boldsymbol \gamma_{m}) (j=1,...,m)$$
+
+$$\boldsymbol \gamma_j =(\boldsymbol \gamma_{j1\cdot},\boldsymbol \gamma_{j2\cdot})^T=\begin{pmatrix}
+\gamma_{j11} & \gamma_{j12} & ... &\gamma_{j1r}&...& \gamma_{j1q}\\
+\gamma_{j21} & \gamma_{j22} & ... &\gamma_{j2r}&...& \gamma_{j2q}\\
+\end{pmatrix} (r=1,...,q),$$
+
+
+where *q* is the dimension of $\boldsymbol\theta$, and each row of $\boldsymbol \gamma_{j}$ is (non-uniform) DIF parameter for a focal group, i.e. $\boldsymbol \gamma_{j1\cdot}$ is (non-uniform) DIF parameter for the first focal group, and $\boldsymbol \gamma_{j2\cdot}$ is (non-uniform) DIF parameter for the second focal group,
+
+and uniform DIF parameter
+$$\boldsymbol \beta = (\boldsymbol \beta_{1},\boldsymbol \beta_{2},...,\boldsymbol \beta_{j},...,\boldsymbol \beta_{m})  (j=1,...,m)$$
+
+$$\boldsymbol \beta_j =(\boldsymbol \beta_{j1\cdot},\boldsymbol \beta_{j2\cdot})^T
+=\begin{pmatrix}
+\beta_{j11} & \beta_{j12} & ...&\beta_{j1k} & ... & \beta_{j1,p-1}\\
+\beta_{j21} & \beta_{j22} & ...&\beta_{j2k} & ... & \beta_{j2,p-1}\\
+\end{pmatrix}(k=1,...,p-1),$$
+
+where *p* is the number of categories in GRM, and each row of $\boldsymbol \beta_{j}$ is (uniform) DIF parameter for a focal group, i.e. $\boldsymbol \beta_{j1\cdot}$ is (uniform) DIF parameter for the first focal group, and $\boldsymbol \beta_{j2\cdot}$ is (uniform) DIF parameter for the second focal group.
+
+If an examinee *i* is in the first focal group, then y=2, 
+
+$$\boldsymbol \gamma_{jky}=\boldsymbol \gamma_{j1\cdot},$$ and $$\boldsymbol \beta_{jky}=\boldsymbol \beta_{j1\cdot}.$$
+
+If an examinee *i* is in the second focal group, then y=3, 
+$$\boldsymbol \gamma_{jky}=\boldsymbol \gamma_{j2\cdot},$$ and $$\boldsymbol \beta_{jky}=\boldsymbol \beta_{j2\cdot}.$$
+
+If an item does not have DIF, then $\boldsymbol \Gamma=\boldsymbol 0$ and $\boldsymbol \beta=\boldsymbol 0$. If an item has uniform DIF, then $\boldsymbol \Gamma=\boldsymbol 0$.
+
+
+The $N*m$ response matrix is
+
+$$\textbf U=\begin{pmatrix}
+u_{11} & u_{12} &... & u_{1j}& ... & u_{1m}\\
+u_{21} & u_{22} &... & u_{2j}&... & u_{2m}\\
+\vdots & \vdots & \ddots&\vdots & \ddots& \vdots\\
+u_{i1} & u_{i2} &... & u_{ij}&... & u_{im}\\
+\vdots & \vdots & \ddots&\vdots & \ddots& \vdots\\
+u_{N1} & u_{N2} & ... & u_{Nj}&... & u_{Nm}\\
+\end{pmatrix}(i=1,...,N; j=1,2,...,m).$$
+
+
+A dummy variable to indicate whether examinee *i* gets score *k* for the item *j* $$x_{ijk} =\begin{cases} 1, & \mbox{if } u_{ij}=k \\ 0, & \mbox{if } u_{ij} \neq k \end{cases}.$$
+
+$\boldsymbol y_i$ is the group indicator. $\boldsymbol y_i=(0,0)$ stands for the reference group, $\boldsymbol y_i=(1,0)$ stands for the rfirst focal group and $\boldsymbol y_i=(0,1)$ stands for the second focal group. The sample size of the reference group, the first focal group and the second focal group are denoted by $N_1$, $N_2$, $N_3$, respectively. We have the total sample size $N=N_1+N_2+N_3$. We have 
+
+$$\boldsymbol Y=\begin{pmatrix}
+\boldsymbol y_1 \\
+\boldsymbol y_2 \\
+\vdots \\
+\boldsymbol y_{N_1}\\
+\boldsymbol y_{N_1+1} \\
+\boldsymbol y_{N_1+2} \\
+\vdots \\
+\boldsymbol y_{N_1+N_2} \\
+\boldsymbol y_{N_1+N_2+1} \\
+\boldsymbol y_{N_1+N_2+2}\\
+\vdots \\
+\boldsymbol y_{N_1+N_2+N_3}\\
+\end{pmatrix}=\begin{pmatrix}
+0 & 0 \\
+0 & 0 \\
+\vdots & \vdots \\
+0 & 0 \\
+1 & 0 \\
+1 & 0 \\
+\vdots & \vdots \\
+1 & 0 \\
+0 & 1 \\
+0 & 1 \\
+\vdots & \vdots \\
+0 & 1 \\
+\end{pmatrix}.$$
+
+
+Suppose the prior distribution of $\boldsymbol \theta_i$ in group *y* is multivariate normal distribution with mean vector of $\boldsymbol\mu_y$ and covariance matrix of $\boldsymbol\Sigma_y$.
+The prior density of $\boldsymbol \theta_i$ is
+$$f(\boldsymbol \theta_{i} \mid \boldsymbol\mu_y,\boldsymbol\Sigma_y)=(2\pi)^{-\frac{p}{2}}|\boldsymbol\Sigma_y|^{-\frac{1}{2}}e^{-0.5(\boldsymbol\theta_i-\boldsymbol\mu_y)^T|\boldsymbol\Sigma_y|^{-1}(\boldsymbol\theta_i-\boldsymbol\mu_y)}.$$
+
+
+If *i* is in 1,...,$N_1$, then $y_i=(0,0)$. $\boldsymbol\mu_{y}=\boldsymbol\mu_1$ and $\boldsymbol \Sigma_y=\boldsymbol \Sigma_1$, $\boldsymbol \theta_i\sim N(\boldsymbol\mu_1,\boldsymbol \Sigma_1)$.
+
+If *i* is in $N_1+1$,...,$N_1+N_2$, then $y_i=(1,0)$. $\boldsymbol\mu_{y}=\boldsymbol\mu_2$ and $\boldsymbol \Sigma_y=\boldsymbol \Sigma_2$, $\boldsymbol \theta_i\sim N(\boldsymbol\mu_2,\boldsymbol \Sigma_2)$.
+
+If *i* is in $N_1+N_2+1$,...,$N_1+N_2+N_3$, then $y_i=(0,1)$. $\boldsymbol\mu_{y}=\boldsymbol\mu_3$ and $\boldsymbol \Sigma_y=\boldsymbol \Sigma_3$, $\boldsymbol \theta_i\sim N(\boldsymbol\mu_3,\boldsymbol \Sigma_3)$.
+
+We have $\boldsymbol\mu_1=\boldsymbol 0$ and all elements on the diagonal of $\boldsymbol \Sigma_1$ are 1
+for the reference group. Then with some anchor items, the trait parameters for focal groups, i.e. $\boldsymbol\mu_2$, $\boldsymbol\mu_3$, $\boldsymbol \Sigma_2$ and $\boldsymbol \Sigma_3$, can be freely estimated.
+
+
+*G* quadrature samples (same for all examinees) are denoted by $\boldsymbol q_{g}(g=1,...,G)$, and $\boldsymbol q_{g}$ = ($q_{g1}$,$q_{g2}$,...,$q_{gr}$,...,$q_{gq}$$)^T$ (r=1,2,...,q). At iteration *t*, we calculate $f(\boldsymbol q_{g} \mid \boldsymbol \mu^{(t-1)}_y,\boldsymbol\Sigma^{(t-1)}_y)$ for each group *y*, where $\boldsymbol \mu^{(t-1)}_y$ and $\boldsymbol\Sigma^{(t-1)}_y$ are the estimated trait parameters from last iteration.
+
+
+For an examinee *i* in the reference group (group 1), we have $y=1$ and
+
+$$P_{ijk\mid q_{g}}^*=P_{jky\mid q_{g}}^* =P_{jk1\mid q_{g}}^*= \frac{1}{1+e^{-({\textbf a_j}{\boldsymbol q_g}+d_k)}} $$
+$$(i=1,...,N_1;j=1,2,...,m; k=1,2,...,p-1;g=1,...,G).$$
+
+For an examinee *i* in the first focal group (group 2), $y=2$ and
+
+$$P_{ijk\mid q_{g}}^*=P_{jky\mid q_{g}}^* =P_{jk2\mid q_{g}}^*= \frac{1}{1+e^{-({\textbf a_j}{\boldsymbol q_g}+d_k+\boldsymbol\gamma_{j1\cdot}\boldsymbol q_{g}+\boldsymbol\beta_{j1k})}}$$
+
+$$(i=N_1+1,...,N_1+N_2;j=1,2,...,m; k=1,2,...,p-1;g=1,...,G).$$
+
+For the second focal group (group 3), $y=3$ and
+
+$$P_{ijk\mid q_{g}}^*=P_{jky\mid q_{g}}^* =P_{jk3\mid q_{g}}^*= \frac{1}{1+e^{-({\textbf a_j}{\boldsymbol q_g}+d_k+\boldsymbol\gamma_{j2\cdot}\boldsymbol q_g+\boldsymbol\beta_{j2k})}}.$$
+
+$$(i=N_1+N_2+1,...,N_1+N_2+N3;j=1,2,...,m; k=1,2,...,p-1;g=1,...,G).$$
+
+
+$$P_{jky\mid q_{g}} = P_{j,k-1,y\mid q_{g}}^* - P_{jky\mid q_{g}}^*$$
+
+# Model Identifiability Constraint
+
+Yet the model is not identified. Some constraints on the item parameters are required. Here, for each dimension, we set one anchor item which we know its DIF parameters ($\Gamma$ and $\beta$) are zero for all groups.
+
+For instance, if we have two ability dimensions (q=2), test length $m=20$, and the each factor is loaded on 10 items, then the simple structure discrimination parameter matrix will take the form 
+
+$$\textbf A = (\textbf a_{1},...,\textbf a_{m})^T=\begin{pmatrix}
+a_{11} & 0\\
+0 & a_{22}\\
+a_{31} & 0 \\
+a_{41} & 0\\
+a_{51} & 0\\
+. & . \\
+. & . \\
+. & . \\
+a_{10,1} & 0\\
+a_{11,1} & 0\\
+0 & a_{12,2}\\
+0 & a_{13,2}\\
+. & . \\
+. & . \\
+. & . \\
+0 & a_{19,2}\\
+0 & a_{20,2}\\
+\end{pmatrix},$$
+
+and the DIF parameters are
+
+$$\boldsymbol \Gamma = (\boldsymbol 0,\boldsymbol 0,\boldsymbol \Gamma_{3},...,\boldsymbol \Gamma_{m})$$
+
+and
+
+$$\boldsymbol \beta = (\boldsymbol 0, \boldsymbol 0, \boldsymbol \beta_{3},...,\boldsymbol \beta_{m})$$
+
+We further assume the reference group has mean zero and variance one and only estimate its correlation, and the means and all the elements in covariance matrices of two focal groups can be freely estimated.
+
+# Uniform DIF Detection via LASSO
+
+As mentioned before, if an item has uniform DIF, then $\boldsymbol \Gamma=\boldsymbol 0$. The DIF parameter we are estimating is only $\boldsymbol \beta = (\boldsymbol 0, \boldsymbol 0, \boldsymbol \beta_{q+1},...,\boldsymbol \beta_{m})$.
+
+## E step
+
+For an examinee with ability $\boldsymbol \theta_i$ the conditional likelihood of observing $\boldsymbol u_i$ is
+
+\begin{equation}
+\begin{aligned}
+&L(\textbf A,\textbf D, \boldsymbol \beta, \boldsymbol \theta_i \mid \textbf y,\boldsymbol u_i)= \prod_{j=1}^m \prod_{k=1}^p P_{jk}(\boldsymbol \theta_i)^{x_{ijk}}.
+\end{aligned}
+\end{equation}
+
+With the assumption of prior distribution of latent trait, the joint likelihood of $\boldsymbol u_i$ and $\boldsymbol \theta_i$ is
+
+\begin{equation}
+\begin{aligned}
+&L(\textbf A,\textbf D, \boldsymbol \beta ,\boldsymbol \mu_y, \boldsymbol \Sigma_y \mid \textbf y,\textbf u_i, \boldsymbol \theta_i) = L(\textbf A,\textbf D,  \boldsymbol \beta, \boldsymbol \theta_i \mid \textbf y, \textbf u_i) f(\boldsymbol \mu_y, \boldsymbol \Sigma_y \mid \boldsymbol \theta_{i} )\\
+&= \prod_{j=1}^m \prod_{k=1}^p P_{jk}(\boldsymbol \theta_i)^{x_{ijk}}(2\pi)^{-p/2}|\boldsymbol \Sigma_y|^{-1/2}\mathrm{exp}(-0.5(\boldsymbol \theta_i-\boldsymbol \mu_y)' \boldsymbol \Sigma_y^{-1}(\boldsymbol \theta_i-\boldsymbol \mu_y)).
+\end{aligned}
+\end{equation}
+
+Therefore, the marginal likelihood of $\boldsymbol u_i$ is
+
+\begin{equation}
+\begin{aligned}
+&m(\textbf A,\textbf D,\boldsymbol \beta ,\boldsymbol \mu_y, \boldsymbol \Sigma_y \mid \boldsymbol y,\boldsymbol u_i) = \int L(\textbf A,\textbf D, \boldsymbol \beta \mid \textbf y, \textbf u_i, \boldsymbol \theta_i) f(\boldsymbol \mu_y, \boldsymbol \Sigma_y \mid \boldsymbol \theta_{i} ) \partial \boldsymbol \theta_{i}
+\end{aligned}
+\end{equation}
+
+Then
+
+\begin{equation}
+\begin{aligned}
+&h(\boldsymbol \theta_{i}\mid \boldsymbol u_i,\boldsymbol y_i,\textbf A^{(t-1)},\textbf D^{(t-1)}, \boldsymbol \beta^{(t-1)},\boldsymbol\mu^{(t-1)}_y,\Sigma^{(t-1)}_y)=\frac{L(\textbf A,\textbf D, \boldsymbol \beta \mid \textbf y, \textbf u_i, \boldsymbol \theta_i) f(\boldsymbol \mu_y, \boldsymbol \Sigma_y \mid \boldsymbol \theta_{i})}{m(\textbf A,\textbf D, \boldsymbol \beta ,\boldsymbol \mu_y, \boldsymbol \Sigma_y \mid \boldsymbol y,\boldsymbol u_i)}
+\end{aligned}
+\end{equation}
+
+is the posterior density of $\boldsymbol \theta_i$ given the estimation of $\textbf A$, $\textbf D$,  $\boldsymbol \beta$ and $\Sigma$ at the iteration *t*. 
+
+
+The expected complete data log-likelihood with respect to the posterior distribution of $\boldsymbol\theta$
+
+\begin{equation}
+\begin{aligned}
+& E[log\lbrace L(\boldsymbol A,\boldsymbol D, \boldsymbol \beta ,\boldsymbol \mu, \boldsymbol \Sigma \mid \boldsymbol Y,\boldsymbol U, \boldsymbol \Theta)  \rbrace|\boldsymbol A^{(t-1)},\boldsymbol D^{(t-1)}, \boldsymbol \beta^{(t-1)} ,\textbf Y,\textbf U, \boldsymbol \mu^{(t-1)}, \boldsymbol \Sigma^{(t-1)}] \\
+& = \sum_i^N \lbrace \int \mathrm{log} L(\boldsymbol A,\boldsymbol D, \boldsymbol \beta \mid \boldsymbol y,\boldsymbol u_i, \boldsymbol \theta_i) h(\boldsymbol \theta_i|\boldsymbol y_i,\boldsymbol u_i,\boldsymbol A^{(t-1)},\boldsymbol D^{(t-1)} , \boldsymbol \beta^{(t-1)}, \boldsymbol \mu^{(t-1)}, \boldsymbol \Sigma^{(t-1)}) \partial  \boldsymbol \theta_i\\
+&+\int \mathrm{log}f(\boldsymbol \mu_y,\boldsymbol \Sigma_y \mid\boldsymbol \theta_{i} ) h(\boldsymbol \theta_i|\boldsymbol u_i,\boldsymbol A^{(t-1)},\boldsymbol D^{(t-1)} , \boldsymbol \beta^{(t-1)},\boldsymbol \mu_y^{(t-1)}, \boldsymbol \Sigma_y^{(t-1)}) \partial  \boldsymbol \theta_i \rbrace
+\end{aligned}
+\end{equation}
+
+
+At iteration *t*, applying Gauss-Hermite quadrature nodes and the integration above can be updated as
+
+\begin{equation}
+\begin{aligned}
+&E[log L(\boldsymbol A,\boldsymbol D, \boldsymbol \beta ,\boldsymbol \mu, \boldsymbol \Sigma \mid \boldsymbol Y, \boldsymbol U)] \\
+&=\sum_i^N \sum_g^G \mathrm{log} L(\boldsymbol A,\boldsymbol D, \boldsymbol \beta  \mid \boldsymbol u_i, \boldsymbol q_{g})\frac{L(\boldsymbol q_{g} \mid \boldsymbol u_i,\boldsymbol A^{(t-1)},\boldsymbol D^{(t-1)},\boldsymbol \beta^{(t-1)},\boldsymbol Y, \boldsymbol \mu^{(t-1)}, \boldsymbol \Sigma^{(t-1)})f(\boldsymbol \mu^{(t-1)}, \boldsymbol \Sigma^{(t-1)} \mid \boldsymbol q_{g})}{\sum_g^G L(\boldsymbol q_{g} \mid \boldsymbol u_i,\boldsymbol A^{(t-1)},\boldsymbol D^{(t-1)}, \boldsymbol \beta^{(t-1)},\boldsymbol Y,\boldsymbol \mu^{(t-1)},  \boldsymbol \Sigma^{(t-1)})f(\boldsymbol \mu^{(t-1)}, \boldsymbol \Sigma^{(t-1)} \mid \boldsymbol q_{g})}\\
+& +\sum_i^N \sum_g^G \mathrm{log} f(\boldsymbol \mu, \boldsymbol \Sigma \mid\boldsymbol q_{g} ) \frac{L(\boldsymbol q_{g} \mid \boldsymbol u_i,\boldsymbol A^{(t-1)},\boldsymbol D^{(t-1)}, \boldsymbol \beta^{(t-1)},\boldsymbol Y, \boldsymbol \mu^{(t-1)}, \boldsymbol \Sigma^{(t-1)})f(\boldsymbol \mu^{(t-1)}, \boldsymbol \Sigma^{(t-1)} \mid \boldsymbol q_{g})}{\sum_g^G L(\boldsymbol q_{g} \mid \boldsymbol u_i,\boldsymbol A^{(t-1)},\boldsymbol D^{(t-1)},\boldsymbol \beta^{(t-1)},\boldsymbol Y,\boldsymbol \mu^{(t-1)}, \boldsymbol \Sigma^{(t-1)})f(\boldsymbol \mu^{(t-1)}, \boldsymbol \Sigma^{(t-1)} \mid \boldsymbol q_{g})}\\
+&=\sum_i^N \sum_g^G \sum_j^m \sum_k^p x_{ijk}\mathrm{log} P_{ijk\mid q_{g}} \frac{L(\boldsymbol q_{g} \mid \boldsymbol u_i,\boldsymbol A^{(t-1)},\boldsymbol D^{(t-1)}, \boldsymbol \beta^{(t-1)},\boldsymbol Y, \boldsymbol \mu^{(t-1)}, \boldsymbol \Sigma^{(t-1)})f(\boldsymbol \mu^{(t-1)}, \boldsymbol \Sigma^{(t-1)} \mid \boldsymbol q_{g})}{\sum_g^G L(\boldsymbol q_{g} \mid \boldsymbol u_i,\boldsymbol A^{(t-1)},\boldsymbol D^{(t-1)},\boldsymbol \beta^{(t-1)},\boldsymbol Y, \boldsymbol \mu^{(t-1)}, \boldsymbol \Sigma^{(t-1)})f(\boldsymbol \mu^{(t-1)}, \boldsymbol \Sigma^{(t-1)} \mid \boldsymbol q_{g})}\\
+&+\sum_i^N \sum_g^G \mathrm{log} f(\boldsymbol \mu, \boldsymbol \Sigma \mid\boldsymbol q_{g} ) \frac{L(\boldsymbol q_{g} \mid \boldsymbol u_i,\boldsymbol A^{(t-1)},\boldsymbol D^{(t-1)}, \boldsymbol \beta^{(t-1)},\boldsymbol Y, \boldsymbol \mu^{(t-1)}, \boldsymbol \Sigma^{(t-1)})f(\boldsymbol \mu^{(t-1)}, \boldsymbol \Sigma^{(t-1)} \mid \boldsymbol q_{g})}{\sum_g^G L(\boldsymbol q_{g} \mid \boldsymbol u_i,\boldsymbol A^{(t-1)},\boldsymbol D^{(t-1)}, \boldsymbol \beta^{(t-1)},\boldsymbol Y, \boldsymbol \mu^{(t-1)}, \boldsymbol \Sigma^{(t-1)})f(\boldsymbol \mu^{(t-1)}, \boldsymbol \Sigma^{(t-1)} \mid \boldsymbol q_{g})}
+\end{aligned}
+\end{equation}
+
+
+
+
+
+Then we can define two artificial terms.
+
+For the reference group, $y=1$. We have
+
+$$n_{gy} =n_{g1} = \sum_{i=1}^{N_1} \frac{L(\boldsymbol q_{g} \mid \textbf y_i,\boldsymbol u_i,\textbf A^{(t-1)},\textbf D^{(t-1)}, \boldsymbol \beta^{(t-1)},\boldsymbol \mu_1^{(t-1)}, \boldsymbol \Sigma_1^{(t-1)})}{\sum_g^G L(\boldsymbol q_{g} \mid \textbf y_i,\boldsymbol u_i,\textbf A^{(t-1)},\textbf D^{(t-1)}, \boldsymbol \beta^{(t-1)},\boldsymbol \mu_1^{(t-1)}, \boldsymbol \Sigma_1^{(t-1)})}, $$
+
+and 
+
+$$r_{jgky} =r_{jgk1} =  \sum_{i=1}^{N_1}x_{ijk} \frac{L(\boldsymbol q_{g} \mid \textbf y_i,\boldsymbol u_i,\textbf A^{(t-1)},\textbf D^{(t-1)}, \boldsymbol \beta^{(t-1)}, \boldsymbol \mu_1^{(t-1)},\boldsymbol \Sigma_1^{(t-1)})}{\sum_g^G L(\boldsymbol q_{g} \mid \textbf y_i,\boldsymbol u_i,\textbf A^{(t-1)},\textbf D^{(t-1)}, \boldsymbol \beta^{(t-1)},\boldsymbol \mu_1^{(t-1)}, \boldsymbol \Sigma_1^{(t-1)})}.$$ 
+
+For the first focal group, $y=2$. We have
+
+$$n_{gy} =n_{g2} = \sum_{i=N_1+1}^{N_1+N_2} \frac{L(\boldsymbol q_{g} \mid \textbf y_i,\boldsymbol u_i,\textbf A^{(t-1)},\textbf D^{(t-1)},\boldsymbol \beta^{(t-1)},\boldsymbol \mu_2^{(t-1)}, \boldsymbol \Sigma_2^{(t-1)})}{\sum_g^G L(\boldsymbol q_{g} \mid \textbf y_i,\boldsymbol u_i,\textbf A^{(t-1)},\textbf D^{(t-1)}, \boldsymbol \beta^{(t-1)},\boldsymbol \mu_2^{(t-1)}, \boldsymbol \Sigma_2^{(t-1)})}, $$
+
+and
+
+$$r_{jgky} =r_{jgk2} =  \sum_{i=N_1+1}^{N_1+N_2}x_{ijk} \frac{L(\boldsymbol q_{g} \mid \textbf y_i,\boldsymbol u_i,\textbf A^{(t-1)},\textbf D^{(t-1)},\boldsymbol \beta^{(t-1)}, \boldsymbol \mu_2^{(t-1)},\boldsymbol \Sigma_2^{(t-1)})}{\sum_g^G L(\boldsymbol q_{g} \mid \textbf y_i,\boldsymbol u_i,\textbf A^{(t-1)},\textbf D^{(t-1)},\boldsymbol \beta^{(t-1)},\boldsymbol \mu_2^{(t-1)}, \boldsymbol \Sigma_2^{(t-1)})}.$$ 
+
+For the second focal group, $y=3$. We have
+
+$$n_{gy} =n_{g3} =\sum_{i=N_1+N_2+1}^{N_1+N_2+N3} \frac{L(\boldsymbol q_{g} \mid \textbf y_i,\boldsymbol u_i,\textbf A^{(t-1)},\textbf D^{(t-1)}, \boldsymbol \beta^{(t-1)},\boldsymbol \mu_3^{(t-1)}, \boldsymbol \Sigma_3^{(t-1)})}{\sum_g^G L(\boldsymbol q_{g} \mid\textbf y_i,\boldsymbol u_i,\textbf A^{(t-1)},\textbf D^{(t-1)}, \boldsymbol \beta^{(t-1)},\boldsymbol \mu_3^{(t-1)}, \boldsymbol \Sigma_3^{(t-1)})} $$
+
+and
+
+$$r_{jgky} =r_{jgk3} =  \sum_{i=N_1+N_2+1}^{N_1+N_2+N3}x_{ijk} \frac{L(\boldsymbol q_{g} \mid \textbf y_i,\boldsymbol u_i,\textbf A^{(t-1)},\textbf D^{(t-1)}, \boldsymbol \beta^{(t-1)}, \boldsymbol \mu_3^{(t-1)},\boldsymbol \Sigma_3^{(t-1)})}{\sum_g^G L(\boldsymbol q_{g} \mid \textbf y_i,\boldsymbol u_i,\textbf A^{(t-1)},\textbf D^{(t-1)}, \boldsymbol \beta^{(t-1)},\boldsymbol \mu_3^{(t-1)}, \boldsymbol \Sigma_3^{(t-1)})}.$$ 
+
+
+
+$n_g=n_{g1}+n_{g2}+n_{g3}$ represents the expected number of examinees with the ability $\boldsymbol q_{g}$, and $r_{jgk}=r_{jgk1}+r_{jgk2}+r_{jgk3}$ is the expected number of examinees who get the score level $k$ on the item *j* with the ability $\boldsymbol q_g$.
+
+\begin{equation}
+\begin{aligned}
+E[log\lbrace L(\textbf A,\textbf D, \boldsymbol \beta, \boldsymbol \mu, \boldsymbol \Sigma \mid \textbf Y, \textbf U, \boldsymbol \Theta)] &= \sum_y^3 \sum_g^G \sum_j^m \sum_k^p  (r_{jgky}  \mathrm{log} P_{jky\mid q_{g}})+ \sum_y^3 \sum_g^G n_{g} \mathrm{log} f(\boldsymbol \mu_y, \boldsymbol \Sigma_y \mid\boldsymbol q_{g} ) 
+\end{aligned}
+\end{equation}
+
+In the EM problem, we want to maximize the above expectation at the iteration *t*. Denote this unpenalized expectation as $\log M$.
+
+For each item *j*, we define 
+
+\begin{equation}
+\begin{aligned}
+\log M_j &= \sum_y^3 \sum_g^G \sum_k^p  (r_{jgky}  \mathrm{log} P_{jky\mid q_{g}})+ \sum_y^3 \sum_g^G n_{g} \mathrm{log} f(\boldsymbol \mu_y, \boldsymbol \Sigma_y \mid\boldsymbol q_{g}) 
+\end{aligned}
+\end{equation}
+
+In our uniform DIF detection problem, the maximum likelihood method does not serve the purpose of DIF variable selection. We apply lasso and minimize the following objective function 
+
+\begin{equation}
+\begin{aligned}
+-\log M + \eta \sum_j^m || \boldsymbol \beta_j ||_1 
+\end{aligned}
+\end{equation}
+
+For each item, we minimize
+
+\begin{equation}
+\begin{aligned}
+-\log M_j +  \eta || \boldsymbol \beta_j ||_1
+\end{aligned}
+\end{equation}
+
+
+where $\eta$ is the lasso tuning parameter.
+
+\begin{equation}
+\begin{aligned}
+(\hat{\boldsymbol A},\hat{\boldsymbol D},\hat{\boldsymbol \beta})=\mathrm{arg} \mathrm{min} \lbrace -\log M +  \eta || \boldsymbol \beta ||_1 \rbrace
+\end{aligned}
+\end{equation}
+
+## M step
+
+
+In our DIF detection problem, we assume the reference group has mean zero and variance one and only estimate the correlation, and the means and all the elements in covariance matrices of two focal groups can be freely estimated.
+
+In quadrature method, at the iteration *t*, the first partial derivative with respect to $\mu$ is
+
+\begin{equation}
+\begin{aligned}
+\frac{\partial \log M }{\partial \boldsymbol\mu_y}  &=\sum_g^G n_{gy} \frac{\partial \mathrm{log} f(\boldsymbol\mu_y,\boldsymbol \Sigma_y \mid\boldsymbol q_{g} )}{\partial \boldsymbol\mu_y}\\
+&=\sum_g^G n_{gy}  \frac{\partial -\frac{1}{2}(\boldsymbol q_g-\boldsymbol \mu_y)^T \boldsymbol \Sigma_y^{-1}(\boldsymbol q_g-\boldsymbol \mu_y)}{\partial \boldsymbol\mu_y}\\
+&=\sum_g^G n_{gy}  (\boldsymbol q_g-\boldsymbol \mu_y) \boldsymbol \Sigma_y^{-1}
+\end{aligned}
+\end{equation}
+
+Set $\frac{\partial \log M }{\partial \boldsymbol\mu_y}=0$, and we know that $\sum_g^G n_{gy}=N_y$.
+
+$\hat{\boldsymbol\mu}_y$ can be updated as
+
+\begin{equation}
+\begin{aligned}
+\hat{\boldsymbol\mu}_2  =\frac{\sum_{g=1}^G n_{g2}\boldsymbol q_{g}}{N_2},
+\end{aligned}
+\end{equation}
+
+and
+
+\begin{equation}
+\begin{aligned}
+\hat{\boldsymbol\mu}_3  =\frac{\sum_{g=1}^G n_{g3}\boldsymbol q_{g}}{N_3}.
+\end{aligned}
+\end{equation}
+
+
+The first partial derivative with respect to $\boldsymbol \Sigma$ is
+
+\begin{equation}
+\begin{aligned}
+\frac{\partial \log M }{\partial \boldsymbol \Sigma_y}  &= \sum_g^G n_{gy} \frac{\partial \mathrm{log} f(\boldsymbol\mu_y,\boldsymbol \Sigma_y \mid\boldsymbol q_{g} )}{\partial \boldsymbol \Sigma_y}\\
+&=\sum_g^G n_{gy} \frac{\partial (-\frac{q}{2}\mathrm{log}(2\pi)-\frac{1}{2}\mathrm{log}|\boldsymbol \Sigma_y|-\frac{1}{2}(\boldsymbol q_g-\boldsymbol \mu_y)^T \boldsymbol \Sigma_y^{-1}(\boldsymbol q_g-\boldsymbol \mu_y))}{\partial \boldsymbol \Sigma_y}\\
+&=\sum_g^G n_{gy}[-\frac{1}{2}\Sigma_y^{-1}+\frac{1}{2}\Sigma_y^{-1}(\boldsymbol q_g-\boldsymbol \mu_y)(\boldsymbol q_g-\boldsymbol \mu_y)^T \Sigma_y^{-1}]
+\end{aligned}
+\end{equation}
+
+Set $\frac{\partial \log M }{\partial \boldsymbol\mu_y}=0$, and use the fact that $\sum_g^G n_{gy}=N_y$.
+
+$\hat{\boldsymbol\Sigma}_y$ can be updated as
+
+\begin{equation}
+\begin{aligned}
+\hat{\boldsymbol\Sigma}_1=\frac{\sum_{g=1}^G n_{g1}\boldsymbol q_{g} \boldsymbol q_{g}'}{N_1},
+\end{aligned}
+\end{equation}
+
+\begin{equation}
+\begin{aligned}
+\hat{\boldsymbol\Sigma}_2=\frac{\sum_{g=1}^G n_{g2}(\boldsymbol q_{g}-\hat{\boldsymbol\mu}_2) (\boldsymbol q_{g}-\hat{\boldsymbol\mu}_2)'}{N_2},
+\end{aligned}
+\end{equation}
+
+and
+
+\begin{equation}
+\begin{aligned}
+\hat{\boldsymbol\Sigma}_3=\frac{\sum_{g=1}^G n_{g3}(\boldsymbol q_{g}-\hat{\boldsymbol\mu}_3) (\boldsymbol q_{g}-\hat{\boldsymbol\mu}_3)'}{N_3}.
+\end{aligned}
+\end{equation}
+
+To standardize the covariance matrix, we calculate standardized quadrature points for the later steps.
+
+\begin{equation}
+\begin{aligned}
+\boldsymbol q_{g}^*=\frac{q_{g}}{\sqrt{\mathrm{diag}\hat{\boldsymbol\Sigma_1}}}.
+\end{aligned}
+\end{equation}
+
+Then we do the following transformation on mean vector and covariance matrices for three groups.
+
+\begin{equation}
+\begin{aligned}
+\hat{\boldsymbol\Sigma}_1^*=\frac{\sum_{g=1}^G n_{g1}\boldsymbol q_{g}^* \boldsymbol q_{g}^{*'}}{N_1},
+\end{aligned}
+\end{equation}
+
+\begin{equation}
+\begin{aligned}
+\hat{\boldsymbol\Sigma}_2^*=\frac{\sum_{g=1}^G n_{g2}(\boldsymbol q_{g}^*-\hat{\boldsymbol\mu}_2) (\boldsymbol q_{g}^*-\hat{\boldsymbol\mu}_2)'}{N_2},
+\end{aligned}
+\end{equation}
+
+and
+
+\begin{equation}
+\begin{aligned}
+\hat{\boldsymbol\Sigma}_3^*=\frac{\sum_{g=1}^G n_{g3}(\boldsymbol q_{g}^*-\hat{\boldsymbol\mu}_3) (\boldsymbol q_{g}^*-\hat{\boldsymbol\mu}_3)'}{N_3}.
+\end{aligned}
+\end{equation}
+
+
+the first partial derivative with respect to $a_{jr}$ is
+
+\begin{equation}
+\begin{aligned}
+\frac{\partial \log M}{\partial a_{jr}} =  \sum_{y}^3 \sum_{k=1}^p \sum_{g=1}^{G} (\frac{r_{jgky} q_{gr}}{P_{jky\mid q_{g}}}(\omega_{j,(k-1),y}-\omega_{jky}))
+\end{aligned}
+\end{equation}
+
+
+where $\omega_{jky} = P_{jky\mid q_{g}}^*-(P_{jky\mid q_{g}}^*)^2$.
+
+Similarly, we have the first partial derivative with respect to $d_{jk}$
+
+\begin{equation}
+\begin{aligned}
+\frac{\partial \log M}{\partial d_{jk}} =\sum_y^3 \sum_g^G \omega_{jky} (\frac{r_{jg,(k+1),y}}{P_{j,(k+1),y\mid q_{g}}}-\frac{r_{jgky}}{P_{jky\mid q_{g}}})
+\end{aligned}
+\end{equation}
+
+where $\omega_{jky} = P_{jky\mid q_{g}}^*-(P_{jky\mid q_{g}}^*)^2$,
+
+and the first partial derivative with respect to $\beta_{jky}$, where y=(2,3), is
+
+\begin{equation}
+\begin{aligned}
+\frac{\partial \log M}{\partial \beta_{jky}} = \sum_g^G \omega_{jky} (\frac{r_{jg(k+1)y}}{P_{j(k+1)y\mid q_{g}}}-\frac{r_{jgky}}{P_{jky\mid q_{g}}})
+\end{aligned}
+\end{equation}
+
+where $\omega_{jky} = P_{jky\mid q_{g}}^*-(P_{jky\mid q_{g}}^*)^2$.
+
+
+
+The second partial derivatives in the Hessian matrix are given by
+
+\begin{equation}
+\begin{aligned}
+&\frac{\partial^2 \log M}{\partial a_{jr}^2}= \sum_y^3 \sum_{k=1}^p \sum_{g=1}^{G} -\frac{r_{jgky} q_{gr}^2(P_{j(k-1)y\mid q_{g}}^{*}Q_{j(k-1)y\mid q_{g}}^{*}-P_{jky\mid q_{g}}^{*}Q_{jky\mid q_{g}}^{*})^2}{P_{jky\mid q_{g}}^2}\\
+&=\sum_y^3\sum_{k=1}^p \sum_{g=1}^{G} -\frac{r_{jgky} q_{gr}^2(\omega_{j(k-1)y}-\omega_{jky})}{P_{jky\mid q_{g}}^2}
+\end{aligned}
+\end{equation}
+
+\begin{equation}
+\begin{aligned}
+&\frac{\partial^2 \log M}{\partial d_{jk}^2}= \sum_y^3\sum_{g=1}^{G} -(\frac{r_{jgky}}{P_{jky\mid q_{g}}^2}+\frac{r_{jg(k+1)y}}{P_{j(k+1)y\mid q_{g}}^2})P_{jky\mid q_{g}}^{*2}(1-P_{jky\mid q_{g}}^{*})^2\\
+&=\sum_y^3 \sum_{g=1}^{G} -(\frac{r_{jgky}}{P_{jky\mid q_{g}}^2}+\frac{r_{jg(k+1)y}}{P_{j(k+1)y\mid q_{g}}^2})\omega_{jky}^2
+\end{aligned}
+\end{equation}
+
+\begin{equation}
+\begin{aligned}
+&\frac{\partial^2 \log M}{\partial d_{jk}\partial d_{j,k+1}}= \sum_y^3\sum_{g=1}^{G} \frac{r_{jg(k+1)y}}{P_{j(k+1)y\mid q_{g}}^2}(P_{jky\mid q_{g}}^{*2}(1-P_{jky\mid q_{g}}^{*})^2)(P_{j(k+1)y\mid q_{g}}^{*2}(1-P_{j(k+1)y\mid q_{g}}^{*})^2)\\
+&= \sum_y^3\sum_{g=1}^{G} \frac{r_{jg(k+1)y}}{P_{j(k+1)y\mid q_{g}}^2}\omega_{jky}^2\omega_{j(k+1)y}^2\\
+\end{aligned}
+\end{equation}
+
+and
+
+\begin{equation}
+\begin{aligned}
+\frac{\partial^2 \log M}{\partial a_{jr}\partial d_{jk}}&= \sum_y^3\sum_{g=1}^{G} P_{jky}^{*}Q_{jky}^{*}q_{gr}[\frac{r_{jgky}}{P_{jky\mid q_{g}}^2}(P_{j(k-1)y\mid q_{g}}^{*}Q_{j(k-1)y\mid q_{g}}^{*}-P_{jky\mid q_{g}}^{*}Q_{jky\mid q_{g}}^{*}) \\
+&+\frac{r_{jg(k+1)y}}{P_{j(k+1)y\mid q_{g}}^2}(P_{jky\mid q_{g}}^{*}Q_{jky\mid q_{g}}^{*}-P_{j(k+1)y\mid q_{g}}^{*}Q_{j(k+1)y\mid q_{g}}^{*})]\\
+&= \sum_y^3\sum_{g=1}^{G} \omega_{jky}q_{gr}[\frac{r_{jgky}}{P_{jky\mid q_{g}}^2}(\omega_{j(k-1)y}-\omega_{jky}) +\frac{r_{jg(k+1)y}}{P_{j(k+1)y\mid q_{g}}^2}(\omega_{jky}-\omega_{j(k+1)y})]
+\end{aligned}
+\end{equation}
+
+where
+
+$$Q_{jky\mid q_{g}}^{*}=1-P_{jky\mid q_{g}}^{*}.$$
+$$\omega_{jky} = P_{jky\mid q_{g}}^{*}*Q_{jky\mid q_{g}}^{*}$$
+
+\begin{equation}
+\begin{aligned}
+&\frac{\partial^2 \log M}{\partial \beta_{jky}^2}= \frac{\partial^2 \log M}{\partial \beta_{jky} \partial d_{jk}}=\sum_{g=1}^{G} -(\frac{r_{jgky}}{P_{jky\mid q_{g}}^2}+\frac{r_{jg(k+1)y}}{P_{j(k+1)y\mid q_{g}}^2})P_{jky\mid q_{g}}^{*2}(1-P_{jky\mid q_{g}}^{*})^2
+\end{aligned}
+\end{equation}
+
+\begin{equation}
+\begin{aligned}
+\frac{\partial^2 \log M}{\partial a_{jr}\partial \beta_{jky}}= \sum_{g=1}^{G} \omega_{jky}q_{gr}[\frac{r_{jgky}}{P_{jky\mid q_{g}}^2}(\omega_{j(k-1)y}-\omega_{jky}) +\frac{r_{jg(k+1)y}}{P_{j(k+1)y\mid q_{g}}^2}(\omega_{jky}-\omega_{j(k+1)y})]
+\end{aligned}
+\end{equation}
+
+The expectation of the second partial derivatives in the Fisher scoring method are given by
+
+\begin{equation}
+\begin{aligned}
+E(\frac{\partial^2 \log M}{\partial a_{jr}^2})= \sum_y^3 \sum_{k=1}^p \sum_{g=1}^{G} -\frac{n_{gy} q_{gr}^2(\omega_{j(k-1)y}-\omega_{jky})}{P_{jky\mid q_{g}}},
+\end{aligned}
+\end{equation}
+
+\begin{equation}
+\begin{aligned}
+E(\frac{\partial^2 \log M}{\partial d_{jk}^2})= \sum_y^3\sum_{g=1}^{G} -n_{gy}(\frac{1}{P_{jky\mid q_{g}}}+\frac{1}{P_{j(k+1)y\mid q_{g}}})\omega_{jky}^2,
+\end{aligned}
+\end{equation}
+
+\begin{equation}
+\begin{aligned}
+E(\frac{\partial^2 \log M}{\partial d_{jk}\partial d_{j,k+1}})= \sum_y^3\sum_{g=1}^{G} \frac{n_{gy}}{P_{j(k+1)y\mid q_{g}}}\omega_{jky}^2\omega_{j(k+1)y}^2,
+\end{aligned}
+\end{equation}
+
+and
+
+\begin{equation}
+\begin{aligned}
+E(\frac{\partial^2 \log M}{\partial a_{jr}\partial d_{jk}})= \sum_y^3\sum_{g=1}^{G} n_{gy} \omega_{jky}q_{gr}[\frac{1}{P_{jky\mid q_{g}}}(\omega_{j(k-1)y}-\omega_{jky}) +\frac{1}{P_{j(k+1)y\mid q_{g}}}(\omega_{jky}-\omega_{j(k+1)y})].
+\end{aligned}
+\end{equation}
+
+\begin{equation}
+\begin{aligned}
+E(\frac{\partial^2 \log M}{\partial \beta_{jky}^2})= E(\frac{\partial^2 \log M}{\partial \beta_{jky} \partial d_{jk}})=\sum_{g=1}^{G} -n_{gy}(\frac{1}{P_{jky\mid q_{g}}}+\frac{1}{P_{j(k+1)y\mid q_{g}}})\omega_{jky}^2.
+\end{aligned}
+\end{equation}
+
+\begin{equation}
+\begin{aligned}
+E(\frac{\partial^2 \log M}{\partial a_{jr}\partial \beta_{jky}})=\sum_{g=1}^{G} n_{gy} \omega_{jky}q_{gr}[\frac{1}{P_{jky\mid q_{g}}}(\omega_{j(k-1)y}-\omega_{jky}) +\frac{1}{P_{j(k+1)y\mid q_{g}}}(\omega_{jky}-\omega_{j(k+1)y})].
+\end{aligned}
+\end{equation}
+
+### Cyclical coordinate descent
+
+By Bazaraa, Sherali, and Shetty (2006), for a convex function *f*, a point $\bar\theta$ is a global minimizer of *f* if and only if $\partial f(\bar\theta)$, the subgradient of *f* at  $\bar\theta$, contains 0. Hence $\hat\theta_{\tau}$ is the global minimizer only when $\hat\theta_{\tau}=\mathrm{sign}(s) (|s|-\tau)_+$, where $(u)_+=u1(u>0).$ This is called the soft-threshold of *s* and $\tau$, and can be denoted by
+
+\begin{equation}
+\begin{aligned}
+&\hat\theta_{\tau}=\mathrm{soft} (s,\tau)\equiv\mathrm{sign}(s) (|s|-\tau)_+ \\
+&=\arg \min_{\theta \in \mathbb{R}} \lbrace0.5\theta^2-s\theta+\tau|\theta|\rbrace.
+\end{aligned}
+\end{equation}
+
+Then, to minimize our objective function with respect to $\boldsymbol \beta$, our lasso estimator in (13) can be written by
+
+\begin{equation}
+\begin{aligned}
+\hat{\boldsymbol \beta}&=\mathrm{arg} \mathrm{min} \lbrace -\log M(\boldsymbol \beta) +  \eta || \boldsymbol \beta ||_1 \rbrace\\
+&= \mathrm{arg} \mathrm{min} \lbrace -\log M(\boldsymbol \beta_0)- \partial_{\beta} \log M(\boldsymbol \beta_0)(\boldsymbol \beta-\boldsymbol \beta_0)-\frac{\partial^2_{\beta} \log M(\boldsymbol \beta_0)}{2}(\boldsymbol \beta-\boldsymbol \beta_0)^2 +  \eta || \boldsymbol \beta ||_1 \rbrace\\
+&=-\frac{\mathrm{soft}(\partial_{\boldsymbol \beta}\log M-\boldsymbol \beta_j^{(t-1)}*\partial^2_{\boldsymbol \beta}\log M,\eta)}{\partial^2_{\boldsymbol \beta}\log M}
+\end{aligned}
+\end{equation}
+
+
+
+
+We run a cyclical coordinate descent algorithm for each group (item) with all other groups fixed. For item *j*, our algorithm is given by following.
+
+1. Calculate $P_{jky\mid q_{g}}^{*},Q_{jky\mid q_{g}}^{*}$.
+
+2. The parameter $a_{jr}$ and $d_{jk}$ can be updated by
+
+$${a}_{jr}^{(t)}=  a_{jr}^{(t-1)}-\frac{\partial_{ a_{jr}}\log M}{\partial^2_{ a_{jr}}\log M},$$
+
+$${d}_{jk}^{(t)}=  d_{jk}^{(t-1)}-\frac{\partial_{ d_{jk}}\log M}{\partial^2_{ d_{jk}}\log M}$$
+
+and
+
+$$\hat{\boldsymbol \beta}_{jky}=-\frac{\mathrm{soft}(\partial_{\boldsymbol \beta_{jky}}\log M-\boldsymbol \beta_{jky}^{(t-1)}*\partial^2_{\boldsymbol \beta_{jky}}\log M,\eta)}{\partial^2_{\boldsymbol \beta_{jky}}\log M}$$
+
+Then we update $P_{jky\mid q_{g}}^{*}$ and $Q_{jky\mid q_{g}}^{*}$ by plugging in $\hat{\boldsymbol A}$,$\hat{\boldsymbol D}$ and $\hat{\boldsymbol \beta}$ from last coordinate descent cycle and repeat above steps until a convergence criterion is met.
+
+After we get optimizers for item *j*, we do transforamtions on all estimates as following
+
+$${a}_{jr}^{(t)*}=  {a}_{jr}^{(t)}*\sqrt{\mathrm{diag}(\hat{\boldsymbol\Sigma}_{1r})},$$
+
+
+where $\mathrm{diag}(\hat{\boldsymbol\Sigma}_{1r})$ is the *r*th element on the diagonal of the estimated covariance matrix of the reference group $\hat{\boldsymbol {\boldsymbol\Sigma}_1}$.
+
+## Simulation
+
+$\emph Sample$ $\emph Size.$ The total sample size is $N=1500$, and the group sample sizes are $N_1=N_2=N_3=500$.
+
+$\emph Test$ $\emph Length.$ $m=20.$ Simple structure. 10 items per dimension.
+
+$\emph Proportion \ of \ DIF.$ 4 items with DIF. 2 DIF items per dimension.
+
+$\emph Magnitude \ of \ DIF.$ The first focal group with extreme difficulty parameter (+0.5) on the 4 DIF items. 
+
+The second focal group with more extreme difficulty parameter (+1) on the 4 DIF items.
+
+$\emph Generated \ parameters.$
+
+$a_{j1}\sim U(1.5,2.5), j=1,...,10$
+
+$a_{j2}\sim U(1.5,2.5), j=11,...,20$
+
+$d_{1}\sim N(0,1)$
+
+$$\boldsymbol A=\begin{pmatrix}
+2.17&0\\
+0& 2.46\\
+2.41& 0\\
+2.45& 0\\
+2.34& 0\\
+1.84& 0\\
+1.85& 0\\
+1.92& 0\\
+1.94& 0\\
+1.90& 0\\
+1.92& 0\\
+0& 2.43\\
+0& 1.82\\
+0& 2.22\\
+0& 1.93\\
+0& 1.88\\
+0& 1.84\\
+0& 2.12\\
+0& 2.42\\
+0& 2.15\\
+\end{pmatrix},$$
+
+$$\boldsymbol D=\begin{pmatrix}
+0.03\\
+-1.28\\
+0.58\\
+-2.06\\
+0.12\\
+3.25\\
+-0.41\\
+-0.51\\
+0.89\\
+1.33\\
+0.85\\
+0.82\\
+-0.37\\
+-0.99\\
+-0.27\\
+0.19\\
+1.73\\
+0.05\\
+-1.86\\
+-0.63\\
+\end{pmatrix},$$
+
+$$\boldsymbol\beta=\begin{pmatrix}
+0 & 0\\
+0 & 0 \\
+0 & 0 \\
+0.5 & 1 \\
+0.5 & 1 \\
+0 & 0 \\
+0 & 0 \\
+0 & 0 \\
+0 & 0 \\
+0 & 0 \\
+0 & 0 \\
+0.5 & 1 \\
+0.5 & 1 \\
+0 & 0 \\
+0 & 0 \\
+0 & 0 \\
+0 & 0 \\
+0 & 0 \\
+0 & 0 \\
+0 & 0 \\
+\end{pmatrix},$$
+
+No impact. $\theta_i\sim N(\begin{pmatrix}0\\0\\\end{pmatrix}, \begin{pmatrix}1&0.85\\0.85&1\\\end{pmatrix})$
+
+### Results of 16 Replications
+
+$\emph Table \ 1. \ Type \ I \ error \ and \ Power \ of \ regularization \ method$
+
+Group | Omnibus DIF| Group with DIF=0.5| Group with DIF=1| 
+------|------|------|------|
+Power| 1 | 0.5 | 1 |
+Type I| 0.049 | 0.01875 | 0.022 |
+
+Omnibus DIF is defined as if at least one focal group showd DIF on an item, then that item is flagged as DIF.
+
+$\emph Table \ 2. \ Type \ I \ error \ and \ Power \ of \ mirt \ LRT$
+
+Group | Omnibus DIF| 
+------|------|
+Power| 1 | 
+Type I| 0.053 | 
+
+mirt LRT can only do the omnibus DIF test.
+
+Both regularization and mirt LRT can detect DIF maginitude 1 with power 100%. Our regularization method has slightly lower Type I error.
+
+$\emph Table \ 3. \  Item \ parameter \ estimates \ by \ regularization$
+
+Item Parameters |$\boldsymbol a_1$| $\boldsymbol a_2$| $\boldsymbol d$| 
+------------------ | -----|------|------|------|------|------|
+Bias|-0.0160795| -0.0099595|0.02939|
+RMSE|0.141|0.145|0.146|
+
+$\emph Table \ 4. \ Item \ parameter \ estimates \ by \ mirt \ LRT$
+
+Item Parameters |$\boldsymbol a_1$| $\boldsymbol a_2$| $\boldsymbol d$| 
+------------------ | -----|------|------|------|------|------|
+Bias|0.002604| 0.0118656|-0.040605|
+RMSE|0.14481|0.1484|0.15307|
+
+Our regularization method has slightly better non-DIF item parameter estimates.
+
+$\emph Table \ 5. \ Absolute \ bias \ for \ DIF \ magnitude \ recoveries \ that \ were \ true \ DIF$
+
+Group | Omnibus DIF| Group with DIF=0.5| Group with DIF=1| 
+------|------|------|------|
+Regularization (include false negative)| 0.255 | 0.302 | 0.208 |
+Regularization (exclude false negative)| 0.173 | 0.104 | 0.208 |
+mirt LRT (include false negative)| 0.1746 | 0.1666 | 0.1826 |
+
+$\emph Table \ 6. \ Absolute \ bias \ for \ DIF \ magnitude \ recoveries \ that \ were \ non-DIF$
+
+Group | Omnibus DIF| Group with DIF=0.5| Group with DIF=1| 
+------|------|------|------|
+Regularization | 0.336 | 0.33 | 0.341 |
+mirt LRT | 0.15696 | 0.1516 | 0.1622 |
+
+The results in Table 6 are the average of estimated DIF for false positive items. LRT by mirt performs better when type I error happens. The type I error is low, so the probability to have these bias is low.
+
+# Non-uniform DIF Detection via LASSO 
+
+
+When the items have non-uniform DIF on slope only, i.e., there is no DIF on the intercepts, the DIF parameter we are estimating is $\boldsymbol \Gamma = (\boldsymbol 0,..., \boldsymbol 0, \boldsymbol \Gamma_{q+1},...,\boldsymbol \Gamma_{m})$.
+
+## E step
+
+For an examinee with ability $\boldsymbol \theta_i$ the conditional likelihood of observing $\boldsymbol u_i$ is
+
+\begin{equation}
+\begin{aligned}
+&L(\textbf A,\textbf D, \boldsymbol \Gamma, \boldsymbol \theta_i \mid \textbf y,\boldsymbol u_i)= \prod_{j=1}^m \prod_{k=1}^p P_{jk}(\boldsymbol \theta_i)^{x_{ijk}}.
+\end{aligned}
+\end{equation}
+
+With the assumption of prior distribution of latent trait, the joint likelihood of $\boldsymbol u_i$ and $\boldsymbol \theta_i$ is
+
+\begin{equation}
+\begin{aligned}
+&L(\textbf A,\textbf D,\boldsymbol \Gamma,\boldsymbol \mu_y, \boldsymbol \Sigma_y \mid \textbf y,\textbf u_i, \boldsymbol \theta_i) = L(\textbf A,\textbf D, \boldsymbol \Gamma, \boldsymbol \theta_i \mid \textbf y, \textbf u_i) f(\boldsymbol \mu_y, \boldsymbol \Sigma_y \mid \boldsymbol \theta_{i} )\\
+&= \prod_{j=1}^m \prod_{k=1}^p P_{jk}(\boldsymbol \theta_i)^{x_{ijk}}(2\pi)^{-p/2}|\boldsymbol \Sigma_y|^{-1/2}\mathrm{exp}(-0.5(\boldsymbol \theta_i-\boldsymbol \mu_y)' \boldsymbol \Sigma_y^{-1}(\boldsymbol \theta_i-\boldsymbol \mu_y)).
+\end{aligned}
+\end{equation}
+
+Therefore, the marginal likelihood of $\boldsymbol u_i$ is
+
+\begin{equation}
+\begin{aligned}
+&m(\textbf A,\textbf D,\boldsymbol \Gamma,\boldsymbol \mu_y, \boldsymbol \Sigma_y \mid \boldsymbol y,\boldsymbol u_i) = \int L(\textbf A,\textbf D, \boldsymbol \Gamma \mid \textbf y, \textbf u_i, \boldsymbol \theta_i) f(\boldsymbol \mu_y, \boldsymbol \Sigma_y \mid \boldsymbol \theta_{i} ) \partial \boldsymbol \theta_{i}
+\end{aligned}
+\end{equation}
+
+Then
+
+\begin{equation}
+\begin{aligned}
+&h(\boldsymbol \theta_{i}\mid \boldsymbol u_i,\boldsymbol y_i,\textbf A^{(t-1)},\textbf D^{(t-1)} ,\boldsymbol \Gamma^{(t-1)}, \boldsymbol\mu^{(t-1)}_y,\Sigma^{(t-1)}_y)=\frac{L(\textbf A,\textbf D, \boldsymbol \Gamma \mid \textbf y, \textbf u_i, \boldsymbol \theta_i) f(\boldsymbol \mu_y, \boldsymbol \Sigma_y \mid \boldsymbol \theta_{i})}{m(\textbf A,\textbf D,\boldsymbol \Gamma, \boldsymbol \mu_y, \boldsymbol \Sigma_y \mid \boldsymbol y,\boldsymbol u_i)}
+\end{aligned}
+\end{equation}
+
+is the posterior density of $\boldsymbol \theta_i$ given the estimation of $\textbf A$, $\textbf D$, $\boldsymbol \Gamma$ and $\Sigma$ at the iteration *t*. 
+
+
+The expected complete data log-likelihood with respect to the posterior distribution of $\boldsymbol\theta$
+
+\begin{equation}
+\begin{aligned}
+& E[log\lbrace L(\boldsymbol A,\boldsymbol D,\boldsymbol \Gamma, \boldsymbol \mu, \boldsymbol \Sigma \mid \boldsymbol Y,\boldsymbol U, \boldsymbol \Theta)  \rbrace|\boldsymbol A^{(t-1)},\boldsymbol D^{(t-1)},\boldsymbol \Gamma^{(t-1)}, \textbf Y,\textbf U, \boldsymbol \mu^{(t-1)}, \boldsymbol \Sigma^{(t-1)}] \\
+& = \sum_i^N \lbrace \int \mathrm{log} L(\boldsymbol A,\boldsymbol D,\boldsymbol \Gamma \mid \boldsymbol y,\boldsymbol u_i, \boldsymbol \theta_i) h(\boldsymbol \theta_i|\boldsymbol y_i,\boldsymbol u_i,\boldsymbol A^{(t-1)},\boldsymbol D^{(t-1)} ,\boldsymbol \Gamma^{(t-1)}, \boldsymbol \mu^{(t-1)}, \boldsymbol \Sigma^{(t-1)}) \partial  \boldsymbol \theta_i\\
+&+\int \mathrm{log}f(\boldsymbol \mu_y,\boldsymbol \Sigma_y \mid\boldsymbol \theta_{i} ) h(\boldsymbol \theta_i|\boldsymbol u_i,\boldsymbol A^{(t-1)},\boldsymbol D^{(t-1)} ,\boldsymbol \Gamma^{(t-1)}, \boldsymbol \mu_y^{(t-1)}, \boldsymbol \Sigma_y^{(t-1)}) \partial  \boldsymbol \theta_i \rbrace
+\end{aligned}
+\end{equation}
+
+
+At iteration *t*, applying Gauss-Hermite quadrature nodes and the integration above can be updated as
+
+\begin{equation}
+\begin{aligned}
+&E[log L(\boldsymbol A,\boldsymbol D,\boldsymbol \Gamma, \boldsymbol \mu, \boldsymbol \Sigma \mid \boldsymbol Y, \boldsymbol U)] \\
+&=\sum_i^N \sum_g^G \mathrm{log} L(\boldsymbol A,\boldsymbol D,\boldsymbol \Gamma \mid \boldsymbol u_i, \boldsymbol q_{g})\frac{L(\boldsymbol q_{g} \mid \boldsymbol u_i,\boldsymbol A^{(t-1)},\boldsymbol D^{(t-1)},\boldsymbol \Gamma^{(t-1)}, \boldsymbol Y, \boldsymbol \mu^{(t-1)}, \boldsymbol \Sigma^{(t-1)})f(\boldsymbol \mu^{(t-1)}, \boldsymbol \Sigma^{(t-1)} \mid \boldsymbol q_{g})}{\sum_g^G L(\boldsymbol q_{g} \mid \boldsymbol u_i,\boldsymbol A^{(t-1)},\boldsymbol D^{(t-1)},\boldsymbol \Gamma^{(t-1)}, \boldsymbol Y,\boldsymbol \mu^{(t-1)},  \boldsymbol \Sigma^{(t-1)})f(\boldsymbol \mu^{(t-1)}, \boldsymbol \Sigma^{(t-1)} \mid \boldsymbol q_{g})}\\
+& +\sum_i^N \sum_g^G \mathrm{log} f(\boldsymbol \mu, \boldsymbol \Sigma \mid\boldsymbol q_{g} ) \frac{L(\boldsymbol q_{g} \mid \boldsymbol u_i,\boldsymbol A^{(t-1)},\boldsymbol D^{(t-1)},\boldsymbol \Gamma^{(t-1)}, \boldsymbol Y, \boldsymbol \mu^{(t-1)}, \boldsymbol \Sigma^{(t-1)})f(\boldsymbol \mu^{(t-1)}, \boldsymbol \Sigma^{(t-1)} \mid \boldsymbol q_{g})}{\sum_g^G L(\boldsymbol q_{g} \mid \boldsymbol u_i,\boldsymbol A^{(t-1)},\boldsymbol D^{(t-1)},\boldsymbol \Gamma^{(t-1)}, \boldsymbol Y,\boldsymbol \mu^{(t-1)}, \boldsymbol \Sigma^{(t-1)})f(\boldsymbol \mu^{(t-1)}, \boldsymbol \Sigma^{(t-1)} \mid \boldsymbol q_{g})}\\
+&=\sum_i^N \sum_g^G \sum_j^m \sum_k^p x_{ijk}\mathrm{log} P_{ijk\mid q_{g}} \frac{L(\boldsymbol q_{g} \mid \boldsymbol u_i,\boldsymbol A^{(t-1)},\boldsymbol D^{(t-1)},\boldsymbol \Gamma^{(t-1)}, \boldsymbol Y, \boldsymbol \mu^{(t-1)}, \boldsymbol \Sigma^{(t-1)})f(\boldsymbol \mu^{(t-1)}, \boldsymbol \Sigma^{(t-1)} \mid \boldsymbol q_{g})}{\sum_g^G L(\boldsymbol q_{g} \mid \boldsymbol u_i,\boldsymbol A^{(t-1)},\boldsymbol D^{(t-1)},\boldsymbol \Gamma^{(t-1)}, \boldsymbol Y, \boldsymbol \mu^{(t-1)}, \boldsymbol \Sigma^{(t-1)})f(\boldsymbol \mu^{(t-1)}, \boldsymbol \Sigma^{(t-1)} \mid \boldsymbol q_{g})}\\
+&+\sum_i^N \sum_g^G \mathrm{log} f(\boldsymbol \mu, \boldsymbol \Sigma \mid\boldsymbol q_{g} ) \frac{L(\boldsymbol q_{g} \mid \boldsymbol u_i,\boldsymbol A^{(t-1)},\boldsymbol D^{(t-1)},\boldsymbol \Gamma^{(t-1)}, \boldsymbol Y, \boldsymbol \mu^{(t-1)}, \boldsymbol \Sigma^{(t-1)})f(\boldsymbol \mu^{(t-1)}, \boldsymbol \Sigma^{(t-1)} \mid \boldsymbol q_{g})}{\sum_g^G L(\boldsymbol q_{g} \mid \boldsymbol u_i,\boldsymbol A^{(t-1)},\boldsymbol D^{(t-1)},\boldsymbol \Gamma^{(t-1)},\boldsymbol Y, \boldsymbol \mu^{(t-1)}, \boldsymbol \Sigma^{(t-1)})f(\boldsymbol \mu^{(t-1)}, \boldsymbol \Sigma^{(t-1)} \mid \boldsymbol q_{g})}
+\end{aligned}
+\end{equation}
+
+
+
+
+
+Then we can define two artificial terms.
+
+For the reference group, $y=1$. We have
+
+$$n_{gy} =n_{g1} = \sum_{i=1}^{N_1} \frac{L(\boldsymbol q_{g} \mid \textbf y_i,\boldsymbol u_i,\textbf A^{(t-1)},\textbf D^{(t-1)},\boldsymbol \Gamma^{(t-1)}, \boldsymbol \mu_1^{(t-1)}, \boldsymbol \Sigma_1^{(t-1)})}{\sum_g^G L(\boldsymbol q_{g} \mid \textbf y_i,\boldsymbol u_i,\textbf A^{(t-1)},\textbf D^{(t-1)},\boldsymbol \Gamma^{(t-1)},\boldsymbol \mu_1^{(t-1)}, \boldsymbol \Sigma_1^{(t-1)})}, $$
+
+and 
+
+$$r_{jgky} =r_{jgk1} =  \sum_{i=1}^{N_1}x_{ijk} \frac{L(\boldsymbol q_{g} \mid \textbf y_i,\boldsymbol u_i,\textbf A^{(t-1)},\textbf D^{(t-1)},\boldsymbol \Gamma^{(t-1)},  \boldsymbol \mu_1^{(t-1)},\boldsymbol \Sigma_1^{(t-1)})}{\sum_g^G L(\boldsymbol q_{g} \mid \textbf y_i,\boldsymbol u_i,\textbf A^{(t-1)},\textbf D^{(t-1)},\boldsymbol \Gamma^{(t-1)}, \boldsymbol \mu_1^{(t-1)}, \boldsymbol \Sigma_1^{(t-1)})}.$$ 
+
+For the first focal group, $y=2$. We have
+
+$$n_{gy} =n_{g2} = \sum_{i=N_1+1}^{N_1+N_2} \frac{L(\boldsymbol q_{g} \mid \textbf y_i,\boldsymbol u_i,\textbf A^{(t-1)},\textbf D^{(t-1)},\boldsymbol \Gamma^{(t-1)}, \boldsymbol \mu_2^{(t-1)}, \boldsymbol \Sigma_2^{(t-1)})}{\sum_g^G L(\boldsymbol q_{g} \mid \textbf y_i,\boldsymbol u_i,\textbf A^{(t-1)},\textbf D^{(t-1)},\boldsymbol \Gamma^{(t-1)}, \boldsymbol \mu_2^{(t-1)}, \boldsymbol \Sigma_2^{(t-1)})}, $$
+
+and
+
+$$r_{jgky} =r_{jgk2} =  \sum_{i=N_1+1}^{N_1+N_2}x_{ijk} \frac{L(\boldsymbol q_{g} \mid \textbf y_i,\boldsymbol u_i,\textbf A^{(t-1)},\textbf D^{(t-1)},\boldsymbol \Gamma^{(t-1)}, \boldsymbol \mu_2^{(t-1)},\boldsymbol \Sigma_2^{(t-1)})}{\sum_g^G L(\boldsymbol q_{g} \mid \textbf y_i,\boldsymbol u_i,\textbf A^{(t-1)},\textbf D^{(t-1)},\boldsymbol \Gamma^{(t-1)}, \boldsymbol \mu_2^{(t-1)}, \boldsymbol \Sigma_2^{(t-1)})}.$$ 
+
+For the second focal group, $y=3$. We have
+
+$$n_{gy} =n_{g3} =\sum_{i=N_1+N_2+1}^{N_1+N_2+N3} \frac{L(\boldsymbol q_{g} \mid \textbf y_i,\boldsymbol u_i,\textbf A^{(t-1)},\textbf D^{(t-1)},\boldsymbol \Gamma^{(t-1)}, \boldsymbol \mu_3^{(t-1)}, \boldsymbol \Sigma_3^{(t-1)})}{\sum_g^G L(\boldsymbol q_{g} \mid\textbf y_i,\boldsymbol u_i,\textbf A^{(t-1)},\textbf D^{(t-1)},\boldsymbol \Gamma^{(t-1)}, \boldsymbol \mu_3^{(t-1)}, \boldsymbol \Sigma_3^{(t-1)})} $$
+
+and
+
+$$r_{jgky} =r_{jgk3} =  \sum_{i=N_1+N_2+1}^{N_1+N_2+N3}x_{ijk} \frac{L(\boldsymbol q_{g} \mid \textbf y_i,\boldsymbol u_i,\textbf A^{(t-1)},\textbf D^{(t-1)},\boldsymbol \Gamma^{(t-1)}, \boldsymbol \mu_3^{(t-1)},\boldsymbol \Sigma_3^{(t-1)})}{\sum_g^G L(\boldsymbol q_{g} \mid \textbf y_i,\boldsymbol u_i,\textbf A^{(t-1)},\textbf D^{(t-1)},\boldsymbol \Gamma^{(t-1)}, \boldsymbol \mu_3^{(t-1)}, \boldsymbol \Sigma_3^{(t-1)})}.$$ 
+
+
+
+$n_g=n_{g1}+n_{g2}+n_{g3}$ represents the expected number of examinees with the ability $\boldsymbol q_{g}$, and $r_{jgk}=r_{jgk1}+r_{jgk2}+r_{jgk3}$ is the expected number of examinees who get the score level $k$ on the item *j* with the ability $\boldsymbol q_g$.
+
+\begin{equation}
+\begin{aligned}
+E[log\lbrace L(\textbf A,\textbf D,\boldsymbol \Gamma,  \boldsymbol \mu, \boldsymbol \Sigma \mid \textbf Y, \textbf U, \boldsymbol \Theta)] &= \sum_y^3 \sum_g^G \sum_j^m \sum_k^p  (r_{jgky}  \mathrm{log} P_{jky\mid q_{g}})+ \sum_y^3 \sum_g^G n_{g} \mathrm{log} f(\boldsymbol \mu_y, \boldsymbol \Sigma_y \mid\boldsymbol q_{g} ) 
+\end{aligned}
+\end{equation}
+
+In the EM problem, we want to maximize the above expectation at the iteration *t*. Denote this unpenalized expectation as $\log M$.
+
+For each item *j*, we define 
+
+\begin{equation}
+\begin{aligned}
+\log M_j &= \sum_y^3 \sum_g^G \sum_k^p  (r_{jgky}  \mathrm{log} P_{jky\mid q_{g}})+ \sum_y^3 \sum_g^G n_{g} \mathrm{log} f(\boldsymbol \mu_y, \boldsymbol \Sigma_y \mid\boldsymbol q_{g}) 
+\end{aligned}
+\end{equation}
+
+In our DIF detection problem, we minimize the following objective function 
+
+\begin{equation}
+\begin{aligned}
+-\log M + \eta \sum_j^m ||\boldsymbol \Gamma_j||_1
+\end{aligned}
+\end{equation}
+
+For each item, we minimize
+
+\begin{equation}
+\begin{aligned}
+-\log M_j +  \eta ||\boldsymbol \Gamma_j||_1
+\end{aligned}
+\end{equation}
+
+
+where $\eta$ is the lasso tuning parameter.
+
+\begin{equation}
+\begin{aligned}
+(\hat{\boldsymbol A},\hat{\boldsymbol D},\hat{\boldsymbol \Gamma})=\mathrm{arg} \mathrm{min} \lbrace -\log M +  \eta || \boldsymbol \Gamma ||_1 \rbrace
+\end{aligned}
+\end{equation}
+
+## M step
+
+
+Again, we assume the reference group has mean zero and variance one and only estimate its correlations. The means and all elements in the covariance matrices of two focal groups can be freely estimated.
+
+$\hat{\boldsymbol\mu}_y$ can be updated as
+
+\begin{equation}
+\begin{aligned}
+\hat{\boldsymbol\mu}_2  =\frac{\sum_{g=1}^G n_{g2}\boldsymbol q_{g}}{N_2},
+\end{aligned}
+\end{equation}
+
+and
+
+\begin{equation}
+\begin{aligned}
+\hat{\boldsymbol\mu}_3  =\frac{\sum_{g=1}^G n_{g3}\boldsymbol q_{g}}{N_3}.
+\end{aligned}
+\end{equation}
+
+
+$\hat{\boldsymbol\Sigma}_y$ can be updated as
+
+\begin{equation}
+\begin{aligned}
+\hat{\boldsymbol\Sigma}_1=\frac{\sum_{g=1}^G n_{g1}\boldsymbol q_{g}\boldsymbol q_{g}'}{N_1},
+\end{aligned}
+\end{equation}
+
+\begin{equation}
+\begin{aligned}
+\hat{\boldsymbol\Sigma}_2=\frac{\sum_{g=1}^G n_{g2}(\boldsymbol q_{g}-\hat{\boldsymbol\mu}_2) (\boldsymbol q_{g}-\hat{\boldsymbol\mu}_2)'}{N_2},
+\end{aligned}
+\end{equation}
+
+and
+
+\begin{equation}
+\begin{aligned}
+\hat{\boldsymbol\Sigma}_3=\frac{\sum_{g=1}^G n_{g3}(\boldsymbol q_{g}-\hat{\boldsymbol\mu}_3) (\boldsymbol q_{g}-\hat{\boldsymbol\mu}_3)'}{N_3}.
+\end{aligned}
+\end{equation}
+
+Standardized quadrature points.
+
+\begin{equation}
+\begin{aligned}
+\boldsymbol q_{g}^*=\frac{q_{g}}{\sqrt{\mathrm{diag}\hat{\boldsymbol\Sigma_1}}}.
+\end{aligned}
+\end{equation}
+
+Then we do the following transformation on covariance matrices for three groups.
+
+\begin{equation}
+\begin{aligned}
+\hat{\boldsymbol\Sigma}_1^*=\frac{\sum_{g=1}^G n_{g1}\boldsymbol q_{g}^* \boldsymbol q_{g}^{*'}}{N_1},
+\end{aligned}
+\end{equation}
+
+\begin{equation}
+\begin{aligned}
+\hat{\boldsymbol\Sigma}_2^*=\frac{\sum_{g=1}^G n_{g2}(\boldsymbol q_{g}^*-\hat{\boldsymbol\mu}_2) (\boldsymbol q_{g}^*-\hat{\boldsymbol\mu}_2)'}{N_2},
+\end{aligned}
+\end{equation}
+
+and
+
+\begin{equation}
+\begin{aligned}
+\hat{\boldsymbol\Sigma}_3^*=\frac{\sum_{g=1}^G n_{g3}(\boldsymbol q_{g}^*-\hat{\boldsymbol\mu}_3) (\boldsymbol q_{g}^*-\hat{\boldsymbol\mu}_3)'}{N_3}.
+\end{aligned}
+\end{equation}
+
+
+
+The first partial derivative with respect to $a_{jr}$ is
+
+\begin{equation}
+\begin{aligned}
+\frac{\partial \log M}{\partial a_{jr}} =  \sum_{y}^3 \sum_{k=1}^p \sum_{g=1}^{G} (\frac{r_{jgky} q_{gr}}{P_{jky\mid q_{g}}}(\omega_{j,(k-1),y}-\omega_{jky}))
+\end{aligned}
+\end{equation}
+
+
+where $\omega_{jky} = P_{jky\mid q_{g}}^*-(P_{jky\mid q_{g}}^*)^2$.
+
+Similarly, we have the first partial derivative with respect to $d_{jk}$
+
+\begin{equation}
+\begin{aligned}
+\frac{\partial \log M}{\partial d_{jk}} =\sum_y^3 \sum_g^G \omega_{jky} (\frac{r_{jg,(k+1),y}}{P_{j,(k+1),y\mid q_{g}}}-\frac{r_{jgky}}{P_{jky\mid q_{g}}})
+\end{aligned}
+\end{equation}
+
+where $\omega_{jky} = P_{jky\mid q_{g}}^*-(P_{jky\mid q_{g}}^*)^2$,
+
+the first partial derivative with respect to $\gamma_{jry}$, where y=(2,3), is
+
+\begin{equation}
+\begin{aligned}
+\frac{\partial \log M}{\partial \gamma_{jry}} &= \sum_g^G \sum_k^p \frac{r_{jgky} q_{gr} [P_{j(k-1)y\mid q_{g}}^*(1-P_{j(k-1)y \mid q_{g}}^*)-P_{jky\mid q_{g}}^*(1-P_{jky\mid q_{g}}^*)] }{P_{jky\mid q_{g}}}\\
+&= \sum_{k}^p \sum_{g}^{G} (\frac{r_{jgky} q_{gr}}{P_{jky\mid q_{g}}}(\omega_{j(k-1)y}-\omega_{jky}))
+\end{aligned}
+\end{equation}
+
+where $\omega_{jky} = P_{jky\mid q_{g}}^*-(P_{jky\mid q_{g}}^*)^2$.
+
+
+
+The second partial derivatives in the Hessian matrix are given by
+
+\begin{equation}
+\begin{aligned}
+&\frac{\partial^2 \log M}{\partial a_{jr}^2}= \sum_y^3 \sum_{k=1}^p \sum_{g=1}^{G} -\frac{r_{jgky} q_{gr}^2(P_{j(k-1)y\mid q_{g}}^{*}Q_{j(k-1)y\mid q_{g}}^{*}-P_{jky\mid q_{g}}^{*}Q_{jky\mid q_{g}}^{*})^2}{P_{jky\mid q_{g}}^2}\\
+&=\sum_y^3\sum_{k=1}^p \sum_{g=1}^{G} -\frac{r_{jgky} q_{gr}^2(\omega_{j(k-1)y}-\omega_{jky})}{P_{jky\mid q_{g}}^2}
+\end{aligned}
+\end{equation}
+
+\begin{equation}
+\begin{aligned}
+&\frac{\partial^2 \log M}{\partial d_{jk}^2}= \sum_y^3\sum_{g=1}^{G} -(\frac{r_{jgky}}{P_{jky\mid q_{g}}^2}+\frac{r_{jg(k+1)y}}{P_{j(k+1)y\mid q_{g}}^2})P_{jky\mid q_{g}}^{*2}(1-P_{jky\mid q_{g}}^{*})^2\\
+&=\sum_y^3 \sum_{g=1}^{G} -(\frac{r_{jgky}}{P_{jky\mid q_{g}}^2}+\frac{r_{jg(k+1)y}}{P_{j(k+1)y\mid q_{g}}^2})\omega_{jky}^2
+\end{aligned}
+\end{equation}
+
+\begin{equation}
+\begin{aligned}
+&\frac{\partial^2 \log M}{\partial d_{jk}\partial d_{j,k+1}}= \sum_y^3\sum_{g=1}^{G} \frac{r_{jg(k+1)y}}{P_{j(k+1)y\mid q_{g}}^2}(P_{jky\mid q_{g}}^{*2}(1-P_{jky\mid q_{g}}^{*})^2)(P_{j(k+1)y\mid q_{g}}^{*2}(1-P_{j(k+1)y\mid q_{g}}^{*})^2)\\
+&= \sum_y^3\sum_{g=1}^{G} \frac{r_{jg(k+1)y}}{P_{j(k+1)y\mid q_{g}}^2}\omega_{jky}^2\omega_{j(k+1)y}^2\\
+\end{aligned}
+\end{equation}
+
+and
+
+\begin{equation}
+\begin{aligned}
+\frac{\partial^2 \log M}{\partial a_{jr}\partial d_{jk}}&= \sum_y^3\sum_{g=1}^{G} P_{jky}^{*}Q_{jky}^{*}q_{gr}[\frac{r_{jgky}}{P_{jky\mid q_{g}}^2}(P_{j(k-1)y\mid q_{g}}^{*}Q_{j(k-1)y\mid q_{g}}^{*}-P_{jky\mid q_{g}}^{*}Q_{jky\mid q_{g}}^{*}) \\
+&+\frac{r_{jg(k+1)y}}{P_{j(k+1)y\mid q_{g}}^2}(P_{jky\mid q_{g}}^{*}Q_{jky\mid q_{g}}^{*}-P_{j(k+1)y\mid q_{g}}^{*}Q_{j(k+1)y\mid q_{g}}^{*})]\\
+&= \sum_y^3\sum_{g=1}^{G} \omega_{jky}q_{gr}[\frac{r_{jgky}}{P_{jky\mid q_{g}}^2}(\omega_{j(k-1)y}-\omega_{jky}) +\frac{r_{jg(k+1)y}}{P_{j(k+1)y\mid q_{g}}^2}(\omega_{jky}-\omega_{j(k+1)y})]
+\end{aligned}
+\end{equation}
+
+where
+
+$$Q_{jky\mid q_{g}}^{*}=1-P_{jky\mid q_{g}}^{*}.$$
+
+\begin{equation}
+\begin{aligned}
+&\frac{\partial^2 \log M}{\partial \gamma_{jry}^2}= \frac{\partial^2 \log M}{\partial \gamma_{jry}\partial a_{jr}}=\sum_{k=1}^p \sum_{g=1}^{G} -\frac{r_{jgky} q_{gr}^2(\omega_{j(k-1)y}-\omega_{jky})}{P_{jky\mid q_{g}}^2}
+\end{aligned}
+\end{equation}
+
+\begin{equation}
+\begin{aligned}
+\frac{\partial^2 \log M}{\partial \gamma_{jry}\partial d_{jk}}= \sum_{g=1}^{G} \omega_{jky}q_{gr}[\frac{r_{jgky}}{P_{jky\mid q_{g}}^2}(\omega_{j(k-1)y}-\omega_{jky}) +\frac{r_{jg(k+1)y}}{P_{j(k+1)y\mid q_{g}}^2}(\omega_{jky}-\omega_{j(k+1)y})]
+\end{aligned}
+\end{equation}
+
+The expectation of the second partial derivatives in the Fisher scoring method are given by
+
+\begin{equation}
+\begin{aligned}
+E(\frac{\partial^2 \log M}{\partial a_{jr}^2})= \sum_y^3 \sum_{k=1}^p \sum_{g=1}^{G} -\frac{n_{gy} q_{gr}^2(\omega_{j(k-1)y}-\omega_{jky})}{P_{jky\mid q_{g}}},
+\end{aligned}
+\end{equation}
+
+\begin{equation}
+\begin{aligned}
+E(\frac{\partial^2 \log M}{\partial d_{jk}^2})= \sum_y^3\sum_{g=1}^{G} -n_{gy}(\frac{1}{P_{jky\mid q_{g}}}+\frac{1}{P_{j(k+1)y\mid q_{g}}})\omega_{jky}^2,
+\end{aligned}
+\end{equation}
+
+\begin{equation}
+\begin{aligned}
+E(\frac{\partial^2 \log M}{\partial d_{jk}\partial d_{j,k+1}})= \sum_y^3\sum_{g=1}^{G} \frac{n_{gy}}{P_{j(k+1)y\mid q_{g}}}\omega_{jky}^2\omega_{j(k+1)y}^2,
+\end{aligned}
+\end{equation}
+
+and
+
+\begin{equation}
+\begin{aligned}
+E(\frac{\partial^2 \log M}{\partial a_{jr}\partial d_{jk}})= \sum_y^3\sum_{g=1}^{G} n_{gy} \omega_{jky}q_{gr}[\frac{1}{P_{jky\mid q_{g}}}(\omega_{j(k-1)y}-\omega_{jky}) +\frac{1}{P_{j(k+1)y\mid q_{g}}}(\omega_{jky}-\omega_{j(k+1)y})].
+\end{aligned}
+\end{equation}
+
+\begin{equation}
+\begin{aligned}
+E(\frac{\partial^2 \log M}{\partial \gamma_{jry}^2})= E(\frac{\partial^2 \log M}{\partial \gamma_{jry}\partial a_{jr}})= \sum_{k=1}^p \sum_{g=1}^{G} -\frac{n_{gy} q_{gr}^2(\omega_{j(k-1)y}-\omega_{jky})}{P_{jky\mid q_{g}}}.
+\end{aligned}
+\end{equation}
+
+\begin{equation}
+\begin{aligned}
+E(\frac{\partial^2 \log M}{\partial \gamma_{jry}\partial d_{jk}})=\sum_{g=1}^{G} n_{gy} \omega_{jky}q_{gr}[\frac{1}{P_{jky\mid q_{g}}}(\omega_{j(k-1)y}-\omega_{jky}) +\frac{1}{P_{j(k+1)y\mid q_{g}}}(\omega_{jky}-\omega_{j(k+1)y})].
+\end{aligned}
+\end{equation}
+
+### Cyclical coordinate descent
+
+Same as in 3.2, to minimize our objective function with respect to $\boldsymbol \Gamma$, our lasso estimator in (13) can be written by
+
+\begin{equation}
+\begin{aligned}
+\hat{\boldsymbol \Gamma}&=\mathrm{arg} \mathrm{min} \lbrace -\log M(\boldsymbol \Gamma) +  \eta || \boldsymbol \Gamma ||_1 \rbrace\\
+&= \mathrm{arg} \mathrm{min} \lbrace -\log M(\boldsymbol \Gamma_0)- \partial_{\Gamma} \log M(\boldsymbol \Gamma_0)(\boldsymbol \Gamma-\boldsymbol \Gamma_0)-\frac{\partial^2_{\Gamma} \log M(\boldsymbol \Gamma_0)}{2}(\boldsymbol \Gamma-\boldsymbol \Gamma_0)^2 +  \eta || \boldsymbol \Gamma ||_1 \rbrace\\
+&=-\frac{\mathrm{soft}(\partial_{\boldsymbol \Gamma}\log M-\boldsymbol \Gamma_j^{(t-1)}*\partial^2_{\boldsymbol \Gamma}\log M,\eta)}{\partial^2_{\boldsymbol \Gamma}\log M}
+\end{aligned}
+\end{equation}
+
+
+
+
+We run a cyclical coordinate descent algorithm for each group (item) with all other groups fixed. For item *j*, our algorithm is given by following.
+
+1. Calculate $P_{jky\mid q_{g}}^{*}$ and $Q_{jky\mid q_{g}}^{*}$.
+
+2. The parameter $a_{jr}$ and $d_{jk}$ can be updated by
+
+$${a}_{jr}^{(t)}=  a_{jr}^{(t-1)}-\frac{\partial_{ a_{jr}}\log M}{\partial^2_{ a_{jr}}\log M},$$
+
+$${d}_{jk}^{(t)}=  d_{jk}^{(t-1)}-\frac{\partial_{ d_{jk}}\log M}{\partial^2_{ d_{jk}}\log M}$$
+
+and
+
+$$\hat{\boldsymbol \Gamma}_{jry}=-\frac{\mathrm{soft}(\partial_{\boldsymbol \Gamma_{jry}}\log M-\boldsymbol \Gamma_{jry}^{(t-1)}*\partial^2_{\boldsymbol \Gamma_{jry}}\log M,\eta)}{\partial^2_{\boldsymbol \Gamma_{jry}}\log M}$$
+
+Then we update $P_{jky\mid q_{g}}^{*}$ and $Q_{jky\mid q_{g}}^{*}$ by plugging in $\hat{\boldsymbol A}$,$\hat{\boldsymbol D}$ and $\hat{\boldsymbol \beta}$ from last coordinate descent cycle and repeat above steps until a convergence criterion is met.
+
+After we get optimizers for item *j*, we do transforamtions on all estimates as following
+
+$${a}_{jr}^{(t)*}=  {a}_{jr}^{(t)}*\sqrt{\mathrm{diag}(\hat{\boldsymbol\Sigma}_{1r})},$$
+
+$${\gamma}_{jr}^{(t)*}=  {\gamma}_{jr}^{(t)}*\sqrt{\mathrm{diag}(\hat{\boldsymbol\Sigma}_{1r})},$$
+
+
+where $\mu_{1r}$ is the *r*th element of the estimated mean vector of the reference group $\hat{\boldsymbol \mu_1}$, and $\mathrm{diag}(\hat{\boldsymbol\Sigma}_{1r})$ is the *r*th element on the diagonal of the estimated covariance matrix of the reference group $\hat{\boldsymbol {\boldsymbol\Sigma}_1}$.
+
+## Simulation
+
+$\emph Sample$ $\emph Size.$ The total sample size is $N=1500$, and the group sample sizes are $N_1=N_2=N_3=500$.
+
+$\emph Test$ $\emph Length.$ $m=20.$ Simple structure. 10 items per dimension.
+
+$\emph Proportion \ of \ DIF.$ 4 items with DIF. 2 DIF items per dimension.
+
+$\emph Magnitude \ of \ DIF.$ The first focal group with smaller discrimination parameter (-0.5) on the 4 DIF items. 
+
+The second focal group with much smaller difficulty parameter (-1) on the 4 DIF items.
+
+$\emph Generated \ parameters.$
+
+$a_{j1}\sim U(1.5,2.5), j=1,...,10$
+
+$a_{j2}\sim U(1.5,2.5), j=11,...,20$
+
+$d_{1}\sim N(0,1)$
+
+$$\boldsymbol A=\begin{pmatrix}
+2.17&0\\
+0& 2.46\\
+2.41& 0\\
+2.45& 0\\
+2.34& 0\\
+1.84& 0\\
+1.85& 0\\
+1.92& 0\\
+1.94& 0\\
+1.90& 0\\
+1.92& 0\\
+0& 2.43\\
+0& 1.82\\
+0& 2.22\\
+0& 1.93\\
+0& 1.88\\
+0& 1.84\\
+0& 2.12\\
+0& 2.42\\
+0& 2.15\\
+\end{pmatrix},$$
+
+$$\boldsymbol D=\begin{pmatrix}
+0.03\\
+-1.28\\
+0.58\\
+-2.06\\
+0.12\\
+3.25\\
+-0.41\\
+-0.51\\
+0.89\\
+1.33\\
+0.85\\
+0.82\\
+-0.37\\
+-0.99\\
+-0.27\\
+0.19\\
+1.73\\
+0.05\\
+-1.86\\
+-0.63\\
+\end{pmatrix},$$
+
+
+$$\boldsymbol\Gamma_j=\begin{pmatrix}
+0 & 0\\
+0 & 0 \\
+\end{pmatrix}, for \ j=1,2,3,6,7,8,9,10,11,14,15,16,17,18,19,20$$ 
+
+$$\boldsymbol\Gamma_j=\begin{pmatrix}
+-0.5 & 0\\
+-1 & 0 \\
+\end{pmatrix}, for \ j=4,5$$ 
+$$\boldsymbol\Gamma_j=\begin{pmatrix}
+0 & -0.5\\
+0 & -1 \\
+\end{pmatrix}, for \ j=12,13$$ 
+
+No impact. $\theta_i\sim N(\begin{pmatrix}0\\0\\\end{pmatrix}, \begin{pmatrix}1&0.85\\0.85&1\\\end{pmatrix})$
+
+
+
+
+
+# Non-uniform DIF Detection via Group LASSO 
+
+When the items have non-uniform DIF on both slope and intercept, the DIF parameter we are estimating are $\boldsymbol \Gamma = (\boldsymbol 0,..., \boldsymbol 0, \boldsymbol \Gamma_{q+1},...,\boldsymbol \Gamma_{m})$ and $\boldsymbol \beta = (\boldsymbol 0,..., \boldsymbol 0, \boldsymbol \beta_{q+1},...,\boldsymbol \beta_{m})$.
+
+## E step
+
+For an examinee with ability $\boldsymbol \theta_i$ the conditional likelihood of observing $\boldsymbol u_i$ is
+
+\begin{equation}
+\begin{aligned}
+&L(\textbf A,\textbf D, \boldsymbol \Gamma, \boldsymbol \beta, \boldsymbol \theta_i \mid \textbf y,\boldsymbol u_i)= \prod_{j=1}^m \prod_{k=1}^p P_{jk}(\boldsymbol \theta_i)^{x_{ijk}}.
+\end{aligned}
+\end{equation}
+
+With the assumption of prior distribution of latent trait, the joint likelihood of $\boldsymbol u_i$ and $\boldsymbol \theta_i$ is
+
+\begin{equation}
+\begin{aligned}
+&L(\textbf A,\textbf D,\boldsymbol \Gamma, \boldsymbol \beta ,\boldsymbol \mu_y, \boldsymbol \Sigma_y \mid \textbf y,\textbf u_i, \boldsymbol \theta_i) = L(\textbf A,\textbf D, \boldsymbol \Gamma, \boldsymbol \beta, \boldsymbol \theta_i \mid \textbf y, \textbf u_i) f(\boldsymbol \mu_y, \boldsymbol \Sigma_y \mid \boldsymbol \theta_{i} )\\
+&= \prod_{j=1}^m \prod_{k=1}^p P_{jk}(\boldsymbol \theta_i)^{x_{ijk}}(2\pi)^{-p/2}|\boldsymbol \Sigma_y|^{-1/2}\mathrm{exp}(-0.5(\boldsymbol \theta_i-\boldsymbol \mu_y)' \boldsymbol \Sigma_y^{-1}(\boldsymbol \theta_i-\boldsymbol \mu_y)).
+\end{aligned}
+\end{equation}
+
+Therefore, the marginal likelihood of $\boldsymbol u_i$ is
+
+\begin{equation}
+\begin{aligned}
+&m(\textbf A,\textbf D,\boldsymbol \Gamma, \boldsymbol \beta ,\boldsymbol \mu_y, \boldsymbol \Sigma_y \mid \boldsymbol y,\boldsymbol u_i) = \int L(\textbf A,\textbf D, \boldsymbol \Gamma, \boldsymbol \beta \mid \textbf y, \textbf u_i, \boldsymbol \theta_i) f(\boldsymbol \mu_y, \boldsymbol \Sigma_y \mid \boldsymbol \theta_{i} ) \partial \boldsymbol \theta_{i}
+\end{aligned}
+\end{equation}
+
+Then
+
+\begin{equation}
+\begin{aligned}
+&h(\boldsymbol \theta_{i}\mid \boldsymbol u_i,\boldsymbol y_i,\textbf A^{(t-1)},\textbf D^{(t-1)} ,\boldsymbol \Gamma^{(t-1)}, \boldsymbol \beta^{(t-1)},\boldsymbol\mu^{(t-1)}_y,\Sigma^{(t-1)}_y)=\frac{L(\textbf A,\textbf D, \boldsymbol \Gamma, \boldsymbol \beta \mid \textbf y, \textbf u_i, \boldsymbol \theta_i) f(\boldsymbol \mu_y, \boldsymbol \Sigma_y \mid \boldsymbol \theta_{i})}{m(\textbf A,\textbf D,\boldsymbol \Gamma, \boldsymbol \beta ,\boldsymbol \mu_y, \boldsymbol \Sigma_y \mid \boldsymbol y,\boldsymbol u_i)}
+\end{aligned}
+\end{equation}
+
+is the posterior density of $\boldsymbol \theta_i$ given the estimation of $\textbf A$, $\textbf D$, $\boldsymbol \Gamma$, $\boldsymbol \beta$ and $\Sigma$ at the iteration *t*. 
+
+
+The expected complete data log-likelihood with respect to the posterior distribution of $\boldsymbol\theta$
+
+\begin{equation}
+\begin{aligned}
+& E[log\lbrace L(\boldsymbol A,\boldsymbol D,\boldsymbol \Gamma, \boldsymbol \beta ,\boldsymbol \mu, \boldsymbol \Sigma \mid \boldsymbol Y,\boldsymbol U, \boldsymbol \Theta)  \rbrace|\boldsymbol A^{(t-1)},\boldsymbol D^{(t-1)},\boldsymbol \Gamma^{(t-1)}, \boldsymbol \beta^{(t-1)} ,\textbf Y,\textbf U, \boldsymbol \mu^{(t-1)}, \boldsymbol \Sigma^{(t-1)}] \\
+& = \sum_i^N \lbrace \int \mathrm{log} L(\boldsymbol A,\boldsymbol D,\boldsymbol \Gamma, \boldsymbol \beta \mid \boldsymbol y,\boldsymbol u_i, \boldsymbol \theta_i) h(\boldsymbol \theta_i|\boldsymbol y_i,\boldsymbol u_i,\boldsymbol A^{(t-1)},\boldsymbol D^{(t-1)} ,\boldsymbol \Gamma^{(t-1)}, \boldsymbol \beta^{(t-1)}, \boldsymbol \mu^{(t-1)}, \boldsymbol \Sigma^{(t-1)}) \partial  \boldsymbol \theta_i\\
+&+\int \mathrm{log}f(\boldsymbol \mu_y,\boldsymbol \Sigma_y \mid\boldsymbol \theta_{i} ) h(\boldsymbol \theta_i|\boldsymbol u_i,\boldsymbol A^{(t-1)},\boldsymbol D^{(t-1)} ,\boldsymbol \Gamma^{(t-1)}, \boldsymbol \beta^{(t-1)},\boldsymbol \mu_y^{(t-1)}, \boldsymbol \Sigma_y^{(t-1)}) \partial  \boldsymbol \theta_i \rbrace
+\end{aligned}
+\end{equation}
+
+
+At iteration *t*, applying Gauss-Hermite quadrature nodes and the integration above can be updated as
+
+\begin{equation}
+\begin{aligned}
+&E[log L(\boldsymbol A,\boldsymbol D,\boldsymbol \Gamma, \boldsymbol \beta ,\boldsymbol \mu, \boldsymbol \Sigma \mid \boldsymbol Y, \boldsymbol U)] \\
+&=\sum_i^N \sum_g^G \mathrm{log} L(\boldsymbol A,\boldsymbol D,\boldsymbol \Gamma, \boldsymbol \beta  \mid \boldsymbol u_i, \boldsymbol q_{g})\frac{L(\boldsymbol q_{g} \mid \boldsymbol u_i,\boldsymbol A^{(t-1)},\boldsymbol D^{(t-1)},\boldsymbol \Gamma^{(t-1)}, \boldsymbol \beta^{(t-1)},\boldsymbol Y, \boldsymbol \mu^{(t-1)}, \boldsymbol \Sigma^{(t-1)})f(\boldsymbol \mu^{(t-1)}, \boldsymbol \Sigma^{(t-1)} \mid \boldsymbol q_{g})}{\sum_g^G L(\boldsymbol q_{g} \mid \boldsymbol u_i,\boldsymbol A^{(t-1)},\boldsymbol D^{(t-1)},\boldsymbol \Gamma^{(t-1)}, \boldsymbol \beta^{(t-1)},\boldsymbol Y,\boldsymbol \mu^{(t-1)},  \boldsymbol \Sigma^{(t-1)})f(\boldsymbol \mu^{(t-1)}, \boldsymbol \Sigma^{(t-1)} \mid \boldsymbol q_{g})}\\
+& +\sum_i^N \sum_g^G \mathrm{log} f(\boldsymbol \mu, \boldsymbol \Sigma \mid\boldsymbol q_{g} ) \frac{L(\boldsymbol q_{g} \mid \boldsymbol u_i,\boldsymbol A^{(t-1)},\boldsymbol D^{(t-1)},\boldsymbol \Gamma^{(t-1)}, \boldsymbol \beta^{(t-1)},\boldsymbol Y, \boldsymbol \mu^{(t-1)}, \boldsymbol \Sigma^{(t-1)})f(\boldsymbol \mu^{(t-1)}, \boldsymbol \Sigma^{(t-1)} \mid \boldsymbol q_{g})}{\sum_g^G L(\boldsymbol q_{g} \mid \boldsymbol u_i,\boldsymbol A^{(t-1)},\boldsymbol D^{(t-1)},\boldsymbol \Gamma^{(t-1)}, \boldsymbol \beta^{(t-1)},\boldsymbol Y,\boldsymbol \mu^{(t-1)}, \boldsymbol \Sigma^{(t-1)})f(\boldsymbol \mu^{(t-1)}, \boldsymbol \Sigma^{(t-1)} \mid \boldsymbol q_{g})}\\
+&=\sum_i^N \sum_g^G \sum_j^m \sum_k^p x_{ijk}\mathrm{log} P_{ijk\mid q_{g}} \frac{L(\boldsymbol q_{g} \mid \boldsymbol u_i,\boldsymbol A^{(t-1)},\boldsymbol D^{(t-1)},\boldsymbol \Gamma^{(t-1)}, \boldsymbol \beta^{(t-1)},\boldsymbol Y, \boldsymbol \mu^{(t-1)}, \boldsymbol \Sigma^{(t-1)})f(\boldsymbol \mu^{(t-1)}, \boldsymbol \Sigma^{(t-1)} \mid \boldsymbol q_{g})}{\sum_g^G L(\boldsymbol q_{g} \mid \boldsymbol u_i,\boldsymbol A^{(t-1)},\boldsymbol D^{(t-1)},\boldsymbol \Gamma^{(t-1)}, \boldsymbol \beta^{(t-1)},\boldsymbol Y, \boldsymbol \mu^{(t-1)}, \boldsymbol \Sigma^{(t-1)})f(\boldsymbol \mu^{(t-1)}, \boldsymbol \Sigma^{(t-1)} \mid \boldsymbol q_{g})}\\
+&+\sum_i^N \sum_g^G \mathrm{log} f(\boldsymbol \mu, \boldsymbol \Sigma \mid\boldsymbol q_{g} ) \frac{L(\boldsymbol q_{g} \mid \boldsymbol u_i,\boldsymbol A^{(t-1)},\boldsymbol D^{(t-1)},\boldsymbol \Gamma^{(t-1)}, \boldsymbol \beta^{(t-1)},\boldsymbol Y, \boldsymbol \mu^{(t-1)}, \boldsymbol \Sigma^{(t-1)})f(\boldsymbol \mu^{(t-1)}, \boldsymbol \Sigma^{(t-1)} \mid \boldsymbol q_{g})}{\sum_g^G L(\boldsymbol q_{g} \mid \boldsymbol u_i,\boldsymbol A^{(t-1)},\boldsymbol D^{(t-1)},\boldsymbol \Gamma^{(t-1)}, \boldsymbol \beta^{(t-1)},\boldsymbol Y, \boldsymbol \mu^{(t-1)}, \boldsymbol \Sigma^{(t-1)})f(\boldsymbol \mu^{(t-1)}, \boldsymbol \Sigma^{(t-1)} \mid \boldsymbol q_{g})}
+\end{aligned}
+\end{equation}
+
+
+
+
+
+Then we can define two artificial terms.
+
+For the reference group, $y=1$. We have
+
+$$n_{gy} =n_{g1} = \sum_{i=1}^{N_1} \frac{L(\boldsymbol q_{g} \mid \textbf y_i,\boldsymbol u_i,\textbf A^{(t-1)},\textbf D^{(t-1)},\boldsymbol \Gamma^{(t-1)}, \boldsymbol \beta^{(t-1)},\boldsymbol \mu_1^{(t-1)}, \boldsymbol \Sigma_1^{(t-1)})}{\sum_g^G L(\boldsymbol q_{g} \mid \textbf y_i,\boldsymbol u_i,\textbf A^{(t-1)},\textbf D^{(t-1)},\boldsymbol \Gamma^{(t-1)}, \boldsymbol \beta^{(t-1)},\boldsymbol \mu_1^{(t-1)}, \boldsymbol \Sigma_1^{(t-1)})}, $$
+
+and 
+
+$$r_{jgky} =r_{jgk1} =  \sum_{i=1}^{N_1}x_{ijk} \frac{L(\boldsymbol q_{g} \mid \textbf y_i,\boldsymbol u_i,\textbf A^{(t-1)},\textbf D^{(t-1)},\boldsymbol \Gamma^{(t-1)}, \boldsymbol \beta^{(t-1)}, \boldsymbol \mu_1^{(t-1)},\boldsymbol \Sigma_1^{(t-1)})}{\sum_g^G L(\boldsymbol q_{g} \mid \textbf y_i,\boldsymbol u_i,\textbf A^{(t-1)},\textbf D^{(t-1)},\boldsymbol \Gamma^{(t-1)}, \boldsymbol \beta^{(t-1)},\boldsymbol \mu_1^{(t-1)}, \boldsymbol \Sigma_1^{(t-1)})}.$$ 
+
+For the first focal group, $y=2$. We have
+
+$$n_{gy} =n_{g2} = \sum_{i=N_1+1}^{N_1+N_2} \frac{L(\boldsymbol q_{g} \mid \textbf y_i,\boldsymbol u_i,\textbf A^{(t-1)},\textbf D^{(t-1)},\boldsymbol \Gamma^{(t-1)}, \boldsymbol \beta^{(t-1)},\boldsymbol \mu_2^{(t-1)}, \boldsymbol \Sigma_2^{(t-1)})}{\sum_g^G L(\boldsymbol q_{g} \mid \textbf y_i,\boldsymbol u_i,\textbf A^{(t-1)},\textbf D^{(t-1)},\boldsymbol \Gamma^{(t-1)}, \boldsymbol \beta^{(t-1)},\boldsymbol \mu_2^{(t-1)}, \boldsymbol \Sigma_2^{(t-1)})}, $$
+
+and
+
+$$r_{jgky} =r_{jgk2} =  \sum_{i=N_1+1}^{N_1+N_2}x_{ijk} \frac{L(\boldsymbol q_{g} \mid \textbf y_i,\boldsymbol u_i,\textbf A^{(t-1)},\textbf D^{(t-1)},\boldsymbol \Gamma^{(t-1)}, \boldsymbol \beta^{(t-1)}, \boldsymbol \mu_2^{(t-1)},\boldsymbol \Sigma_2^{(t-1)})}{\sum_g^G L(\boldsymbol q_{g} \mid \textbf y_i,\boldsymbol u_i,\textbf A^{(t-1)},\textbf D^{(t-1)},\boldsymbol \Gamma^{(t-1)}, \boldsymbol \beta^{(t-1)},\boldsymbol \mu_2^{(t-1)}, \boldsymbol \Sigma_2^{(t-1)})}.$$ 
+
+For the second focal group, $y=3$. We have
+
+$$n_{gy} =n_{g3} =\sum_{i=N_1+N_2+1}^{N_1+N_2+N3} \frac{L(\boldsymbol q_{g} \mid \textbf y_i,\boldsymbol u_i,\textbf A^{(t-1)},\textbf D^{(t-1)},\boldsymbol \Gamma^{(t-1)}, \boldsymbol \beta^{(t-1)},\boldsymbol \mu_3^{(t-1)}, \boldsymbol \Sigma_3^{(t-1)})}{\sum_g^G L(\boldsymbol q_{g} \mid\textbf y_i,\boldsymbol u_i,\textbf A^{(t-1)},\textbf D^{(t-1)},\boldsymbol \Gamma^{(t-1)}, \boldsymbol \beta^{(t-1)},\boldsymbol \mu_3^{(t-1)}, \boldsymbol \Sigma_3^{(t-1)})} $$
+
+and
+
+$$r_{jgky} =r_{jgk3} =  \sum_{i=N_1+N_2+1}^{N_1+N_2+N3}x_{ijk} \frac{L(\boldsymbol q_{g} \mid \textbf y_i,\boldsymbol u_i,\textbf A^{(t-1)},\textbf D^{(t-1)},\boldsymbol \Gamma^{(t-1)}, \boldsymbol \beta^{(t-1)}, \boldsymbol \mu_3^{(t-1)},\boldsymbol \Sigma_3^{(t-1)})}{\sum_g^G L(\boldsymbol q_{g} \mid \textbf y_i,\boldsymbol u_i,\textbf A^{(t-1)},\textbf D^{(t-1)},\boldsymbol \Gamma^{(t-1)}, \boldsymbol \beta^{(t-1)},\boldsymbol \mu_3^{(t-1)}, \boldsymbol \Sigma_3^{(t-1)})}.$$ 
+
+
+
+$n_g=n_{g1}+n_{g2}+n_{g3}$ represents the expected number of examinees with the ability $\boldsymbol q_{g}$, and $r_{jgk}=r_{jgk1}+r_{jgk2}+r_{jgk3}$ is the expected number of examinees who get the score level $k$ on the item *j* with the ability $\boldsymbol q_g$.
+
+\begin{equation}
+\begin{aligned}
+E[log\lbrace L(\textbf A,\textbf D,\boldsymbol \Gamma, \boldsymbol \beta, \boldsymbol \mu, \boldsymbol \Sigma \mid \textbf Y, \textbf U, \boldsymbol \Theta)] &= \sum_y^3 \sum_g^G \sum_j^m \sum_k^p  (r_{jgky}  \mathrm{log} P_{jky\mid q_{g}})+ \sum_y^3 \sum_g^G n_{g} \mathrm{log} f(\boldsymbol \mu_y, \boldsymbol \Sigma_y \mid\boldsymbol q_{g} ) 
+\end{aligned}
+\end{equation}
+
+In the EM problem, we want to maximize the above expectation at the iteration *t*. Denote this unpenalized expectation as $\log M$.
+
+For each item *j*, we define 
+
+\begin{equation}
+\begin{aligned}
+\log M_j &= \sum_y^3 \sum_g^G \sum_k^p  (r_{jgky}  \mathrm{log} P_{jky\mid q_{g}})+ \sum_y^3 \sum_g^G n_{g} \mathrm{log} f(\boldsymbol \mu_y, \boldsymbol \Sigma_y \mid\boldsymbol q_{g}) 
+\end{aligned}
+\end{equation}
+
+In our DIF detection problem, we minimize the following objective function 
+
+\begin{equation}
+\begin{aligned}
+-\log M + \eta \sum_j^m ||(\boldsymbol \Gamma_j, \boldsymbol \beta_j )||_2 
+\end{aligned}
+\end{equation}
+
+For each item, we minimize
+
+\begin{equation}
+\begin{aligned}
+-\log M_j +  \eta ||(\boldsymbol \Gamma_j, \boldsymbol \beta_j )||_2 
+\end{aligned}
+\end{equation}
+
+
+where $\eta$ is the group lasso tuning parameter.
+
+We denote by $\boldsymbol\tau \in \mathbb R^{(y-1)*r+(y-1)*(m-1)}$ the whole DIF parameter vector, i.e. $\boldsymbol\tau=(\boldsymbol\Gamma,\boldsymbol\beta)^T$.
+
+Then, our objective function is
+
+\begin{equation}
+\begin{aligned}
+S_\eta(\boldsymbol\tau)=-\log M +  \eta \sum_j^m ||\boldsymbol\tau||_2.
+\end{aligned}
+\end{equation}
+
+For each item *j*,
+
+\begin{equation}
+\begin{aligned}
+S_\eta(\boldsymbol\tau_j)=-\log M_j +  \eta ||\boldsymbol\tau_j||_2.
+\end{aligned}
+\end{equation}
+
+
+## M step
+
+Same as before, we assume the reference group has mean zero and variance one and only estimate its correlations. The means and all elements in the covariance matrices of two focal groups can be freely estimated.
+
+$\hat{\boldsymbol\mu}_y$ can be updated as
+
+\begin{equation}
+\begin{aligned}
+\hat{\boldsymbol\mu}_2  =\frac{\sum_{g=1}^G n_{g2}\boldsymbol q_{g}}{N_2},
+\end{aligned}
+\end{equation}
+
+and
+
+\begin{equation}
+\begin{aligned}
+\hat{\boldsymbol\mu}_3  =\frac{\sum_{g=1}^G n_{g3}\boldsymbol q_{g}}{N_3}.
+\end{aligned}
+\end{equation}
+
+
+$\hat{\boldsymbol\Sigma}_y$ can be updated as
+
+\begin{equation}
+\begin{aligned}
+\hat{\boldsymbol\Sigma}_1=\frac{\sum_{g=1}^G n_{g1}\boldsymbol q_{g}\boldsymbol q_{g}'}{N_1},
+\end{aligned}
+\end{equation}
+
+\begin{equation}
+\begin{aligned}
+\hat{\boldsymbol\Sigma}_2=\frac{\sum_{g=1}^G n_{g2}(\boldsymbol q_{g}-\hat{\boldsymbol\mu}_2) (\boldsymbol q_{g}-\hat{\boldsymbol\mu}_2)'}{N_2},
+\end{aligned}
+\end{equation}
+
+and
+
+\begin{equation}
+\begin{aligned}
+\hat{\boldsymbol\Sigma}_3=\frac{\sum_{g=1}^G n_{g3}(\boldsymbol q_{g}-\hat{\boldsymbol\mu}_3) (\boldsymbol q_{g}-\hat{\boldsymbol\mu}_3)'}{N_3}.
+\end{aligned}
+\end{equation}
+
+Standardized quadrature points.
+
+\begin{equation}
+\begin{aligned}
+\boldsymbol q_{g}^*=\frac{q_{g}}{\sqrt{\mathrm{diag}\hat{\boldsymbol\Sigma_1}}}.
+\end{aligned}
+\end{equation}
+
+Then we do the following transformation on covariance matrices for three groups.
+
+\begin{equation}
+\begin{aligned}
+\hat{\boldsymbol\Sigma}_1^*=\frac{\sum_{g=1}^G n_{g1}\boldsymbol q_{g}^* \boldsymbol q_{g}^{*'}}{N_1},
+\end{aligned}
+\end{equation}
+
+\begin{equation}
+\begin{aligned}
+\hat{\boldsymbol\Sigma}_2^*=\frac{\sum_{g=1}^G n_{g2}(\boldsymbol q_{g}^*-\hat{\boldsymbol\mu}_2) (\boldsymbol q_{g}^*-\hat{\boldsymbol\mu}_2)'}{N_2},
+\end{aligned}
+\end{equation}
+
+and
+
+\begin{equation}
+\begin{aligned}
+\hat{\boldsymbol\Sigma}_3^*=\frac{\sum_{g=1}^G n_{g3}(\boldsymbol q_{g}^*-\hat{\boldsymbol\mu}_3) (\boldsymbol q_{g}^*-\hat{\boldsymbol\mu}_3)'}{N_3}.
+\end{aligned}
+\end{equation}
+
+
+
+
+the first partial derivative with respect to $a_{jr}$ is
+
+\begin{equation}
+\begin{aligned}
+\frac{\partial \log M}{\partial a_{jr}} =  \sum_{y}^3 \sum_{k=1}^p \sum_{g=1}^{G} (\frac{r_{jgky} q_{gr}}{P_{jky\mid q_{g}}}(\omega_{j,(k-1),y}-\omega_{jky}))
+\end{aligned}
+\end{equation}
+
+
+where $\omega_{jky} = P_{jky\mid q_{g}}^*-(P_{jky\mid q_{g}}^*)^2$.
+
+Similarly, we have the first partial derivative with respect to $d_{jk}$
+
+\begin{equation}
+\begin{aligned}
+\frac{\partial \log M}{\partial d_{jk}} =\sum_y^3 \sum_g^G \omega_{jky} (\frac{r_{jg,(k+1),y}}{P_{j,(k+1),y\mid q_{g}}}-\frac{r_{jgky}}{P_{jky\mid q_{g}}})
+\end{aligned}
+\end{equation}
+
+where $\omega_{jky} = P_{jky\mid q_{g}}^*-(P_{jky\mid q_{g}}^*)^2$,
+
+the first partial derivative with respect to $\gamma_{jry}$, where y=(2,3), is
+
+\begin{equation}
+\begin{aligned}
+\frac{\partial \log M}{\partial \gamma_{jry}} &= \sum_g^G \sum_k^p \frac{r_{jgky} q_{gr} [P_{j(k-1)y\mid q_{g}}^*(1-P_{j(k-1)y \mid q_{g}}^*)-P_{jky\mid q_{g}}^*(1-P_{jky\mid q_{g}}^*)] }{P_{jky\mid q_{g}}}\\
+&= \sum_{k}^p \sum_{g}^{G} (\frac{r_{jgky} q_{gr}}{P_{jky\mid q_{g}}}(\omega_{j(k-1)y}-\omega_{jky}))
+\end{aligned}
+\end{equation}
+
+where $\omega_{jky} = P_{jky\mid q_{g}}^*-(P_{jky\mid q_{g}}^*)^2$,
+
+and the first partial derivative with respect to $\beta_{jky}$, where y=(2,3), is
+
+\begin{equation}
+\begin{aligned}
+\frac{\partial \log M}{\partial \beta_{jky}} = \sum_g^G \omega_{jky} (\frac{r_{jg(k+1)y}}{P_{j(k+1)y\mid q_{g}}}-\frac{r_{jgky}}{P_{jky\mid q_{g}}})
+\end{aligned}
+\end{equation}
+
+where $\omega_{jky} = P_{jky\mid q_{g}}^*-(P_{jky\mid q_{g}}^*)^2$.
+
+
+
+The second partial derivatives in the Hessian matrix are given by
+
+$$\frac{\partial^2 \log M}{\partial a_{jr}^2}= \sum_y^3 \sum_{k=1}^p \sum_{g=1}^{G} -\frac{r_{jgky} q_{gr}^2(P_{j(k-1)y\mid q_{g}}^{*}Q_{j(k-1)y\mid q_{g}}^{*}-P_{jky\mid q_{g}}^{*}Q_{jky\mid q_{g}}^{*})^2}{P_{jky\mid q_{g}}^2}$$
+$$=\sum_y^3\sum_{k=1}^p \sum_{g=1}^{G} -\frac{r_{jgky} q_{gr}^2(\omega_{j(k-1)y}-\omega_{jky})}{P_{jky\mid q_{g}}^2}$$
+
+$$\frac{\partial^2 \log M}{\partial d_{jk}^2}= \sum_y^3\sum_{g=1}^{G} -(\frac{r_{jgky}}{P_{jky\mid q_{g}}^2}+\frac{r_{jg(k+1)y}}{P_{j(k+1)y\mid q_{g}}^2})P_{jky\mid q_{g}}^{*2}(1-P_{jky\mid q_{g}}^{*})^2$$
+
+$$=\sum_y^3 \sum_{g=1}^{G} -(\frac{r_{jgky}}{P_{jky\mid q_{g}}^2}+\frac{r_{jg(k+1)y}}{P_{j(k+1)y\mid q_{g}}^2})\omega_{jky}^2$$
+
+$$\frac{\partial^2 \log M}{\partial d_{jk}\partial d_{j,k+1}}= \sum_y^3\sum_{g=1}^{G} \frac{r_{jg(k+1)y}}{P_{j(k+1)y\mid q_{g}}^2}(P_{jky\mid q_{g}}^{*2}(1-P_{jky\mid q_{g}}^{*})^2)(P_{j(k+1)y\mid q_{g}}^{*2}(1-P_{j(k+1)y\mid q_{g}}^{*})^2)$$
+
+$$= \sum_y^3\sum_{g=1}^{G} \frac{r_{jg(k+1)y}}{P_{j(k+1)y\mid q_{g}}^2}\omega_{jky}^2\omega_{j(k+1)y}^2$$
+
+and
+
+$$\frac{\partial^2 \log M}{\partial a_{jr}\partial d_{jk}}= \sum_y^3\sum_{g=1}^{G} P_{jky}^{*}Q_{jky}^{*}q_{gr}[\frac{r_{jgky}}{P_{jky\mid q_{g}}^2}(P_{j(k-1)y\mid q_{g}}^{*}Q_{j(k-1)y\mid q_{g}}^{*}-P_{jky\mid q_{g}}^{*}Q_{jky\mid q_{g}}^{*}) $$
+$$+\frac{r_{jg(k+1)y}}{P_{j(k+1)y\mid q_{g}}^2}(P_{jky\mid q_{g}}^{*}Q_{jky\mid q_{g}}^{*}-P_{j(k+1)y\mid q_{g}}^{*}Q_{j(k+1)y\mid q_{g}}^{*})]$$
+
+$$= \sum_y^3\sum_{g=1}^{G} \omega_{jky}q_{gr}[\frac{r_{jgky}}{P_{jky\mid q_{g}}^2}(\omega_{j(k-1)y}-\omega_{jky}) +\frac{r_{jg(k+1)y}}{P_{j(k+1)y\mid q_{g}}^2}(\omega_{jky}-\omega_{j(k+1)y})]$$
+where
+
+$$Q_{jky\mid q_{g}}^{*}=1-P_{jky\mid q_{g}}^{*}.$$
+
+$$\frac{\partial^2 \log M}{\partial \gamma_{jry}^2}= \frac{\partial^2 \log M}{\partial \gamma_{jry}\partial a_{jr}}=\sum_{k=1}^p \sum_{g=1}^{G} -\frac{r_{jgky} q_{gr}^2(\omega_{j(k-1)y}-\omega_{jky})}{P_{jky\mid q_{g}}^2}$$
+
+$$\frac{\partial^2 \log M}{\partial \gamma_{jry}\partial d_{jk}}=\frac{\partial^2 \log M}{\partial a_{jr}\partial \beta_{jky}}=\frac{\partial^2 \log M}{\partial \gamma_{jry}\partial \beta_{jky}}= \sum_{g=1}^{G} \omega_{jky}q_{gr}[\frac{r_{jgky}}{P_{jky\mid q_{g}}^2}(\omega_{j(k-1)y}-\omega_{jky}) +\frac{r_{jg(k+1)y}}{P_{j(k+1)y\mid q_{g}}^2}(\omega_{jky}-\omega_{j(k+1)y})]$$
+where
+
+$$Q_{jky\mid q_{g}}^{*}=1-P_{jky\mid q_{g}}^{*}.$$
+
+$$\frac{\partial^2 \log M}{\partial \beta_{jky}^2}= \frac{\partial^2 \log M}{\partial \beta_{jky} \partial d_{jk}}=\sum_{g=1}^{G} -(\frac{r_{jgky}}{P_{jky\mid q_{g}}^2}+\frac{r_{jg(k+1)y}}{P_{j(k+1)y\mid q_{g}}^2})P_{jky\mid q_{g}}^{*2}(1-P_{jky\mid q_{g}}^{*})^2$$
+
+
+The expectation of the second partial derivatives in the Fisher scoring method are given by
+
+$$E(\frac{\partial^2 \log M}{\partial a_{jr}^2})= \sum_y^3 \sum_{k=1}^p \sum_{g=1}^{G} -\frac{n_{gy} q_{gr}^2(\omega_{j(k-1)y}-\omega_{jky})}{P_{jky\mid q_{g}}},$$
+
+$$E(\frac{\partial^2 \log M}{\partial d_{jk}^2})= \sum_y^3\sum_{g=1}^{G} -n_{gy}(\frac{1}{P_{jky\mid q_{g}}}+\frac{1}{P_{j(k+1)y\mid q_{g}}})\omega_{jky}^2,$$
+
+$$E(\frac{\partial^2 \log M}{\partial d_{jk}\partial d_{j,k+1}})= \sum_y^3\sum_{g=1}^{G} \frac{n_{gy}}{P_{j(k+1)y\mid q_{g}}}\omega_{jky}^2\omega_{j(k+1)y}^2,$$
+
+and
+
+$$E(\frac{\partial^2 \log M}{\partial a_{jr}\partial d_{jk}})= \sum_y^3\sum_{g=1}^{G} n_{gy} \omega_{jky}q_{gr}[\frac{1}{P_{jky\mid q_{g}}}(\omega_{j(k-1)y}-\omega_{jky}) +\frac{1}{P_{j(k+1)y\mid q_{g}}}(\omega_{jky}-\omega_{j(k+1)y})].$$
+
+$$E(\frac{\partial^2 \log M}{\partial \gamma_{jry}^2})= E(\frac{\partial^2 \log M}{\partial \gamma_{jry}\partial a_{jr}})= \sum_{k=1}^p \sum_{g=1}^{G} -\frac{n_{gy} q_{gr}^2(\omega_{j(k-1)y}-\omega_{jky})}{P_{jky\mid q_{g}}}$$
+
+$$E(\frac{\partial^2 \log M}{\partial \gamma_{jry}\partial d_{jk}})=E(\frac{\partial^2 \log M}{\partial a_{jr}\partial \beta_{jky}})=E(\frac{\partial^2 \log M}{\partial \gamma_{jry}\partial \beta_{jky}})=\sum_{g=1}^{G} n_{gy} \omega_{jky}q_{gr}[\frac{1}{P_{jky\mid q_{g}}}(\omega_{j(k-1)y}-\omega_{jky}) +\frac{1}{P_{j(k+1)y\mid q_{g}}}(\omega_{jky}-\omega_{j(k+1)y})].$$
+
+
+$$E(\frac{\partial^2 \log M}{\partial \beta_{jky}^2})= E(\frac{\partial^2 \log M}{\partial \beta_{jky} \partial d_{jk}})=\sum_{g=1}^{G} -n_{gy}(\frac{1}{P_{jky\mid q_{g}}}+\frac{1}{P_{j(k+1)y\mid q_{g}}})\omega_{jky}^2.$$
+
+### Block co-ordinate gradient descent
+
+(We denote by $\boldsymbol\tau \in \mathbb R^{(y-1)*q+(y-1)*(p-1)}$ the whole DIF parameter vector, i.e. $\boldsymbol\tau=(\boldsymbol\Gamma,\boldsymbol\beta)^T$.
+
+Then, our objective function is
+
+$$S_\eta(\boldsymbol\tau)=-\log M +  \eta \sum_j^m ||\boldsymbol\tau_j||_2. )$$
+
+Using a second-order Taylor series expansion at $\hat{\boldsymbol\tau}^{(t-1)}$ (and replacing the Hessian of the marginal log-likelihood $\log M(\cdot)$ by a suitable matrix $H^{(t-1)}$) we define
+
+$$M_{\eta}^{(t-1)}(\boldsymbol \epsilon)=-\lbrace\log M + \boldsymbol \epsilon^T \nabla\log M+\frac{1}{2}\boldsymbol \epsilon^TH^{(t-1)}\boldsymbol \epsilon \rbrace+  \eta \sum_j^m ||\hat{\boldsymbol\tau}_j^{(t-1)}+\boldsymbol \epsilon_j||_2,$$
+
+where $\boldsymbol \epsilon=\boldsymbol\tau-\boldsymbol\tau^{(t-1)}$.
+
+We have $M_{\eta}^{(t-1)}(\boldsymbol \epsilon)\approx S_\eta(\hat{\boldsymbol\tau}^{(t-1)}+\boldsymbol \epsilon)$.
+
+We run a block co-ordinate gradient descent algorithm for each group (item) with all other groups fixed. For item *j*, our algorithm is given by following.
+
+1. Calculate $P_{jky\mid q_{g}}^{*},Q_{jky\mid q_{g}}^{*}$ and $||\boldsymbol\tau_j||_2$.
+
+2. The parameter $a_{jr}$ and $d_{jk}$ can be updated by
+
+$${a}_{jr}^{(t)}=  a_{jr}^{(t-1)}-\frac{\partial_{ a_{jr}}\log M}{\partial^2_{ a_{jr}}\log M}$$
+
+and 
+
+$${d}_{jk}^{(t)}=  d_{jk}^{(t-1)}-\frac{\partial_{ d_{jk}}\log M}{\partial^2_{ d_{jk}}\log M}$$
+
+3. Denote $u$ to be the subgradient of $||\boldsymbol\tau_j^{(t-1)}+\boldsymbol \epsilon_j||_2$. We have
+
+$$u =\begin{cases} \frac{\hat{\boldsymbol\tau}_j^{(t-1)}+\boldsymbol \epsilon_j}{||\hat{\boldsymbol\tau}_j^{(t-1)}+\boldsymbol \epsilon_j||_2}, & \mbox{if } \hat{\boldsymbol\tau}_j^{(t-1)}+\boldsymbol \epsilon_j \neq \boldsymbol 0 \\ \in\lbrace u: ||u||_2\leq1\rbrace, & \mbox{if } \hat{\boldsymbol\tau}_j^{(t-1)}+\boldsymbol \epsilon_j = \boldsymbol 0 \end{cases}.$$
+
+The subgradient equation $\partial_{\epsilon_j} M_{\eta}^{(t-1)}(\boldsymbol \epsilon)=-\nabla\log M_j-\boldsymbol \epsilon^T_jH^{(t-1)}_{jj}+\eta u=0$ is satisfied with $\boldsymbol\tau_j^{(t-1)}+\boldsymbol \epsilon_j=0$ if
+
+$$||u||_2=||\frac{\nabla\log M_j+\boldsymbol \epsilon^T_jH^{(t-1)}_{jj}}{\eta}||_2 \leq1$$
+
+
+$$||\nabla\log M_j+\boldsymbol \epsilon^T_jH^{(t-1)}_{jj}||_2 \leq\eta$$
+
+$$||\nabla\log M_j-\hat{\boldsymbol\tau}_j^{(t-1)}H^{(t-1)}_{jj}||_2 \leq\eta,$$
+
+the minimizer of $M_{\eta}^{(t-1)}(\boldsymbol \epsilon)$ is 
+
+$$\boldsymbol \epsilon_j^{(t-1)}=-\hat{\boldsymbol\tau}_j^{(t-1)}.$$
+
+Otherwise,
+
+Then the subgradient equation is 
+
+$$\partial_{\epsilon_j} M_{\eta}^{(t-1)}(\boldsymbol \epsilon)=-\nabla\log M_j-\boldsymbol \epsilon^T_jH^{(t-1)}_{jj}+\eta \frac{\hat{\boldsymbol\tau}_j^{(t-1)}+\boldsymbol \epsilon_j}{||\hat{\boldsymbol\tau}_j^{(t-1)}+\boldsymbol \epsilon_j||_2}=0$$
+
+
+$$-\nabla\log M_j-\boldsymbol \epsilon^T_jH^{(t-1)}_{jj}+\eta \frac{(\hat{\boldsymbol\tau}_j^{(t-1)}+\boldsymbol \epsilon_j)(-H^{(t-1)}_{jj})}{||\hat{\boldsymbol\tau}_j^{(t-1)}+\boldsymbol \epsilon_j||_2(-H^{(t-1)}_{jj})}=0$$
+
+$$-\nabla\log M_j-\boldsymbol \epsilon^T_jH^{(t-1)}_{jj}+\eta \frac{\nabla\log M_j-\hat{\boldsymbol\tau}_j^{(t-1)}H^{(t-1)}_{jj}}{||\nabla\log M_j-\hat{\boldsymbol\tau}_j^{(t-1)}H^{(t-1)}_{jj}||_2}=0$$
+
+$$\boldsymbol \epsilon_j^{(t-1)}=-(H^{(t-1)}_{jj})^{-1}\lbrace\nabla\log M_j-\eta \frac{\nabla\log M_j-\hat{\boldsymbol\tau}_j^{(t-1)}H^{(t-1)}_{jj}}{||\nabla\log M_j-\hat{\boldsymbol\tau}_j^{(t-1)}H^{(t-1)}_{jj}||_2}\rbrace.$$
+
+$$\nabla\log M_j=(\frac{\partial \log M}{\partial \gamma_{jry}},\frac{\partial \log M}{\partial \beta_{jky}}), r=1,...,q; k=1,...,p-1; y=2,3.$$
+
+If $\boldsymbol \epsilon^{(t-1)}_j\neq0$, performing a Backtracking-Armijo line search: let $\alpha^{(t-1)}$ be the largest value in $\lbrace\alpha^{(0)}\delta^l\rbrace_{l\geq 0}$ s.t.
+
+$$S_{\eta}(\hat{\boldsymbol\tau}^{(t-1)}_j+\alpha^{(t-1)}\boldsymbol \epsilon^{(t-1)}_j)-S_{\eta}(\hat{\boldsymbol\tau}^{(t-1)}_j)\leq\alpha^{(t-1)}\sigma\Delta^{(t-1)},$$
+
+where $\alpha^{(0)}=1$, $\delta=0.5$ and $\sigma=0.1$, and $\Delta^{(t-1)}$ is the improvement in the objective function $S_{\eta}(\cdot)$ when using a linear approximation for the log-likelihood, i.e.
+
+$$\Delta^{(t-1)}=-\boldsymbol \epsilon_j^{(t-1)T}\nabla\log M+\eta||\hat{\boldsymbol\tau}_j^{(t-1)}+\boldsymbol \epsilon_j^{(t-1)}||_2-\eta||\hat{\boldsymbol\tau}_j^{(t-1)}||_2.$$
+
+
+$$\hat{\boldsymbol\tau}^{(t)}_j=(\hat{\boldsymbol\Gamma}^{(t)}_j,\hat{\boldsymbol\beta}^{(t)}_j)=\hat{\boldsymbol\tau}^{(t-1)}_j+\alpha^{(t-1)}\boldsymbol \epsilon^{(t-1)}_j$$
+
+
+
+Then we update $P_{jky\mid q_{g}}^{*}$ and $Q_{jky\mid q_{g}}^{*}$ by plugging in $\hat{\boldsymbol A}$,$\hat{\boldsymbol D}$, $\hat{\boldsymbol \Gamma}$ and $\hat{\boldsymbol \beta}$ from last coordinate descent cycle and repeat above steps until a convergence criterion is met.
+
+After we get optimizers for item *j*, we do transforamtions on all estimates as following
+
+$${a}_{jr}^{(t)*}=  {a}_{jr}^{(t)}*\sqrt{\mathrm{diag}(\hat{\boldsymbol\Sigma}_{1r})},$$
+
+$${\gamma}_{jr}^{(t)*}=  {\gamma}_{jr}^{(t)}*\sqrt{\mathrm{diag}(\hat{\boldsymbol\Sigma}_{1r})},$$
+
+
+where $\mu_{1r}$ is the *r*th element of the estimated mean vector of the reference group $\hat{\boldsymbol \mu_1}$, and $\mathrm{diag}(\hat{\boldsymbol\Sigma}_{1r})$ is the *r*th element on the diagonal of the estimated covariance matrix of the reference group $\hat{\boldsymbol {\boldsymbol\Sigma}_1}$.
+
+
+
+
+
+
+
+
