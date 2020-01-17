@@ -1949,3 +1949,45 @@ sum(mirt.p.mat[,-c(2,3,10,11)]<0.05)/(16*14)
 
 
 
+mirt.p.mat=matrix(0,20,18) # 20 is the number of replications
+bias.mirt=matrix(0,20,3)
+rmse.mirt=matrix(0,20,3)
+difrec.mirt.fn=matrix(0,20,3) # DIF magnitude recovery with false negative included
+difrec.mirt=matrix(0,20,3) # DIF magnitude recovery without false negative (the results are same as false negative included case)
+difmag.mirt.fp=matrix(0,20,2) # DIF magnitude recovery among those none DIF items (false positive)
+for (i in 2:20){
+  seed=i*100
+  set.seed(seed)
+  Theta=mvrnorm(n=N1+N2+N3,mu=c(0,0),Sigma = matrix(c(1,0.85,0.85,1),2,2))
+  Theta1=Theta[1:N1,]
+  Theta2=Theta[(N1+1):(N1+N2),]
+  Theta3=Theta[(N1+N2+1):(N1+N2+N3),]
+  datasetR=simdata(Amat1,Dmat1,itemtype = "dich",Theta=Theta1)
+  datasetF1=simdata(Amat2,Dmat2,itemtype = "dich",Theta=Theta2)
+  datasetF2=simdata(Amat3,Dmat3,itemtype = "dich",Theta=Theta3)
+  resp=rbind(datasetR,datasetF1,datasetF2)
+  s <- 'D1 = 1,3-11
+          D2 = 2,12-20
+          COV = D1*D2'
+  #md.noncons0 <- multipleGroup(resp, cmodel, group = Group,SE=TRUE,invariance=c('free_means', 'free_var','intercepts',colnames(resp)[1:r]))
+  md.noncons0 <- multipleGroup(resp, s, group = Group,SE=TRUE,invariance=c('intercepts',colnames(resp)[1:r]))
+  mirt.p.mat[(i),1:9]=DIF(md.noncons0, which.par = c('a1'), p.adjust = 'fdr',scheme = 'add',items2test=c(3:11))[,8]
+  mirt.p.mat[(i),10:18]=DIF(md.noncons0, which.par = c('a2'), p.adjust = 'fdr',scheme = 'add',items2test=c(12:20))[,8]
+  md.refit0 <- multipleGroup(resp, s, group = Group,SE=TRUE,invariance=c('intercepts',colnames(resp)[-(which(mirt.p.mat[i,]<0.05)+2)]))
+  bias.mirt[i,1:2]=colSums(coef(md.refit0,simplify=T)$G1$items[,1:r]-Amat1)/10
+  rmse.mirt[i,1:2]=sqrt(colSums((coef(md.refit0,simplify=T)$G1$items[,1:r]-Amat1)^2)/10)
+  bias.mirt[i,3]=colMeans(coef(md.refit0,simplify=T)$G1$items[,3]-Dmat1)
+  rmse.mirt[i,3]=sqrt(colMeans((coef(md.refit0,simplify=T)$G1$items[,3]-Dmat1)^2))
+  difrec.mirt.fn[i,2]= mean(c(abs((coef(md.refit0,simplify=T)$G1$items[,1]-coef(md.refit0,simplify=T)$G2$items[,1])[c(4,5)]-0.5),abs((coef(md.refit0,simplify=T)$G1$items[,2]-coef(md.refit0,simplify=T)$G2$items[,2])[c(12,13)]-0.5)))
+  difrec.mirt.fn[i,3]= mean(c(abs((coef(md.refit0,simplify=T)$G1$items[,1]-coef(md.refit0,simplify=T)$G3$items[,1])[c(4,5)]-1),abs((coef(md.refit0,simplify=T)$G1$items[,2]-coef(md.refit0,simplify=T)$G3$items[,2])[c(12,13)]-1)))
+  difrec.mirt.fn[i,1]=mean(c(difrec.mirt.fn[i,2],difrec.mirt.fn[i,3]))
+  #difmag.mirt.fp[i,1]= mean(abs((coef(md.refit0,simplify=T)$G1$items[,1:2]-coef(md.refit0,simplify=T)$G2$items[,1:2])[-c(4,5,12,13),]))
+  #difmag.mirt.fp[i,2]= mean(abs((coef(md.refit0,simplify=T)$G1$items[,1:2]-coef(md.refit0,simplify=T)$G3$items[,1:2])[-c(4,5,12,13),]))
+}
+sum(mirt.p.mat[,c(2,3,10,11)]<0.05)/(20*4)
+sum(mirt.p.mat[,-c(2,3,10,11)]<0.05)/(20*14)
+colMeans(bias.mirt)
+colMeans(rmse.mirt)
+colMeans(difrec.mirt.fn)
+colMeans(na.omit(difmag.mirt.fp))
+
