@@ -7,13 +7,14 @@ A22=A23=A21
 D11=rnorm(J,0,1)
 D12=D13=D11
 # focal group has smaller slopes and more extreme intercepts
-A12[5]=A11[5]- 0.3
-A22[12]=A21[12]- 0.3
-A22[13]=A21[13]- 0.3
-A13[4]=A11[4]- 0.6
-A13[5]=A11[5]- 0.6
-A23[12]=A21[12]- 0.6
-A23[13]=A21[13]- 0.6
+A12[4]=A11[4]- 0.5
+A12[5]=A11[5]- 0.5
+A22[12]=A21[12]- 0.5
+A22[13]=A21[13]- 0.5
+A13[4]=A11[4]- 1
+A13[5]=A11[5]- 1
+A23[12]=A21[12]- 1
+A23[13]=A21[13]- 1
 Amat1=cbind(A11,A21)
 Amat2=cbind(A12,A22)
 Amat3=cbind(A13,A23)
@@ -21,7 +22,7 @@ Dmat1=cbind(D11)
 Dmat2=cbind(D12)
 Dmat3=cbind(D13)
 
-N1=N2=N3=500
+N1=N2=N3=1000
 Group=c(rep('G1', N1), rep('G2', N2), rep('G3', N3))
 N=N1+N2+N3
 
@@ -83,10 +84,10 @@ md0 <- mirt(resp, cmodel, itemtype = "2PL")
 gra0=coef(md0,simplify=T)$items[,1:r]
 grd0=matrix(coef(md0,simplify=T)$items[,3],J,1)
 grgamma0=array(0,dim=c(r,r,J))
-grgamma0[1,1,3:11]=-0.5
-grgamma0[2,1,3:11]=-1
-grgamma0[1,2,12:20]=-0.5
-grgamma0[2,2,12:20]=-1
+grgamma0[1,1,3:11]=-0.7
+grgamma0[2,1,3:11]=-1.2
+grgamma0[1,2,12:20]=-0.7
+grgamma0[2,2,12:20]=-1.2
 Sig0=coef(md0,simplify=T)$cov
 
 ##############################################
@@ -1881,7 +1882,7 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=F,gra00=gra00,
 
 r=2
 m=2
-eta.vec=seq(15,29,2)
+eta.vec=seq(15,39,2)
 bics=rep(0,length(eta.vec))
 Gammas=array(double(2*J*m*length(eta.vec)),dim = c(2,2,J,length(eta.vec)))
 biass=matrix(0,length(eta.vec),3)
