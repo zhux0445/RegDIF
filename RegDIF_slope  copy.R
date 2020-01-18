@@ -7,7 +7,6 @@ A22=A23=A21
 D11=rnorm(J,0,1)
 D12=D13=D11
 # focal group has smaller slopes and more extreme intercepts
-A12[4]=A11[4]- 0.3
 A12[5]=A11[5]- 0.3
 A22[12]=A21[12]- 0.3
 A22[13]=A21[13]- 0.3

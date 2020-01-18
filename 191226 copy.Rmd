@@ -1133,7 +1133,7 @@ where $\mu_{1r}$ is the *r*th element of the estimated mean vector of the refere
 
 ## Simulation
 
-$\emph Sample$ $\emph Size.$ The total sample size is $N=1500$, and the group sample sizes are $N_1=N_2=N_3=500$.
+$\emph Sample$ $\emph Size.$ The total sample size is $N=3000$, and the group sample sizes are $N_1=N_2=N_3=1000$.
 
 $\emph Test$ $\emph Length.$ $m=20.$ Simple structure. 10 items per dimension.
 
@@ -1214,7 +1214,7 @@ $$\boldsymbol\Gamma_j=\begin{pmatrix}
 
 No impact. $\theta_i\sim N(\begin{pmatrix}0\\0\\\end{pmatrix}, \begin{pmatrix}1&0.85\\0.85&1\\\end{pmatrix})$
 
-### Results of 16 Replications
+### Results of 20 Replications
 
 $\emph Table \ 1. \ Type \ I \ error \ and \ Power \ of \ regularization \ method$
 
