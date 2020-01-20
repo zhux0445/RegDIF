@@ -1,4 +1,6 @@
 # Dataset #3 (2 Non-uniform DIF items per scale)
+J=20
+
 set.seed(1)
 A11=c(runif(1,1.5,2.5),0,runif(9,1.5,2.5),rep(0,9))
 A12=A13=A11
@@ -36,7 +38,7 @@ y3=c(0,1)
 ######################    Seed     ########################
 ######################             ########################
 ###########################################################
-set.seed(200)
+set.seed(100)
 Theta=mvrnorm(n=N,mu=c(0,0),Sigma = matrix(c(1,0.85,0.85,1),2,2))
 Theta1=Theta[1:N1,]
 Theta2=Theta[(N1+1):(N1+N2),]
@@ -60,18 +62,6 @@ library(irtoys)
 soft=function(s, tau) {      
   val=sign(s)*max(c(abs(s) - tau,0))
   return(val) }
-
-#starting values by mirt
-s <- 'D1 = 1,3-11
-          D2 = 2,12-20
-          COV = D1*D2'
-cmodel <- mirt.model(s)
-md0 <- multipleGroup(resp, cmodel, group = Group,invariance=c('slopes',colnames(resp)[1:r]))
-gra0=coef(md0,simplify=T)$R$items[,1:r]
-grd0=matrix(coef(md0,simplify=T)$R$items[,3],J,1)
-grbeta0[,1]=matrix(coef(md0,simplify=T)$F1$items[,3]-coef(md0,simplify=T)$R$items[,3],J,1)
-grbeta0[,2]=matrix(coef(md0,simplify=T)$F2$items[,3]-coef(md0,simplify=T)$R$items[,3],J,1)
-Sig0=coef(md0,simplify=T)$R$cov
 
 ##############################################
 #    starting values by mirt for eta=0       #
@@ -112,33 +102,34 @@ G=length(X1)^r
 gh=t(matrix(rep(X1,r),r,length(X1),byrow = T))
 idx <- as.matrix(expand.grid(rep(list(1:length(X1)),r)))
 X <- matrix(gh[idx,1],nrow(idx),r)
-ng <-  numeric(G)
+ng = ng1 = ng2 = ng3 = numeric(G)
 #gra = azero
 #grd = matrix(0,J,1)
 gra=gra0
 grd=grd0
 #grbeta=grbeta0
-Sig=Sig0
+Sig.gp1=Sig.gp2=Sig.gp3=Sig0
 grgamma=grgamma0
 grbeta=matrix(0,J,2)
 #starting values for the MC samples form the prior
-Mu=rep(0,r)
+Mu.gp1=Mu.gp2=Mu.gp3=rep(0,r)
 #X=theta #for check later
 
 Pstar <- Qstar <-Pstar1 <- Qstar1 <-Pstar2 <- Qstar2 <-Pstar3 <- Qstar3 <- matrix(double(G*(m-1)),G,m-1)
 P<-P1<-P2<-P3<- matrix(double(G*m),G,m)
-df.a <- df.d  <- df.gamma <- df.Sig <- 1
+df.a <- df.d  <- df.gamma  <- 1
 
 iter <- 0
 
-while(max(df.a)>eps & max(df.d)>eps&  max(df.gamma)>eps & max(df.Sig)>eps)
+while(max(df.a)>eps & max(df.d)>eps&  max(df.gamma)>eps)
 {
   aold <- gra
   dold <- grd
   #gammaold=grgamma
   gammaold=grgamma
-  Sigold <- Sig
-  A=dmvnorm(X,rep(0,r),Sig)
+  A1=dmvnorm(X,Mu.gp1,Sig.gp1)
+  A2=dmvnorm(X,Mu.gp2,Sig.gp2)
+  A3=dmvnorm(X,Mu.gp3,Sig.gp3)
   
   #calculation of n_g 
   axmat=gra%*%t(X) #a%*%X
@@ -189,7 +180,7 @@ while(max(df.a)>eps & max(df.d)>eps&  max(df.gamma)>eps & max(df.Sig)>eps)
         
       }
     }
-    LiA[i,]=apply(pij, 2, prod)*A
+    LiA[i,]=apply(pij, 2, prod)*A1
   }
   
   for (i in (N1+1):(N1+N2))
@@ -203,7 +194,7 @@ while(max(df.a)>eps & max(df.d)>eps&  max(df.gamma)>eps & max(df.Sig)>eps)
         
       }
     }
-    LiA[i,]=apply(pij, 2, prod)*A
+    LiA[i,]=apply(pij, 2, prod)*A2
   }
   
   for (i in (N1+N2+1):(N1+N2+N3))
@@ -217,7 +208,7 @@ while(max(df.a)>eps & max(df.d)>eps&  max(df.gamma)>eps & max(df.Sig)>eps)
         
       }
     }
-    LiA[i,]=apply(pij, 2, prod)*A
+    LiA[i,]=apply(pij, 2, prod)*A3
   }
   
   Pi = apply(LiA,1,sum)
@@ -227,25 +218,59 @@ while(max(df.a)>eps & max(df.d)>eps&  max(df.gamma)>eps & max(df.Sig)>eps)
   ng3=apply(LiA[(N1+N2+1):(N1+N2+N3),]/Pi[(N1+N2+1):(N1+N2+N3)],2,sum)
   
   #update mu hat and Sigma hat
-  Sigg=matrix(0,r,r)
+  Mu01=Mu02=Mu03=numeric(r)
   for (g in 1:G){
-    Sigg=Sigg+X[g,]%*%t(X[g,])*ng[g]
+    Mu02=Mu02+X[g,]*ng2[g]
   }
-  Sig.hat=Sigg/N
+  for (g in 1:G){
+    Mu03=Mu03+X[g,]*ng3[g]
+  }
+  Mu.gp1=Mu01/N1
+  Mu.gp2=Mu02/N2
+  Mu.gp3=Mu03/N3
+  
+  #update mu hat and Sigma hat
+  Sigg1=Sigg2=Sigg3=matrix(0,r,r)
+  for (g in 1:G){
+    Sigg1=Sigg1+(X[g,]-Mu.gp1)%*%t(X[g,]-Mu.gp1)*ng1[g]
+  }
+  for (g in 1:G){
+    Sigg2=Sigg2+(X[g,]-Mu.gp2)%*%t(X[g,]-Mu.gp2)*ng2[g]
+  }
+  for (g in 1:G){
+    Sigg3=Sigg3+(X[g,]-Mu.gp3)%*%t(X[g,]-Mu.gp3)*ng3[g]
+  }
+  Sig.hat1=Sigg1/N1
+  Sig.hat2=Sigg2/N2
+  Sig.hat3=Sigg3/N3
+  
   
   #scale 
   #mu.hat.mat=matrix(rep(mu.hat,G),G,r,byrow = T)
-  Tau=sqrt(diag(Sig.hat))
+  Tau=sqrt(diag(Sig.hat1))
   Tau.mat=matrix(rep(Tau,G),G,r,byrow = T)
   #q_g_star
   #X=(X-mu.hat.mat)/Tau.mat
   Xstar=X/Tau.mat
   
-  Sigg2=matrix(0,r,r)
+  #Sigg2=matrix(0,r,r)
+  #for (g in 1:G){
+  #  Sigg2=Sigg2+Xstar[g,]%*%t(Xstar[g,])*ng[g]
+  #}
+  #Sig=Sigg2/N
+  Sigg1star=Sigg2star=Sigg3star=matrix(0,r,r)
   for (g in 1:G){
-    Sigg2=Sigg2+Xstar[g,]%*%t(Xstar[g,])*ng[g]
+    Sigg1star=Sigg1star+(Xstar[g,]-Mu.gp1)%*%t(Xstar[g,]-Mu.gp1)*ng1[g]
   }
-  Sig=Sigg2/N
+  for (g in 1:G){
+    Sigg2star=Sigg2star+(Xstar[g,]-Mu.gp2)%*%t(Xstar[g,]-Mu.gp2)*ng2[g]
+  }
+  for (g in 1:G){
+    Sigg3star=Sigg3star+(Xstar[g,]-Mu.gp3)%*%t(Xstar[g,]-Mu.gp3)*ng3[g]
+  }
+  Sig.gp1=Sigg1star/N1
+  Sig.gp2=Sigg2star/N2
+  Sig.gp3=Sigg3star/N3
   
   ##Constraint part
   #calculation of r_jgk
@@ -620,7 +645,6 @@ while(max(df.a)>eps & max(df.d)>eps&  max(df.gamma)>eps & max(df.Sig)>eps)
   df.d <- abs(dold-grd)
   df.a <- abs(aold-gra)
   df.gamma <- abs(gammaold-grgamma)
-  df.Sig = abs(Sigold-Sig)
   iter <- iter+1
 }
 
@@ -628,7 +652,12 @@ while(max(df.a)>eps & max(df.d)>eps&  max(df.gamma)>eps & max(df.Sig)>eps)
 gra00=gra
 grd00=grd
 grgamma00=grgamma
-Sig00=Sig
+mu100= Mu.gp1
+mu200= Mu.gp2
+mu300= Mu.gp3
+Sig100=Sig.gp1
+Sig200=Sig.gp2
+Sig300=Sig.gp3
 
 #########################
 ##     For \eta>0      ##
@@ -644,7 +673,7 @@ Sig00=Sig
 ##                     ##
 #########################
 
-ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=F,gra00=gra00,grd00=grd00,grgamma00=grgamma00,Sig00=Sig00)
+ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=T,gra00=gra00,grd00=grd00,grgamma00=grgamma00,mu100=mu100,mu200=mu200,mu300=mu300,Sig100=Sig100,Sig200=Sig200,Sig300=Sig300)
 {
   #make sure the responses are coded from 1 instead of 0
   if(min(resp)==0)
@@ -660,33 +689,34 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=F,gra00=gra00,
   gh=t(matrix(rep(X1,r),r,length(X1),byrow = T))
   idx <- as.matrix(expand.grid(rep(list(1:length(X1)),r)))
   X <- matrix(gh[idx,1],nrow(idx),r)
-  ng <-  numeric(G)
+  ng= ng1= ng2= ng3 = numeric(G)
   #gra = azero
   #grd = matrix(0,J,1)
   gra=gra00
   grd=grd00
   grgamma=grgamma00
   grbeta=matrix(0,J,2)
-  Sig=Sig00
+  Sig.gp1=Sig100; Sig.gp2=Sig200; Sig.gp3=Sig300
   
   #starting values for the MC samples form the prior
-  Mu=rep(0,r)
+  Mu.gp1=mu100; Mu.gp2=mu200; Mu.gp3=mu300
   #X=theta #for check later
   
   Pstar <- Qstar <-Pstar1 <- Qstar1 <-Pstar2 <- Qstar2 <-Pstar3 <- Qstar3 <- matrix(double(G*(m-1)),G,m-1)
   P<-P1<-P2<-P3<- matrix(double(G*m),G,m)
-  df.a <- df.d  <- df.gamma <- df.beta <- df.Sig <- 1
+  df.a <- df.d  <- df.gamma <- df.beta <- 1
   
   iter <- 0
   
   #start of the main loop
-  while(max(df.a)>eps & max(df.d)>eps & max(df.gamma)>eps & max(df.Sig)>eps)
+  while(max(df.a)>eps & max(df.d)>eps & max(df.gamma)>eps)
   {
     aold <- gra
     dold <- grd
     gammaold=grgamma
-    Sigold <- Sig
-    A=dmvnorm(X,rep(0,r),Sig)
+    A1=dmvnorm(X,Mu.gp1,Sig.gp1)
+    A2=dmvnorm(X,Mu.gp2,Sig.gp2)
+    A3=dmvnorm(X,Mu.gp3,Sig.gp3)
     
     #calculation of n_g 
     axmat=gra%*%t(X) #a%*%X
@@ -737,7 +767,7 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=F,gra00=gra00,
           
         }
       }
-      LiA[i,]=apply(pij, 2, prod)*A
+      LiA[i,]=apply(pij, 2, prod)*A1
     }
     
     for (i in (N1+1):(N1+N2))
@@ -751,7 +781,7 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=F,gra00=gra00,
           
         }
       }
-      LiA[i,]=apply(pij, 2, prod)*A
+      LiA[i,]=apply(pij, 2, prod)*A2
     }
     
     for (i in (N1+N2+1):(N1+N2+N3))
@@ -765,7 +795,7 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=F,gra00=gra00,
           
         }
       }
-      LiA[i,]=apply(pij, 2, prod)*A
+      LiA[i,]=apply(pij, 2, prod)*A3
     }
     
     Pi = apply(LiA,1,sum)
@@ -775,25 +805,51 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=F,gra00=gra00,
     ng3=apply(LiA[(N1+N2+1):(N1+N2+N3),]/Pi[(N1+N2+1):(N1+N2+N3)],2,sum)
     
     #update mu hat and Sigma hat
-    Sigg=matrix(0,r,r)
+    Mu01=Mu02=Mu03=numeric(r)
     for (g in 1:G){
-      Sigg=Sigg+X[g,]%*%t(X[g,])*ng[g]
+      Mu02=Mu02+X[g,]*ng2[g]
     }
-    Sig.hat=Sigg/N
+    for (g in 1:G){
+      Mu03=Mu03+X[g,]*ng3[g]
+    }
+    Mu.gp1=Mu01/N1; Mu.gp2=Mu02/N2; Mu.gp3=Mu03/N3
+    
+    #update Sigma hat
+    Sigg1=Sigg2=Sigg3=matrix(0,r,r)
+    for (g in 1:G){
+      Sigg1=Sigg1+(X[g,]-Mu.gp1)%*%t(X[g,]-Mu.gp1)*ng1[g]
+    }
+    for (g in 1:G){
+      Sigg2=Sigg2+(X[g,]-Mu.gp2)%*%t(X[g,]-Mu.gp2)*ng2[g]
+    }
+    for (g in 1:G){
+      Sigg3=Sigg3+(X[g,]-Mu.gp3)%*%t(X[g,]-Mu.gp3)*ng3[g]
+    }
+    Sig.hat1=Sigg1/N1
+    Sig.hat2=Sigg2/N2
+    Sig.hat3=Sigg3/N3
     
     #scale 
     #mu.hat.mat=matrix(rep(mu.hat,G),G,r,byrow = T)
-    Tau=sqrt(diag(Sig.hat))
+    Tau=sqrt(diag(Sig.hat1))
     Tau.mat=matrix(rep(Tau,G),G,r,byrow = T)
     #q_g_star
     #X=(X-mu.hat.mat)/Tau.mat
     Xstar=X/Tau.mat
     
-    Sigg2=matrix(0,r,r)
+    Sigg1star=Sigg2star=Sigg3star=matrix(0,r,r)
     for (g in 1:G){
-      Sigg2=Sigg2+Xstar[g,]%*%t(Xstar[g,])*ng[g]
+      Sigg1star=Sigg1star+(Xstar[g,]-Mu.gp1)%*%t(Xstar[g,]-Mu.gp1)*ng1[g]
     }
-    Sig=Sigg2/N
+    for (g in 1:G){
+      Sigg2star=Sigg2star+(Xstar[g,]-Mu.gp2)%*%t(Xstar[g,]-Mu.gp2)*ng2[g]
+    }
+    for (g in 1:G){
+      Sigg3star=Sigg3star+(Xstar[g,]-Mu.gp3)%*%t(Xstar[g,]-Mu.gp3)*ng3[g]
+    }
+    Sig.gp1=Sigg1star/N1
+    Sig.gp2=Sigg2star/N2
+    Sig.gp3=Sigg3star/N3
     
     ##Constraint part
     #calculation of r_jgk
@@ -1168,7 +1224,6 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=F,gra00=gra00,
     df.d <- abs(dold-grd)
     df.a <- abs(aold-gra)
     df.gamma <- abs(gammaold-grgamma)
-    df.Sig = abs(Sigold-Sig)
     iter <- iter+1
   }
   
@@ -1187,18 +1242,19 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=F,gra00=gra00,
   }
   Pstar <- Qstar <-Pstar1 <- Qstar1 <-Pstar2 <- Qstar2 <-Pstar3 <- Qstar3 <- matrix(double(G*(m-1)),G,m-1)
   P<-P1<-P2<-P3<- matrix(double(G*m),G,m)
-  df.a <- df.d  <- df.gamma  <- df.Sig <- 1
+  df.a <- df.d  <- df.gamma  <- 1
   
   iter <- 0
   
   #start of the main loop
-  while(max(df.a)>eps & max(df.d)>eps & max(df.gamma)>eps & max(df.Sig)>eps)
+  while(max(df.a)>eps & max(df.d)>eps & max(df.gamma)>eps)
   {
     aold <- gra
     dold <- grd
     gammaold=grgamma
-    Sigold <- Sig
-    A=dmvnorm(X,rep(0,r),Sig)
+    A1=dmvnorm(X,Mu.gp1,Sig.gp1)
+    A2=dmvnorm(X,Mu.gp2,Sig.gp2)
+    A3=dmvnorm(X,Mu.gp3,Sig.gp3)
     
     #calculation of n_g 
     axmat=gra%*%t(X) #a%*%X
@@ -1249,7 +1305,7 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=F,gra00=gra00,
           
         }
       }
-      LiA[i,]=apply(pij, 2, prod)*A
+      LiA[i,]=apply(pij, 2, prod)*A1
     }
     
     for (i in (N1+1):(N1+N2))
@@ -1263,7 +1319,7 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=F,gra00=gra00,
           
         }
       }
-      LiA[i,]=apply(pij, 2, prod)*A
+      LiA[i,]=apply(pij, 2, prod)*A2
     }
     
     for (i in (N1+N2+1):(N1+N2+N3))
@@ -1277,7 +1333,7 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=F,gra00=gra00,
           
         }
       }
-      LiA[i,]=apply(pij, 2, prod)*A
+      LiA[i,]=apply(pij, 2, prod)*A3
     }
     
     Pi = apply(LiA,1,sum)
@@ -1287,25 +1343,53 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=F,gra00=gra00,
     ng3=apply(LiA[(N1+N2+1):(N1+N2+N3),]/Pi[(N1+N2+1):(N1+N2+N3)],2,sum)
     
     #update mu hat and Sigma hat
-    Sigg=matrix(0,r,r)
+    Mu01=Mu02=Mu03=numeric(r)
     for (g in 1:G){
-      Sigg=Sigg+X[g,]%*%t(X[g,])*ng[g]
+      Mu02=Mu02+X[g,]*ng2[g]
     }
-    Sig.hat=Sigg/N
+    for (g in 1:G){
+      Mu03=Mu03+X[g,]*ng3[g]
+    }
+    Mu.gp1=Mu01/N1
+    Mu.gp2=Mu02/N2
+    Mu.gp3=Mu03/N3
+    
+    #update mu hat and Sigma hat
+    Sigg1=Sigg2=Sigg3=matrix(0,r,r)
+    for (g in 1:G){
+      Sigg1=Sigg1+(X[g,]-Mu.gp1)%*%t(X[g,]-Mu.gp1)*ng1[g]
+    }
+    for (g in 1:G){
+      Sigg2=Sigg2+(X[g,]-Mu.gp2)%*%t(X[g,]-Mu.gp2)*ng2[g]
+    }
+    for (g in 1:G){
+      Sigg3=Sigg3+(X[g,]-Mu.gp3)%*%t(X[g,]-Mu.gp3)*ng3[g]
+    }
+    Sig.hat1=Sigg1/N1
+    Sig.hat2=Sigg2/N2
+    Sig.hat3=Sigg3/N3
     
     #scale 
     #mu.hat.mat=matrix(rep(mu.hat,G),G,r,byrow = T)
-    Tau=sqrt(diag(Sig.hat))
+    Tau=sqrt(diag(Sig.hat1))
     Tau.mat=matrix(rep(Tau,G),G,r,byrow = T)
     #q_g_star
     #X=(X-mu.hat.mat)/Tau.mat
     Xstar=X/Tau.mat
     
-    Sigg2=matrix(0,r,r)
+    Sigg1star=Sigg2star=Sigg3star=matrix(0,r,r)
     for (g in 1:G){
-      Sigg2=Sigg2+Xstar[g,]%*%t(Xstar[g,])*ng[g]
+      Sigg1star=Sigg1star+(Xstar[g,]-Mu.gp1)%*%t(Xstar[g,]-Mu.gp1)*ng1[g]
     }
-    Sig=Sigg2/N
+    for (g in 1:G){
+      Sigg2star=Sigg2star+(Xstar[g,]-Mu.gp2)%*%t(Xstar[g,]-Mu.gp2)*ng2[g]
+    }
+    for (g in 1:G){
+      Sigg3star=Sigg3star+(Xstar[g,]-Mu.gp3)%*%t(Xstar[g,]-Mu.gp3)*ng3[g]
+    }
+    Sig.gp1=Sigg1star/N1
+    Sig.gp2=Sigg2star/N2
+    Sig.gp3=Sigg3star/N3
     
     ##Constraint part
     #calculation of r_jgk
@@ -1712,7 +1796,6 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=F,gra00=gra00,
     df.d <- abs(dold-grd)
     df.a <- abs(aold-gra)
     df.gamma <- abs(gammaold-grgamma)
-    df.Sig = abs(Sigold-Sig)
     iter <- iter+1
   }
   
@@ -1732,7 +1815,9 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=F,gra00=gra00,
   gh=t(matrix(rep(X1,r),r,length(X1),byrow = T))
   idx <- as.matrix(expand.grid(rep(list(1:length(X1)),r)))
   X <- matrix(gh[idx,1],nrow(idx),r)
-  A=dmvnorm(X,rep(0,r),Sig)
+  A1=dmvnorm(X,Mu.gp1,Sig.gp1)
+  A2=dmvnorm(X,Mu.gp2,Sig.gp2)
+  A3=dmvnorm(X,Mu.gp3,Sig.gp3)
   
   
   ##compute ng
@@ -1786,7 +1871,7 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=F,gra00=gra00,
         
       }
     }
-    LiA[i,]=apply(pij, 2, prod)*A
+    LiA[i,]=apply(pij, 2, prod)*A1
   }
   
   for (i in (N1+1):(N1+N2))
@@ -1800,7 +1885,7 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=F,gra00=gra00,
         
       }
     }
-    LiA[i,]=apply(pij, 2, prod)*A
+    LiA[i,]=apply(pij, 2, prod)*A2
   }
   
   for (i in (N1+N2+1):(N1+N2+N3))
@@ -1814,7 +1899,7 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=F,gra00=gra00,
         
       }
     }
-    LiA[i,]=apply(pij, 2, prod)*A
+    LiA[i,]=apply(pij, 2, prod)*A3
   }
   
   Pi = apply(LiA,1,sum)
@@ -1876,13 +1961,13 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=F,gra00=gra00,
   RMSE=c(sqrt(colSums((gra-Amat1)^2)/10),sqrt(colMeans((grd-Dmat1)^2)))
   
   #output esimates and number of iterations
-  return(list(est=cbind(gra,grd),Gamma=grgamma,Corr=Sig,iter=iter,bic=BIC,bias=Bias,RMSE=RMSE))
+  return(list(est=cbind(gra,grd),Gamma=grgamma,mean1=Mu.gp1,mean2=Mu.gp2,mean3=Mu.gp3,Corr1=Sig.gp1,Corr2=Sig.gp2,Corr3=Sig.gp3,iter=iter,bic=BIC,bias=Bias,RMSE=RMSE))
 }
 #end of function
 
 r=2
 m=2
-eta.vec=seq(15,39,2)
+eta.vec=seq(15,33,3)
 bics=rep(0,length(eta.vec))
 Gammas=array(double(2*J*m*length(eta.vec)),dim = c(2,2,J,length(eta.vec)))
 biass=matrix(0,length(eta.vec),3)
@@ -1890,7 +1975,7 @@ RMSEs=matrix(0,length(eta.vec),3)
 for (k in 1:length(eta.vec))
 {
   eta=eta.vec[k]
-  sim=ipest1(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=T,gra00=gra00,grd00=grd00,grgamma00=grgamma00,Sig00=Sig00)
+  sim=ipest1(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=T,gra00=gra00,grd00=grd00,grgamma00=grgamma00,mu100=mu100,mu200=mu200,mu300=mu300,Sig100=Sig100,Sig200=Sig200,Sig300=Sig300)
   bics[k]=sim$bic
   Gammas[,,,k]=sim$Gamma
   biass[k,]=sim$bias
@@ -1913,41 +1998,6 @@ RMSEs[kk,]
 #####  Comparing with mirt LRT add  #####
 #####                               #####
 #########################################
-s <- 'F1 = 1,3-11
-          F2 = 2,12-20
-          COV = F1*F2'
-cmodel <- mirt.model(s)
-mirtCluster()
-md.noncons0 <- multipleGroup(resp, cmodel, group = Group,SE=TRUE,invariance=c('free_means', 'free_var','intercepts',colnames(resp)[1:r]))
-DIF(md.noncons0, which.par = c('a1'), Wald=TRUE, p.adjust = 'fdr',scheme = 'add',items2test=c(3:11)) 
-DIF(md.noncons0, which.par = c('a2'), Wald=TRUE, p.adjust = 'fdr',scheme = 'add',items2test=c(12:20)) 
-mirt100[,8]
-
-
-mirt.p.mat=matrix(0,16,18)
-for (i in 1:16){
-  seed=i*100
-  set.seed(seed)
-  Theta=mvrnorm(n=N1+N2+N3,mu=c(0,0),Sigma = matrix(c(1,0.85,0.85,1),2,2))
-  Theta1=Theta[1:N1,]
-  Theta2=Theta[(N1+1):(N1+N2),]
-  Theta3=Theta[(N1+N2+1):(N1+N2+N3),]
-  datasetR=simdata(Amat1,Dmat1,itemtype = "dich",Theta=Theta1)
-  datasetF1=simdata(Amat2,Dmat2,itemtype = "dich",Theta=Theta2)
-  datasetF2=simdata(Amat3,Dmat3,itemtype = "dich",Theta=Theta3)
-  resp=rbind(datasetR,datasetF1,datasetF2)
-  s <- 'D1 = 1,3-11
-          D2 = 2,12-20
-          COV = D1*D2'
-  cmodel <- mirt.model(s)
-  md.noncons0 <- multipleGroup(resp, cmodel, group = Group,SE=TRUE,invariance=c('free_means', 'free_var','slopes',colnames(resp)[1:r]))
-  mirt.p.mat[(i),]=DIF(md.noncons0, which.par = c('d'), p.adjust = 'fdr',scheme = 'add',items2test=c(3:20))[,8]
-  
-}
-sum(mirt.p.mat[,c(2,3,10,11)]<0.01)/(16*4)
-sum(mirt.p.mat[,-c(2,3,10,11)]<0.05)/(16*14)
-
-
 
 mirt.p.mat=matrix(0,20,18) # 20 is the number of replications
 bias.mirt=matrix(0,20,3)
@@ -1970,10 +2020,10 @@ for (i in 2:20){
           D2 = 2,12-20
           COV = D1*D2'
   #md.noncons0 <- multipleGroup(resp, cmodel, group = Group,SE=TRUE,invariance=c('free_means', 'free_var','intercepts',colnames(resp)[1:r]))
-  md.noncons0 <- multipleGroup(resp, s, group = Group,SE=TRUE,invariance=c('intercepts',colnames(resp)[1:r]))
+  md.noncons0 <- multipleGroup(resp, s, group = Group,SE=TRUE,invariance=c('free_means', 'free_var','intercepts',colnames(resp)[1:r]))
   mirt.p.mat[(i),1:9]=DIF(md.noncons0, which.par = c('a1'), p.adjust = 'fdr',scheme = 'add',items2test=c(3:11))[,8]
   mirt.p.mat[(i),10:18]=DIF(md.noncons0, which.par = c('a2'), p.adjust = 'fdr',scheme = 'add',items2test=c(12:20))[,8]
-  md.refit0 <- multipleGroup(resp, s, group = Group,SE=TRUE,invariance=c('intercepts',colnames(resp)[-(which(mirt.p.mat[i,]<0.05)+2)]))
+  md.refit0 <- multipleGroup(resp, s, group = Group,SE=TRUE,invariance=c('free_means', 'free_var','intercepts',colnames(resp)[-(which(mirt.p.mat[i,]<0.05)+2)]))
   bias.mirt[i,1:2]=colSums(coef(md.refit0,simplify=T)$G1$items[,1:r]-Amat1)/10
   rmse.mirt[i,1:2]=sqrt(colSums((coef(md.refit0,simplify=T)$G1$items[,1:r]-Amat1)^2)/10)
   bias.mirt[i,3]=colMeans(coef(md.refit0,simplify=T)$G1$items[,3]-Dmat1)
