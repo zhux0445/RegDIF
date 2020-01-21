@@ -58,6 +58,9 @@ library(mvtnorm)
 library(graphics)
 library(dmutate)
 library(irtoys)
+library(microbenchmark)
+library(Rcpp)
+sourceCpp("/Users/ruoyizhu/Documents/GitHub/mirt/matrix.cpp")
 
 soft=function(s, tau) {      
   val=sign(s)*max(c(abs(s) - tau,0))
@@ -132,23 +135,16 @@ while(max(df.a)>eps & max(df.d)>eps&  max(df.gamma)>eps)
   A3=dmvnorm(X,Mu.gp3,Sig.gp3)
   
   #calculation of n_g 
-  axmat=gra%*%t(X) #a%*%X
-  ygam1=ygam2=ygam3=matrix(0,20,2)
-  for (j in 1:20){
-    ygam1[j,]=y1%*%grgamma[,,j]
-  }
-  for (j in 1:20){
-    ygam2[j,]=y2%*%grgamma[,,j]
-  }
-  for (j in 1:20){
-    ygam3[j,]=y3%*%grgamma[,,j]
-  }
-  ygamat1=ygam1%*%t(X)
-  ygamat2=ygam2%*%t(X)
-  ygamat3=ygam3%*%t(X)
-  grbeta1=t(y1%*%t(grbeta))
-  grbeta2=t(y2%*%t(grbeta))
-  grbeta3=t(y3%*%t(grbeta))
+  axmat=eigenMapMatMult(gra,t(X))
+  ygam1=ygam2=ygam3=matrix(0,J,r)
+  ygam2=t(grgamma[1,,])
+  ygam3=t(grgamma[2,,])
+  ygamat1=eigenMapMatMult(ygam1,t(X))
+  ygamat2=eigenMapMatMult(ygam2,t(X))
+  ygamat3=eigenMapMatMult(ygam3,t(X))
+  grbeta1=matrix(0,J,m-1)
+  grbeta2=matrix(0,J,m-1)
+  grbeta3=matrix(0,J,m-1)
   pstar1=pstar2=pstar3=array(double(J*(m-1)*G),dim = c(J,(m-1),G))
   p1=p2=p3=array(double(J*m*G),dim = c(J,m,G))
   for (g in 1:G)
@@ -166,50 +162,38 @@ while(max(df.a)>eps & max(df.d)>eps&  max(df.gamma)>eps)
     pstar3[,,g] = 1/(1+exp(-(grd+axmat[,g]+ygamat3[,g]+grbeta3)))
     p3[,,g] = t(-diff(rbind(rep(1,J),t(pstar3[,,g]),rep(0,J))))
   }
-  pij=matrix(double(J*G),J,G)
+  
+  pij=array(double(J*G*N1),dim=c(J,G,N1))
   LiA=matrix(double(N*G),N,G)
   
-  for (i in 1:N1)
+  for (j in 1:J)
   {
-    respi=resp[i,]
-    for (j in 1:J)
+    for (g in 1:G)
     {
-      for (g in 1:G)
-      {
-        pij[j,g] <- p1[j,respi[j],g]
-        
-      }
+      pij[j,g,]=p1[j,(resp[1:N1,j]),g]
     }
-    LiA[i,]=apply(pij, 2, prod)*A1
   }
+  LiA[1:N1,]=t(apply(pij, c(2,3), prod)*A1)
   
-  for (i in (N1+1):(N1+N2))
+  for (j in 1:J)
   {
-    respi=resp[i,]
-    for (j in 1:J)
+    for (g in 1:G)
     {
-      for (g in 1:G)
-      {
-        pij[j,g] <- p2[j,respi[j],g]
-        
-      }
+      pij[j,g,]=p2[j,(resp[(N1+1):(N1+N2),j]),g]
     }
-    LiA[i,]=apply(pij, 2, prod)*A2
   }
+  LiA[(N1+1):(N1+N2),]=t(apply(pij, c(2,3), prod)*A2)
   
-  for (i in (N1+N2+1):(N1+N2+N3))
+  for (j in 1:J)
   {
-    respi=resp[i,]
-    for (j in 1:J)
+    for (g in 1:G)
     {
-      for (g in 1:G)
-      {
-        pij[j,g] <- p3[j,respi[j],g]
-        
-      }
+      pij[j,g,]=p3[j,(resp[(N1+N2+1):(N1+N2+N3),j]),g]
     }
-    LiA[i,]=apply(pij, 2, prod)*A3
   }
+  LiA[(N1+N2+1):(N1+N2+N3),]=t(apply(pij, c(2,3), prod)*A3)
+
+
   
   Pi = apply(LiA,1,sum)
   ng = apply(LiA/Pi,2,sum)
@@ -218,32 +202,13 @@ while(max(df.a)>eps & max(df.d)>eps&  max(df.gamma)>eps)
   ng3=apply(LiA[(N1+N2+1):(N1+N2+N3),]/Pi[(N1+N2+1):(N1+N2+N3)],2,sum)
   
   #update mu hat and Sigma hat
-  Mu01=Mu02=Mu03=numeric(r)
-  for (g in 1:G){
-    Mu02=Mu02+X[g,]*ng2[g]
-  }
-  for (g in 1:G){
-    Mu03=Mu03+X[g,]*ng3[g]
-  }
-  Mu.gp1=Mu01/N1
-  Mu.gp2=Mu02/N2
-  Mu.gp3=Mu03/N3
+  Mu.gp2=colSums(X*ng2)/N2
+  Mu.gp3=colSums(X*ng3)/N3
   
   #update mu hat and Sigma hat
-  Sigg1=Sigg2=Sigg3=matrix(0,r,r)
-  for (g in 1:G){
-    Sigg1=Sigg1+(X[g,]-Mu.gp1)%*%t(X[g,]-Mu.gp1)*ng1[g]
-  }
-  for (g in 1:G){
-    Sigg2=Sigg2+(X[g,]-Mu.gp2)%*%t(X[g,]-Mu.gp2)*ng2[g]
-  }
-  for (g in 1:G){
-    Sigg3=Sigg3+(X[g,]-Mu.gp3)%*%t(X[g,]-Mu.gp3)*ng3[g]
-  }
-  Sig.hat1=Sigg1/N1
-  Sig.hat2=Sigg2/N2
-  Sig.hat3=Sigg3/N3
-  
+  Sig.hat1=eigenMapMatMult(t(X),(X*ng1))/N1
+  Sig.hat2=eigenMapMatMult(t(X-rep(Mu.gp2)),((X-rep(Mu.gp2))*ng2))/N2
+  Sig.hat3=eigenMapMatMult(t(X-rep(Mu.gp3)),((X-rep(Mu.gp3))*ng3))/N3
   
   #scale 
   #mu.hat.mat=matrix(rep(mu.hat,G),G,r,byrow = T)
