@@ -6,7 +6,7 @@ output:  bookdown::pdf_document2
 ---
 # Graded Response Model with DIF
 
-For a polytomously scored item *j*, the probability that examinee *i* with ability vector $\boldsymbol\theta_i$ reaching level *k* or higher on item *j* is
+Assume a total sample size *N*, test length *m* and number of response categories *p*. For a polytomously scored item *j*, the probability that examinee *i* with ability vector $\boldsymbol\theta_i$ reaching level *k* or higher on item *j* is
 \begin{equation}
 \begin{aligned}
 P_{ijk}^*  = \frac{1}{1+e^{-({\textbf a_j}{\boldsymbol\theta_i}+d_{jk}+(\boldsymbol y_i\boldsymbol\gamma_j)\boldsymbol \theta_i+\boldsymbol y_i\boldsymbol\beta_{jk})}}  (i=1,...,N; j=1,2,...,m; k=1,2,...,p-1).
@@ -23,7 +23,7 @@ P_{ijk} = P_{ij,k-1}^* - P_{ijk}^*
 
 is the probability of an examinee *i* with ability vector $\boldsymbol\theta_i$ reaching response level *k* on item *j*.
 
-Assume a total sample size *N* and test length *m*. The ability vector of the $i$th examinee is $\boldsymbol\theta_{i}$ = ($\theta_{i1}$,$\theta_{i2}$,...,$\theta_{ir}$,...,$\theta_{iq}$$)^T$ (i=1,...,N; r=1,2,...,q), and the item parameter matrices are
+Assume the trait variable has *q* dimensions. The ability vector of the $i$th examinee is $\boldsymbol\theta_{i}$ = ($\theta_{i1}$,$\theta_{i2}$,...,$\theta_{ir}$,...,$\theta_{iq}$$)^T$ (i=1,...,N; r=1,2,...,q), and the item parameter matrices are
 
 discrimination parameter
 $$\textbf A = (\textbf a_{1},\textbf a_{2},...,\textbf a_{j},...,\textbf a_{m})^T=\begin{pmatrix}
@@ -1220,8 +1220,8 @@ $\emph Table \ 1. \ Type \ I \ error \ and \ Power \ of \ regularization \ metho
 
 Group | Omnibus DIF| Group with DIF=0.5| Group with DIF=1| 
 ------|------|------|------|
-Power| 1 | 0.5 | 1 |
-Type I| 0.049 | 0.01875 | 0.022 |
+Power| 0.9464 | 0.2857 | 0.9464 |
+Type I| 0.0223 | 0 | 0.0223 |
 
 Omnibus DIF is defined as if at least one focal group showd DIF on an item, then that item is flagged as DIF.
 
