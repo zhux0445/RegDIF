@@ -293,7 +293,7 @@ $n_g=n_{g1}+n_{g2}+n_{g3}$ represents the expected number of examinees with the 
 
 \begin{equation}
 \begin{aligned}
-E[log\lbrace L(\textbf A,\textbf D, \boldsymbol \beta, \boldsymbol \mu, \boldsymbol \Sigma \mid \textbf Y, \textbf U, \boldsymbol \Theta)] &= \sum_y^3 \sum_g^G \sum_j^m \sum_k^p  (r_{jgky}  \mathrm{log} P_{jky\mid q_{g}})+ \sum_y^3 \sum_g^G n_{gy} \mathrm{log} f(\boldsymbol \mu_y, \boldsymbol \Sigma_y \mid\boldsymbol q_{g} ) 
+E[log\lbrace L(\textbf A,\textbf D, \boldsymbol \beta, \boldsymbol \mu, \boldsymbol \Sigma \mid \textbf Y, \textbf U, \boldsymbol \Theta)] &= \sum_g^G \sum_j^m \sum_y^3 \sum_k^p  (r_{gjyk}  \mathrm{log} P_{jyk\mid q_{g}})+ \sum_g^G \sum_y^3  n_{gy} \mathrm{log} f(\boldsymbol \mu_y, \boldsymbol \Sigma_y \mid\boldsymbol q_{g} ) 
 \end{aligned}
 \end{equation}
 
@@ -303,7 +303,7 @@ For each item *j*, we define
 
 \begin{equation}
 \begin{aligned}
-\log M_j &= \sum_y^3 \sum_g^G \sum_k^p  (r_{jgky}  \mathrm{log} P_{jky\mid q_{g}})+ \sum_y^3 \sum_g^G n_{gy} \mathrm{log} f(\boldsymbol \mu_y, \boldsymbol \Sigma_y \mid\boldsymbol q_{g}) 
+\log M_j &= \sum_g^G \sum_y^3 \sum_k^p  (r_{jgky}  \mathrm{log} P_{jky\mid q_{g}})+ \sum_g^G \sum_y^3 n_{gy} \mathrm{log} f(\boldsymbol \mu_y, \boldsymbol \Sigma_y \mid\boldsymbol q_{g}) 
 \end{aligned}
 \end{equation}
 
@@ -435,7 +435,7 @@ the first partial derivative with respect to $a_{jr}$ is
 
 \begin{equation}
 \begin{aligned}
-\frac{\partial \log M}{\partial a_{jr}} =  \sum_{y}^3 \sum_{k=1}^p \sum_{g=1}^{G} (\frac{r_{jgky} q_{gr}}{P_{jky\mid q_{g}}}(\omega_{j,(k-1),y}-\omega_{jky}))
+\frac{\partial \log M}{\partial a_{jr}} =  \sum_{g=1}^{G} \sum_{y}^3 \sum_{k=1}^p (\frac{r_{jgky} q_{gr}}{P_{jky\mid q_{g}}}(\omega_{j,(k-1),y}-\omega_{jky}))
 \end{aligned}
 \end{equation}
 
@@ -587,11 +587,11 @@ We run an EM and cyclical coordinate descent algorithm given by following.
 \Input{$\boldsymbol A_0$,$\boldsymbol D_0$,$\boldsymbol \beta_0$,$\boldsymbol \mu_0$,$\boldsymbol \Sigma_0$,U,$\eta$,$\varepsilon_1$,$\varepsilon_2$}
 \Output{$\hat{\boldsymbol A}$,$\hat{\boldsymbol D}$,$\hat{\boldsymbol \beta}$,$\hat{\boldsymbol \mu}$,$\hat{\boldsymbol \Sigma}$}
 \BlankLine
-\While{$||\hat{\boldsymbol A}-\boldsymbol A_0||+||\hat{\boldsymbol D}-\boldsymbol D_0||+||\hat{\boldsymbol \beta}-\boldsymbol \beta_0||<\varepsilon_1$}{
+\While{$||\hat{\boldsymbol A}-\boldsymbol A_0||+||\hat{\boldsymbol D}-\boldsymbol D_0||+||\hat{\boldsymbol \beta}-\boldsymbol \beta_0||>\varepsilon_1$}{
     Calculate $n_{gy}$ and $r_{jgky}$\;
     Update $\hat{\boldsymbol \mu}$ and $\hat{\boldsymbol \Sigma}$\;
     \For {j=1,...m}{
-    \While{$||\hat{\boldsymbol A_j}-\boldsymbol A_{j0}||+||\hat{\boldsymbol D_j}-\boldsymbol D_{j0}||+||\hat{\boldsymbol \beta_j}-\boldsymbol \beta_{j0}||<\varepsilon_2$}{
+    \While{$||\hat{\boldsymbol A_j}-\boldsymbol A_{j0}||+||\hat{\boldsymbol D_j}-\boldsymbol D_{j0}||+||\hat{\boldsymbol \beta_j}-\boldsymbol \beta_{j0}||>\varepsilon_2$}{
         Calculate $P_{jky\mid q_{g}}^{*},Q_{jky\mid q_{g}}^{*}$\;
         ${a}_{jr}^{(t)}=  a_{jr}^{(t-1)}-\frac{\partial_{ a_{jr}}\log M}{\partial^2_{ a_{jr}}\log M}$\;
         ${d}_{jk}^{(t)}=  d_{jk}^{(t-1)}-\frac{\partial_{ d_{jk}}\log M}{\partial^2_{ d_{jk}}\log M}$\;
@@ -881,11 +881,11 @@ We run an EM and cyclical coordinate descent algorithm given by following.
 \Input{$\boldsymbol A_0$,$\boldsymbol D_0$,$\boldsymbol \beta_0$,$\boldsymbol \mu_0$,$\boldsymbol \Sigma_0$,U,$\eta$,$\varepsilon_1$,$\varepsilon_2$}
 \Output{$\hat{\boldsymbol A}$,$\hat{\boldsymbol D}$,$\hat{\boldsymbol \beta}$,$\hat{\boldsymbol \mu}$,$\hat{\boldsymbol \Sigma}$}
 \BlankLine
-\While{$||\hat{\boldsymbol A}-\boldsymbol A_0||+||\hat{\boldsymbol D}-\boldsymbol D_0||+||\hat{\boldsymbol \Gamma}-\boldsymbol \Gamma_0||<\varepsilon_1$}{
+\While{$||\hat{\boldsymbol A}-\boldsymbol A_0||+||\hat{\boldsymbol D}-\boldsymbol D_0||+||\hat{\boldsymbol \Gamma}-\boldsymbol \Gamma_0||>\varepsilon_1$}{
     Calculate $n_{gy}$ and $r_{jgky}$\;
     Update $\hat{\boldsymbol \mu}$ and $\hat{\boldsymbol \Sigma}$\;
     \For {j=1,...m}{
-    \While{$||\hat{\boldsymbol A_j}-\boldsymbol A_{j0}||+||\hat{\boldsymbol D_j}-\boldsymbol D_{j0}||+||\hat{\boldsymbol \Gamma_j}-\boldsymbol \Gamma_{j0}||<\varepsilon_2$}{
+    \While{$||\hat{\boldsymbol A_j}-\boldsymbol A_{j0}||+||\hat{\boldsymbol D_j}-\boldsymbol D_{j0}||+||\hat{\boldsymbol \Gamma_j}-\boldsymbol \Gamma_{j0}||>\varepsilon_2$}{
         Calculate $P_{jky\mid q_{g}}^{*},Q_{jky\mid q_{g}}^{*}$\;
         ${a}_{jr}^{(t)}=  a_{jr}^{(t-1)}-\frac{\partial_{ a_{jr}}\log M}{\partial^2_{ a_{jr}}\log M}$\;
         ${d}_{jk}^{(t)}=  d_{jk}^{(t-1)}-\frac{\partial_{ d_{jk}}\log M}{\partial^2_{ d_{jk}}\log M}$\;
@@ -898,8 +898,6 @@ We run an EM and cyclical coordinate descent algorithm given by following.
 \end{algorithm} 
 
 Note that $\mathrm{diag}(\hat{\boldsymbol\Sigma}_{1r})$ is the *r*th element on the diagonal of the estimated covariance matrix of the reference group $\hat{\boldsymbol {\boldsymbol\Sigma}_1}$.
-
-where $\mu_{1r}$ is the *r*th element of the estimated mean vector of the reference group $\hat{\boldsymbol \mu_1}$, and $\mathrm{diag}(\hat{\boldsymbol\Sigma}_{1r})$ is the *r*th element on the diagonal of the estimated covariance matrix of the reference group $\hat{\boldsymbol {\boldsymbol\Sigma}_1}$.
 
 ## Simulation
 
@@ -1039,114 +1037,7 @@ When the items have non-uniform DIF on both slope and intercept, the DIF paramet
 
 ## E step
 
-For an examinee with ability $\boldsymbol \theta_i$ the conditional likelihood of observing $\boldsymbol u_i$ is
-
-\begin{equation}
-\begin{aligned}
-&L(\textbf A,\textbf D, \boldsymbol \Gamma, \boldsymbol \beta, \boldsymbol \theta_i \mid \textbf y,\boldsymbol u_i)= \prod_{j=1}^m \prod_{k=1}^p P_{jk}(\boldsymbol \theta_i)^{x_{ijk}}.
-\end{aligned}
-\end{equation}
-
-With the assumption of prior distribution of latent trait, the joint likelihood of $\boldsymbol u_i$ and $\boldsymbol \theta_i$ is
-
-\begin{equation}
-\begin{aligned}
-&L(\textbf A,\textbf D,\boldsymbol \Gamma, \boldsymbol \beta ,\boldsymbol \mu_y, \boldsymbol \Sigma_y \mid \textbf y,\textbf u_i, \boldsymbol \theta_i) = L(\textbf A,\textbf D, \boldsymbol \Gamma, \boldsymbol \beta, \boldsymbol \theta_i \mid \textbf y, \textbf u_i) f(\boldsymbol \mu_y, \boldsymbol \Sigma_y \mid \boldsymbol \theta_{i} )\\
-&= \prod_{j=1}^m \prod_{k=1}^p P_{jk}(\boldsymbol \theta_i)^{x_{ijk}}(2\pi)^{-p/2}|\boldsymbol \Sigma_y|^{-1/2}\mathrm{exp}(-0.5(\boldsymbol \theta_i-\boldsymbol \mu_y)' \boldsymbol \Sigma_y^{-1}(\boldsymbol \theta_i-\boldsymbol \mu_y)).
-\end{aligned}
-\end{equation}
-
-Therefore, the marginal likelihood of $\boldsymbol u_i$ is
-
-\begin{equation}
-\begin{aligned}
-&m(\textbf A,\textbf D,\boldsymbol \Gamma, \boldsymbol \beta ,\boldsymbol \mu_y, \boldsymbol \Sigma_y \mid \boldsymbol y,\boldsymbol u_i) = \int L(\textbf A,\textbf D, \boldsymbol \Gamma, \boldsymbol \beta \mid \textbf y, \textbf u_i, \boldsymbol \theta_i) f(\boldsymbol \mu_y, \boldsymbol \Sigma_y \mid \boldsymbol \theta_{i} ) \partial \boldsymbol \theta_{i}
-\end{aligned}
-\end{equation}
-
-Then
-
-\begin{equation}
-\begin{aligned}
-&h(\boldsymbol \theta_{i}\mid \boldsymbol u_i,\boldsymbol y_i,\textbf A^{(t-1)},\textbf D^{(t-1)} ,\boldsymbol \Gamma^{(t-1)}, \boldsymbol \beta^{(t-1)},\boldsymbol\mu^{(t-1)}_y,\Sigma^{(t-1)}_y)=\frac{L(\textbf A,\textbf D, \boldsymbol \Gamma, \boldsymbol \beta \mid \textbf y, \textbf u_i, \boldsymbol \theta_i) f(\boldsymbol \mu_y, \boldsymbol \Sigma_y \mid \boldsymbol \theta_{i})}{m(\textbf A,\textbf D,\boldsymbol \Gamma, \boldsymbol \beta ,\boldsymbol \mu_y, \boldsymbol \Sigma_y \mid \boldsymbol y,\boldsymbol u_i)}
-\end{aligned}
-\end{equation}
-
-is the posterior density of $\boldsymbol \theta_i$ given the estimation of $\textbf A$, $\textbf D$, $\boldsymbol \Gamma$, $\boldsymbol \beta$ and $\Sigma$ at the iteration *t*. 
-
-
-The expected complete data log-likelihood with respect to the posterior distribution of $\boldsymbol\theta$
-
-\begin{equation}
-\begin{aligned}
-& E[log\lbrace L(\boldsymbol A,\boldsymbol D,\boldsymbol \Gamma, \boldsymbol \beta ,\boldsymbol \mu, \boldsymbol \Sigma \mid \boldsymbol Y,\boldsymbol U, \boldsymbol \Theta)  \rbrace|\boldsymbol A^{(t-1)},\boldsymbol D^{(t-1)},\boldsymbol \Gamma^{(t-1)}, \boldsymbol \beta^{(t-1)} ,\textbf Y,\textbf U, \boldsymbol \mu^{(t-1)}, \boldsymbol \Sigma^{(t-1)}] \\
-& = \sum_i^N \lbrace \int \mathrm{log} L(\boldsymbol A,\boldsymbol D,\boldsymbol \Gamma, \boldsymbol \beta \mid \boldsymbol y,\boldsymbol u_i, \boldsymbol \theta_i) h(\boldsymbol \theta_i|\boldsymbol y_i,\boldsymbol u_i,\boldsymbol A^{(t-1)},\boldsymbol D^{(t-1)} ,\boldsymbol \Gamma^{(t-1)}, \boldsymbol \beta^{(t-1)}, \boldsymbol \mu^{(t-1)}, \boldsymbol \Sigma^{(t-1)}) \partial  \boldsymbol \theta_i\\
-&+\int \mathrm{log}f(\boldsymbol \mu_y,\boldsymbol \Sigma_y \mid\boldsymbol \theta_{i} ) h(\boldsymbol \theta_i|\boldsymbol u_i,\boldsymbol A^{(t-1)},\boldsymbol D^{(t-1)} ,\boldsymbol \Gamma^{(t-1)}, \boldsymbol \beta^{(t-1)},\boldsymbol \mu_y^{(t-1)}, \boldsymbol \Sigma_y^{(t-1)}) \partial  \boldsymbol \theta_i \rbrace
-\end{aligned}
-\end{equation}
-
-
-At iteration *t*, applying Gauss-Hermite quadrature nodes and the integration above can be updated as
-
-\begin{equation}
-\begin{aligned}
-&E[log L(\boldsymbol A,\boldsymbol D,\boldsymbol \Gamma, \boldsymbol \beta ,\boldsymbol \mu, \boldsymbol \Sigma \mid \boldsymbol Y, \boldsymbol U)] \\
-&=\sum_i^N \sum_g^G \mathrm{log} L(\boldsymbol A,\boldsymbol D,\boldsymbol \Gamma, \boldsymbol \beta  \mid \boldsymbol u_i, \boldsymbol q_{g})\frac{L(\boldsymbol q_{g} \mid \boldsymbol u_i,\boldsymbol A^{(t-1)},\boldsymbol D^{(t-1)},\boldsymbol \Gamma^{(t-1)}, \boldsymbol \beta^{(t-1)},\boldsymbol Y, \boldsymbol \mu^{(t-1)}, \boldsymbol \Sigma^{(t-1)})f(\boldsymbol \mu^{(t-1)}, \boldsymbol \Sigma^{(t-1)} \mid \boldsymbol q_{g})}{\sum_g^G L(\boldsymbol q_{g} \mid \boldsymbol u_i,\boldsymbol A^{(t-1)},\boldsymbol D^{(t-1)},\boldsymbol \Gamma^{(t-1)}, \boldsymbol \beta^{(t-1)},\boldsymbol Y,\boldsymbol \mu^{(t-1)},  \boldsymbol \Sigma^{(t-1)})f(\boldsymbol \mu^{(t-1)}, \boldsymbol \Sigma^{(t-1)} \mid \boldsymbol q_{g})}\\
-& +\sum_i^N \sum_g^G \mathrm{log} f(\boldsymbol \mu, \boldsymbol \Sigma \mid\boldsymbol q_{g} ) \frac{L(\boldsymbol q_{g} \mid \boldsymbol u_i,\boldsymbol A^{(t-1)},\boldsymbol D^{(t-1)},\boldsymbol \Gamma^{(t-1)}, \boldsymbol \beta^{(t-1)},\boldsymbol Y, \boldsymbol \mu^{(t-1)}, \boldsymbol \Sigma^{(t-1)})f(\boldsymbol \mu^{(t-1)}, \boldsymbol \Sigma^{(t-1)} \mid \boldsymbol q_{g})}{\sum_g^G L(\boldsymbol q_{g} \mid \boldsymbol u_i,\boldsymbol A^{(t-1)},\boldsymbol D^{(t-1)},\boldsymbol \Gamma^{(t-1)}, \boldsymbol \beta^{(t-1)},\boldsymbol Y,\boldsymbol \mu^{(t-1)}, \boldsymbol \Sigma^{(t-1)})f(\boldsymbol \mu^{(t-1)}, \boldsymbol \Sigma^{(t-1)} \mid \boldsymbol q_{g})}\\
-&=\sum_i^N \sum_g^G \sum_j^m \sum_k^p x_{ijk}\mathrm{log} P_{ijk\mid q_{g}} \frac{L(\boldsymbol q_{g} \mid \boldsymbol u_i,\boldsymbol A^{(t-1)},\boldsymbol D^{(t-1)},\boldsymbol \Gamma^{(t-1)}, \boldsymbol \beta^{(t-1)},\boldsymbol Y, \boldsymbol \mu^{(t-1)}, \boldsymbol \Sigma^{(t-1)})f(\boldsymbol \mu^{(t-1)}, \boldsymbol \Sigma^{(t-1)} \mid \boldsymbol q_{g})}{\sum_g^G L(\boldsymbol q_{g} \mid \boldsymbol u_i,\boldsymbol A^{(t-1)},\boldsymbol D^{(t-1)},\boldsymbol \Gamma^{(t-1)}, \boldsymbol \beta^{(t-1)},\boldsymbol Y, \boldsymbol \mu^{(t-1)}, \boldsymbol \Sigma^{(t-1)})f(\boldsymbol \mu^{(t-1)}, \boldsymbol \Sigma^{(t-1)} \mid \boldsymbol q_{g})}\\
-&+\sum_i^N \sum_g^G \mathrm{log} f(\boldsymbol \mu, \boldsymbol \Sigma \mid\boldsymbol q_{g} ) \frac{L(\boldsymbol q_{g} \mid \boldsymbol u_i,\boldsymbol A^{(t-1)},\boldsymbol D^{(t-1)},\boldsymbol \Gamma^{(t-1)}, \boldsymbol \beta^{(t-1)},\boldsymbol Y, \boldsymbol \mu^{(t-1)}, \boldsymbol \Sigma^{(t-1)})f(\boldsymbol \mu^{(t-1)}, \boldsymbol \Sigma^{(t-1)} \mid \boldsymbol q_{g})}{\sum_g^G L(\boldsymbol q_{g} \mid \boldsymbol u_i,\boldsymbol A^{(t-1)},\boldsymbol D^{(t-1)},\boldsymbol \Gamma^{(t-1)}, \boldsymbol \beta^{(t-1)},\boldsymbol Y, \boldsymbol \mu^{(t-1)}, \boldsymbol \Sigma^{(t-1)})f(\boldsymbol \mu^{(t-1)}, \boldsymbol \Sigma^{(t-1)} \mid \boldsymbol q_{g})}
-\end{aligned}
-\end{equation}
-
-
-
-
-
-Then we can define two artificial terms.
-
-For the reference group, $y=1$. We have
-
-$$n_{gy} =n_{g1} = \sum_{i=1}^{N_1} \frac{L(\boldsymbol q_{g} \mid \textbf y_i,\boldsymbol u_i,\textbf A^{(t-1)},\textbf D^{(t-1)},\boldsymbol \Gamma^{(t-1)}, \boldsymbol \beta^{(t-1)},\boldsymbol \mu_1^{(t-1)}, \boldsymbol \Sigma_1^{(t-1)})}{\sum_g^G L(\boldsymbol q_{g} \mid \textbf y_i,\boldsymbol u_i,\textbf A^{(t-1)},\textbf D^{(t-1)},\boldsymbol \Gamma^{(t-1)}, \boldsymbol \beta^{(t-1)},\boldsymbol \mu_1^{(t-1)}, \boldsymbol \Sigma_1^{(t-1)})}, $$
-
-and 
-
-$$r_{jgky} =r_{jgk1} =  \sum_{i=1}^{N_1}x_{ijk} \frac{L(\boldsymbol q_{g} \mid \textbf y_i,\boldsymbol u_i,\textbf A^{(t-1)},\textbf D^{(t-1)},\boldsymbol \Gamma^{(t-1)}, \boldsymbol \beta^{(t-1)}, \boldsymbol \mu_1^{(t-1)},\boldsymbol \Sigma_1^{(t-1)})}{\sum_g^G L(\boldsymbol q_{g} \mid \textbf y_i,\boldsymbol u_i,\textbf A^{(t-1)},\textbf D^{(t-1)},\boldsymbol \Gamma^{(t-1)}, \boldsymbol \beta^{(t-1)},\boldsymbol \mu_1^{(t-1)}, \boldsymbol \Sigma_1^{(t-1)})}.$$ 
-
-For the first focal group, $y=2$. We have
-
-$$n_{gy} =n_{g2} = \sum_{i=N_1+1}^{N_1+N_2} \frac{L(\boldsymbol q_{g} \mid \textbf y_i,\boldsymbol u_i,\textbf A^{(t-1)},\textbf D^{(t-1)},\boldsymbol \Gamma^{(t-1)}, \boldsymbol \beta^{(t-1)},\boldsymbol \mu_2^{(t-1)}, \boldsymbol \Sigma_2^{(t-1)})}{\sum_g^G L(\boldsymbol q_{g} \mid \textbf y_i,\boldsymbol u_i,\textbf A^{(t-1)},\textbf D^{(t-1)},\boldsymbol \Gamma^{(t-1)}, \boldsymbol \beta^{(t-1)},\boldsymbol \mu_2^{(t-1)}, \boldsymbol \Sigma_2^{(t-1)})}, $$
-
-and
-
-$$r_{jgky} =r_{jgk2} =  \sum_{i=N_1+1}^{N_1+N_2}x_{ijk} \frac{L(\boldsymbol q_{g} \mid \textbf y_i,\boldsymbol u_i,\textbf A^{(t-1)},\textbf D^{(t-1)},\boldsymbol \Gamma^{(t-1)}, \boldsymbol \beta^{(t-1)}, \boldsymbol \mu_2^{(t-1)},\boldsymbol \Sigma_2^{(t-1)})}{\sum_g^G L(\boldsymbol q_{g} \mid \textbf y_i,\boldsymbol u_i,\textbf A^{(t-1)},\textbf D^{(t-1)},\boldsymbol \Gamma^{(t-1)}, \boldsymbol \beta^{(t-1)},\boldsymbol \mu_2^{(t-1)}, \boldsymbol \Sigma_2^{(t-1)})}.$$ 
-
-For the second focal group, $y=3$. We have
-
-$$n_{gy} =n_{g3} =\sum_{i=N_1+N_2+1}^{N_1+N_2+N3} \frac{L(\boldsymbol q_{g} \mid \textbf y_i,\boldsymbol u_i,\textbf A^{(t-1)},\textbf D^{(t-1)},\boldsymbol \Gamma^{(t-1)}, \boldsymbol \beta^{(t-1)},\boldsymbol \mu_3^{(t-1)}, \boldsymbol \Sigma_3^{(t-1)})}{\sum_g^G L(\boldsymbol q_{g} \mid\textbf y_i,\boldsymbol u_i,\textbf A^{(t-1)},\textbf D^{(t-1)},\boldsymbol \Gamma^{(t-1)}, \boldsymbol \beta^{(t-1)},\boldsymbol \mu_3^{(t-1)}, \boldsymbol \Sigma_3^{(t-1)})} $$
-
-and
-
-$$r_{jgky} =r_{jgk3} =  \sum_{i=N_1+N_2+1}^{N_1+N_2+N3}x_{ijk} \frac{L(\boldsymbol q_{g} \mid \textbf y_i,\boldsymbol u_i,\textbf A^{(t-1)},\textbf D^{(t-1)},\boldsymbol \Gamma^{(t-1)}, \boldsymbol \beta^{(t-1)}, \boldsymbol \mu_3^{(t-1)},\boldsymbol \Sigma_3^{(t-1)})}{\sum_g^G L(\boldsymbol q_{g} \mid \textbf y_i,\boldsymbol u_i,\textbf A^{(t-1)},\textbf D^{(t-1)},\boldsymbol \Gamma^{(t-1)}, \boldsymbol \beta^{(t-1)},\boldsymbol \mu_3^{(t-1)}, \boldsymbol \Sigma_3^{(t-1)})}.$$ 
-
-
-
-$n_g=n_{g1}+n_{g2}+n_{g3}$ represents the expected number of examinees with the ability $\boldsymbol q_{g}$, and $r_{jgk}=r_{jgk1}+r_{jgk2}+r_{jgk3}$ is the expected number of examinees who get the score level $k$ on the item *j* with the ability $\boldsymbol q_g$.
-
-\begin{equation}
-\begin{aligned}
-E[log\lbrace L(\textbf A,\textbf D,\boldsymbol \Gamma, \boldsymbol \beta, \boldsymbol \mu, \boldsymbol \Sigma \mid \textbf Y, \textbf U, \boldsymbol \Theta)] &= \sum_y^3 \sum_g^G \sum_j^m \sum_k^p  (r_{jgky}  \mathrm{log} P_{jky\mid q_{g}})+ \sum_y^3 \sum_g^G n_{g} \mathrm{log} f(\boldsymbol \mu_y, \boldsymbol \Sigma_y \mid\boldsymbol q_{g} ) 
-\end{aligned}
-\end{equation}
-
-In the EM problem, we want to maximize the above expectation at the iteration *t*. Denote this unpenalized expectation as $\log M$.
-
-For each item *j*, we define 
-
-\begin{equation}
-\begin{aligned}
-\log M_j &= \sum_y^3 \sum_g^G \sum_k^p  (r_{jgky}  \mathrm{log} P_{jky\mid q_{g}})+ \sum_y^3 \sum_g^G n_{g} \mathrm{log} f(\boldsymbol \mu_y, \boldsymbol \Sigma_y \mid\boldsymbol q_{g}) 
-\end{aligned}
-\end{equation}
+The equations for expectations are same as before.
 
 In our DIF detection problem, we minimize the following objective function 
 
@@ -1188,175 +1079,7 @@ S_\eta(\boldsymbol\tau_j)=-\log M_j +  \eta ||\boldsymbol\tau_j||_2.
 
 ## M step
 
-Same as before, we assume the reference group has mean zero and variance one and only estimate its correlations. The means and all elements in the covariance matrices of two focal groups can be freely estimated.
-
-$\hat{\boldsymbol\mu}_y$ can be updated as
-
-\begin{equation}
-\begin{aligned}
-\hat{\boldsymbol\mu}_2  =\frac{\sum_{g=1}^G n_{g2}\boldsymbol q_{g}}{N_2},
-\end{aligned}
-\end{equation}
-
-and
-
-\begin{equation}
-\begin{aligned}
-\hat{\boldsymbol\mu}_3  =\frac{\sum_{g=1}^G n_{g3}\boldsymbol q_{g}}{N_3}.
-\end{aligned}
-\end{equation}
-
-
-$\hat{\boldsymbol\Sigma}_y$ can be updated as
-
-\begin{equation}
-\begin{aligned}
-\hat{\boldsymbol\Sigma}_1=\frac{\sum_{g=1}^G n_{g1}\boldsymbol q_{g}\boldsymbol q_{g}'}{N_1},
-\end{aligned}
-\end{equation}
-
-\begin{equation}
-\begin{aligned}
-\hat{\boldsymbol\Sigma}_2=\frac{\sum_{g=1}^G n_{g2}(\boldsymbol q_{g}-\hat{\boldsymbol\mu}_2) (\boldsymbol q_{g}-\hat{\boldsymbol\mu}_2)'}{N_2},
-\end{aligned}
-\end{equation}
-
-and
-
-\begin{equation}
-\begin{aligned}
-\hat{\boldsymbol\Sigma}_3=\frac{\sum_{g=1}^G n_{g3}(\boldsymbol q_{g}-\hat{\boldsymbol\mu}_3) (\boldsymbol q_{g}-\hat{\boldsymbol\mu}_3)'}{N_3}.
-\end{aligned}
-\end{equation}
-
-Standardized quadrature points.
-
-\begin{equation}
-\begin{aligned}
-\boldsymbol q_{g}^*=\frac{q_{g}}{\sqrt{\mathrm{diag}\hat{\boldsymbol\Sigma_1}}}.
-\end{aligned}
-\end{equation}
-
-Then we do the following transformation on covariance matrices for three groups.
-
-\begin{equation}
-\begin{aligned}
-\hat{\boldsymbol\Sigma}_1^*=\frac{\sum_{g=1}^G n_{g1}\boldsymbol q_{g}^* \boldsymbol q_{g}^{*'}}{N_1},
-\end{aligned}
-\end{equation}
-
-\begin{equation}
-\begin{aligned}
-\hat{\boldsymbol\Sigma}_2^*=\frac{\sum_{g=1}^G n_{g2}(\boldsymbol q_{g}^*-\hat{\boldsymbol\mu}_2) (\boldsymbol q_{g}^*-\hat{\boldsymbol\mu}_2)'}{N_2},
-\end{aligned}
-\end{equation}
-
-and
-
-\begin{equation}
-\begin{aligned}
-\hat{\boldsymbol\Sigma}_3^*=\frac{\sum_{g=1}^G n_{g3}(\boldsymbol q_{g}^*-\hat{\boldsymbol\mu}_3) (\boldsymbol q_{g}^*-\hat{\boldsymbol\mu}_3)'}{N_3}.
-\end{aligned}
-\end{equation}
-
-
-
-
-the first partial derivative with respect to $a_{jr}$ is
-
-\begin{equation}
-\begin{aligned}
-\frac{\partial \log M}{\partial a_{jr}} =  \sum_{y}^3 \sum_{k=1}^p \sum_{g=1}^{G} (\frac{r_{jgky} q_{gr}}{P_{jky\mid q_{g}}}(\omega_{j,(k-1),y}-\omega_{jky}))
-\end{aligned}
-\end{equation}
-
-
-where $\omega_{jky} = P_{jky\mid q_{g}}^*-(P_{jky\mid q_{g}}^*)^2$.
-
-Similarly, we have the first partial derivative with respect to $d_{jk}$
-
-\begin{equation}
-\begin{aligned}
-\frac{\partial \log M}{\partial d_{jk}} =\sum_y^3 \sum_g^G \omega_{jky} (\frac{r_{jg,(k+1),y}}{P_{j,(k+1),y\mid q_{g}}}-\frac{r_{jgky}}{P_{jky\mid q_{g}}})
-\end{aligned}
-\end{equation}
-
-where $\omega_{jky} = P_{jky\mid q_{g}}^*-(P_{jky\mid q_{g}}^*)^2$,
-
-the first partial derivative with respect to $\gamma_{jry}$, where y=(2,3), is
-
-\begin{equation}
-\begin{aligned}
-\frac{\partial \log M}{\partial \gamma_{jry}} &= \sum_g^G \sum_k^p \frac{r_{jgky} q_{gr} [P_{j(k-1)y\mid q_{g}}^*(1-P_{j(k-1)y \mid q_{g}}^*)-P_{jky\mid q_{g}}^*(1-P_{jky\mid q_{g}}^*)] }{P_{jky\mid q_{g}}}\\
-&= \sum_{k}^p \sum_{g}^{G} (\frac{r_{jgky} q_{gr}}{P_{jky\mid q_{g}}}(\omega_{j(k-1)y}-\omega_{jky}))
-\end{aligned}
-\end{equation}
-
-where $\omega_{jky} = P_{jky\mid q_{g}}^*-(P_{jky\mid q_{g}}^*)^2$,
-
-and the first partial derivative with respect to $\beta_{jky}$, where y=(2,3), is
-
-\begin{equation}
-\begin{aligned}
-\frac{\partial \log M}{\partial \beta_{jky}} = \sum_g^G \omega_{jky} (\frac{r_{jg(k+1)y}}{P_{j(k+1)y\mid q_{g}}}-\frac{r_{jgky}}{P_{jky\mid q_{g}}})
-\end{aligned}
-\end{equation}
-
-where $\omega_{jky} = P_{jky\mid q_{g}}^*-(P_{jky\mid q_{g}}^*)^2$.
-
-
-
-The second partial derivatives in the Hessian matrix are given by
-
-$$\frac{\partial^2 \log M}{\partial a_{jr}^2}= \sum_y^3 \sum_{k=1}^p \sum_{g=1}^{G} -\frac{r_{jgky} q_{gr}^2(P_{j(k-1)y\mid q_{g}}^{*}Q_{j(k-1)y\mid q_{g}}^{*}-P_{jky\mid q_{g}}^{*}Q_{jky\mid q_{g}}^{*})^2}{P_{jky\mid q_{g}}^2}$$
-$$=\sum_y^3\sum_{k=1}^p \sum_{g=1}^{G} -\frac{r_{jgky} q_{gr}^2(\omega_{j(k-1)y}-\omega_{jky})}{P_{jky\mid q_{g}}^2}$$
-
-$$\frac{\partial^2 \log M}{\partial d_{jk}^2}= \sum_y^3\sum_{g=1}^{G} -(\frac{r_{jgky}}{P_{jky\mid q_{g}}^2}+\frac{r_{jg(k+1)y}}{P_{j(k+1)y\mid q_{g}}^2})P_{jky\mid q_{g}}^{*2}(1-P_{jky\mid q_{g}}^{*})^2$$
-
-$$=\sum_y^3 \sum_{g=1}^{G} -(\frac{r_{jgky}}{P_{jky\mid q_{g}}^2}+\frac{r_{jg(k+1)y}}{P_{j(k+1)y\mid q_{g}}^2})\omega_{jky}^2$$
-
-$$\frac{\partial^2 \log M}{\partial d_{jk}\partial d_{j,k+1}}= \sum_y^3\sum_{g=1}^{G} \frac{r_{jg(k+1)y}}{P_{j(k+1)y\mid q_{g}}^2}(P_{jky\mid q_{g}}^{*2}(1-P_{jky\mid q_{g}}^{*})^2)(P_{j(k+1)y\mid q_{g}}^{*2}(1-P_{j(k+1)y\mid q_{g}}^{*})^2)$$
-
-$$= \sum_y^3\sum_{g=1}^{G} \frac{r_{jg(k+1)y}}{P_{j(k+1)y\mid q_{g}}^2}\omega_{jky}^2\omega_{j(k+1)y}^2$$
-
-and
-
-$$\frac{\partial^2 \log M}{\partial a_{jr}\partial d_{jk}}= \sum_y^3\sum_{g=1}^{G} P_{jky}^{*}Q_{jky}^{*}q_{gr}[\frac{r_{jgky}}{P_{jky\mid q_{g}}^2}(P_{j(k-1)y\mid q_{g}}^{*}Q_{j(k-1)y\mid q_{g}}^{*}-P_{jky\mid q_{g}}^{*}Q_{jky\mid q_{g}}^{*}) $$
-$$+\frac{r_{jg(k+1)y}}{P_{j(k+1)y\mid q_{g}}^2}(P_{jky\mid q_{g}}^{*}Q_{jky\mid q_{g}}^{*}-P_{j(k+1)y\mid q_{g}}^{*}Q_{j(k+1)y\mid q_{g}}^{*})]$$
-
-$$= \sum_y^3\sum_{g=1}^{G} \omega_{jky}q_{gr}[\frac{r_{jgky}}{P_{jky\mid q_{g}}^2}(\omega_{j(k-1)y}-\omega_{jky}) +\frac{r_{jg(k+1)y}}{P_{j(k+1)y\mid q_{g}}^2}(\omega_{jky}-\omega_{j(k+1)y})]$$
-where
-
-$$Q_{jky\mid q_{g}}^{*}=1-P_{jky\mid q_{g}}^{*}.$$
-
-$$\frac{\partial^2 \log M}{\partial \gamma_{jry}^2}= \frac{\partial^2 \log M}{\partial \gamma_{jry}\partial a_{jr}}=\sum_{k=1}^p \sum_{g=1}^{G} -\frac{r_{jgky} q_{gr}^2(\omega_{j(k-1)y}-\omega_{jky})}{P_{jky\mid q_{g}}^2}$$
-
-$$\frac{\partial^2 \log M}{\partial \gamma_{jry}\partial d_{jk}}=\frac{\partial^2 \log M}{\partial a_{jr}\partial \beta_{jky}}=\frac{\partial^2 \log M}{\partial \gamma_{jry}\partial \beta_{jky}}= \sum_{g=1}^{G} \omega_{jky}q_{gr}[\frac{r_{jgky}}{P_{jky\mid q_{g}}^2}(\omega_{j(k-1)y}-\omega_{jky}) +\frac{r_{jg(k+1)y}}{P_{j(k+1)y\mid q_{g}}^2}(\omega_{jky}-\omega_{j(k+1)y})]$$
-where
-
-$$Q_{jky\mid q_{g}}^{*}=1-P_{jky\mid q_{g}}^{*}.$$
-
-$$\frac{\partial^2 \log M}{\partial \beta_{jky}^2}= \frac{\partial^2 \log M}{\partial \beta_{jky} \partial d_{jk}}=\sum_{g=1}^{G} -(\frac{r_{jgky}}{P_{jky\mid q_{g}}^2}+\frac{r_{jg(k+1)y}}{P_{j(k+1)y\mid q_{g}}^2})P_{jky\mid q_{g}}^{*2}(1-P_{jky\mid q_{g}}^{*})^2$$
-
-
-The expectation of the second partial derivatives in the Fisher scoring method are given by
-
-$$E(\frac{\partial^2 \log M}{\partial a_{jr}^2})= \sum_y^3 \sum_{k=1}^p \sum_{g=1}^{G} -\frac{n_{gy} q_{gr}^2(\omega_{j(k-1)y}-\omega_{jky})}{P_{jky\mid q_{g}}},$$
-
-$$E(\frac{\partial^2 \log M}{\partial d_{jk}^2})= \sum_y^3\sum_{g=1}^{G} -n_{gy}(\frac{1}{P_{jky\mid q_{g}}}+\frac{1}{P_{j(k+1)y\mid q_{g}}})\omega_{jky}^2,$$
-
-$$E(\frac{\partial^2 \log M}{\partial d_{jk}\partial d_{j,k+1}})= \sum_y^3\sum_{g=1}^{G} \frac{n_{gy}}{P_{j(k+1)y\mid q_{g}}}\omega_{jky}^2\omega_{j(k+1)y}^2,$$
-
-and
-
-$$E(\frac{\partial^2 \log M}{\partial a_{jr}\partial d_{jk}})= \sum_y^3\sum_{g=1}^{G} n_{gy} \omega_{jky}q_{gr}[\frac{1}{P_{jky\mid q_{g}}}(\omega_{j(k-1)y}-\omega_{jky}) +\frac{1}{P_{j(k+1)y\mid q_{g}}}(\omega_{jky}-\omega_{j(k+1)y})].$$
-
-$$E(\frac{\partial^2 \log M}{\partial \gamma_{jry}^2})= E(\frac{\partial^2 \log M}{\partial \gamma_{jry}\partial a_{jr}})= \sum_{k=1}^p \sum_{g=1}^{G} -\frac{n_{gy} q_{gr}^2(\omega_{j(k-1)y}-\omega_{jky})}{P_{jky\mid q_{g}}}$$
-
-$$E(\frac{\partial^2 \log M}{\partial \gamma_{jry}\partial d_{jk}})=E(\frac{\partial^2 \log M}{\partial a_{jr}\partial \beta_{jky}})=E(\frac{\partial^2 \log M}{\partial \gamma_{jry}\partial \beta_{jky}})=\sum_{g=1}^{G} n_{gy} \omega_{jky}q_{gr}[\frac{1}{P_{jky\mid q_{g}}}(\omega_{j(k-1)y}-\omega_{jky}) +\frac{1}{P_{j(k+1)y\mid q_{g}}}(\omega_{jky}-\omega_{j(k+1)y})].$$
-
-
-$$E(\frac{\partial^2 \log M}{\partial \beta_{jky}^2})= E(\frac{\partial^2 \log M}{\partial \beta_{jky} \partial d_{jk}})=\sum_{g=1}^{G} -n_{gy}(\frac{1}{P_{jky\mid q_{g}}}+\frac{1}{P_{j(k+1)y\mid q_{g}}})\omega_{jky}^2.$$
+The equations are same as in section 3.2. The Block co-ordinate gradient descent for solving the group lasso problem as follow.
 
 ### Block co-ordinate gradient descent
 
@@ -1374,19 +1097,9 @@ where $\boldsymbol \epsilon=\boldsymbol\tau-\boldsymbol\tau^{(t-1)}$.
 
 We have $M_{\eta}^{(t-1)}(\boldsymbol \epsilon)\approx S_\eta(\hat{\boldsymbol\tau}^{(t-1)}+\boldsymbol \epsilon)$.
 
-We run a block co-ordinate gradient descent algorithm for each group (item) with all other groups fixed. For item *j*, our algorithm is given by following.
+We run a block co-ordinate gradient descent algorithm for each group (item) with all other groups fixed. For item *j*,
 
-1. Calculate $P_{jky\mid q_{g}}^{*},Q_{jky\mid q_{g}}^{*}$ and $||\boldsymbol\tau_j||_2$.
-
-2. The parameter $a_{jr}$ and $d_{jk}$ can be updated by
-
-$${a}_{jr}^{(t)}=  a_{jr}^{(t-1)}-\frac{\partial_{ a_{jr}}\log M}{\partial^2_{ a_{jr}}\log M}$$
-
-and 
-
-$${d}_{jk}^{(t)}=  d_{jk}^{(t-1)}-\frac{\partial_{ d_{jk}}\log M}{\partial^2_{ d_{jk}}\log M}$$
-
-3. Denote $u$ to be the subgradient of $||\boldsymbol\tau_j^{(t-1)}+\boldsymbol \epsilon_j||_2$. We have
+denote $u$ to be the subgradient of $||\boldsymbol\tau_j^{(t-1)}+\boldsymbol \epsilon_j||_2$. We have
 
 $$u =\begin{cases} \frac{\hat{\boldsymbol\tau}_j^{(t-1)}+\boldsymbol \epsilon_j}{||\hat{\boldsymbol\tau}_j^{(t-1)}+\boldsymbol \epsilon_j||_2}, & \mbox{if } \hat{\boldsymbol\tau}_j^{(t-1)}+\boldsymbol \epsilon_j \neq \boldsymbol 0 \\ \in\lbrace u: ||u||_2\leq1\rbrace, & \mbox{if } \hat{\boldsymbol\tau}_j^{(t-1)}+\boldsymbol \epsilon_j = \boldsymbol 0 \end{cases}.$$
 
@@ -1424,7 +1137,7 @@ $$S_{\eta}(\hat{\boldsymbol\tau}^{(t-1)}_j+\alpha^{(t-1)}\boldsymbol \epsilon^{(
 
 where $\alpha^{(0)}=1$, $\delta=0.5$ and $\sigma=0.1$, and $\Delta^{(t-1)}$ is the improvement in the objective function $S_{\eta}(\cdot)$ when using a linear approximation for the log-likelihood, i.e.
 
-$$\Delta^{(t-1)}=-\boldsymbol \epsilon_j^{(t-1)T}\nabla\log M+\eta||\hat{\boldsymbol\tau}_j^{(t-1)}+\boldsymbol \epsilon_j^{(t-1)}||_2-\eta||\hat{\boldsymbol\tau}_j^{(t-1)}||_2.$$
+$$\Delta^{(t-1)}=-\boldsymbol \epsilon_j^{(t-1)T}\nabla\log M_j+\eta||\hat{\boldsymbol\tau}_j^{(t-1)}+\boldsymbol \epsilon_j^{(t-1)}||_2-\eta||\hat{\boldsymbol\tau}_j^{(t-1)}||_2.$$
 
 
 $$\hat{\boldsymbol\tau}^{(t)}_j=(\hat{\boldsymbol\Gamma}^{(t)}_j,\hat{\boldsymbol\beta}^{(t)}_j)=\hat{\boldsymbol\tau}^{(t-1)}_j+\alpha^{(t-1)}\boldsymbol \epsilon^{(t-1)}_j$$
@@ -1443,7 +1156,33 @@ $${\gamma}_{jr}^{(t)*}=  {\gamma}_{jr}^{(t)}*\sqrt{\mathrm{diag}(\hat{\boldsymbo
 where $\mu_{1r}$ is the *r*th element of the estimated mean vector of the reference group $\hat{\boldsymbol \mu_1}$, and $\mathrm{diag}(\hat{\boldsymbol\Sigma}_{1r})$ is the *r*th element on the diagonal of the estimated covariance matrix of the reference group $\hat{\boldsymbol {\boldsymbol\Sigma}_1}$.
 
 
+We run an EM and block coordinate gradient descent algorithm given by following.
 
+\begin{algorithm}[H]
+\DontPrintSemicolon
+\SetAlgoLined
+\SetKwInOut{Input}{Input}\SetKwInOut{Output}{Output}
+\Input{$\boldsymbol A_0$,$\boldsymbol D_0$,$\boldsymbol \beta_0$,$\boldsymbol \Gamma_0$,$\boldsymbol \mu_0$,$\boldsymbol \Sigma_0$,U,$\eta$,$\varepsilon_1$,$\varepsilon_2$}
+\Output{$\hat{\boldsymbol A}$,$\hat{\boldsymbol D}$,$\hat{\boldsymbol \beta}$,$\boldsymbol \Gamma$,$\hat{\boldsymbol \mu}$,$\hat{\boldsymbol \Sigma}$}
+\BlankLine
+\While{$||\hat{\boldsymbol A}-\boldsymbol A_0||+||\hat{\boldsymbol D}-\boldsymbol D_0||+||\hat{\boldsymbol \Gamma}-\boldsymbol \Gamma_0||+||\hat{\boldsymbol \beta_j}-\boldsymbol \beta_{j0}||>\varepsilon_1$}{
+    Calculate $n_{gy}$ and $r_{jgky}$\;
+    Update $\hat{\boldsymbol \mu}$ and $\hat{\boldsymbol \Sigma}$\;
+    \For {j=1,...m}{
+    \While{$||\hat{\boldsymbol A_j}-\boldsymbol A_{j0}||+||\hat{\boldsymbol D_j}-\boldsymbol D_{j0}||+||\hat{\boldsymbol \Gamma_j}-\boldsymbol \Gamma_{j0}||+|\hat{\boldsymbol \beta_j}-\boldsymbol \beta_{j0}||>\varepsilon_2$}{
+        Update score functions and Hessian matrix by plug $a_{j}^{(t-1)}$,$d_{j}^{(t-1)}$,$\gamma_{j}^{(t-1)}$ and $\beta_{j}^{(t-1)}$ into $P_{jky\mid q_{g}}^{*},Q_{jky\mid q_{g}}^{*}$\;
+        ${a}_{jr}^{(t)}=  a_{jr}^{(t-1)}+\frac{\partial_{ a_{jr}}\log M}{\partial^2_{ a_{jr}}\log M}$\;
+        ${d}_{jk}^{(t)}=  d_{jk}^{(t-1)}-\frac{\partial_{ d_{jk}}\log M}{\partial^2_{ d_{jk}}\log M}$\;
+        $\hat{\boldsymbol\tau}^{(t)}_j=\hat{\boldsymbol\tau}^{(t-1)}_j+\alpha^{(t-1)}\boldsymbol \epsilon^{(t-1)}_j$\;
+    }
+    ${a}_{jr}^{(t)*}=  {a}_{jr}^{(t)}*\sqrt{\mathrm{diag}(\hat{\boldsymbol\Sigma}_{1r})}$\;
+    ${\gamma}_{jr}^{(t)*}=  {\gamma}_{jr}^{(t)}*\sqrt{\mathrm{diag}(\hat{\boldsymbol\Sigma}_{1r})}$\;
+    }
+}
+\caption{Non-uniform DIF Detection via group LASSO}
+\end{algorithm} 
+
+Note that $\mathrm{diag}(\hat{\boldsymbol\Sigma}_{1r})$ is the *r*th element on the diagonal of the estimated covariance matrix of the reference group $\hat{\boldsymbol {\boldsymbol\Sigma}_1}$.
 
 
 
