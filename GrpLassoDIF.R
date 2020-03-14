@@ -101,7 +101,7 @@ Sig0=coef(md0,simplify=T)$cov
 #  starting values at eta=0 for later eta's  #
 #                                            #
 ##############################################
-eta=0
+eta=10
 eps =1e-3
 max.tol=1e-7
 NonUniform=T
@@ -456,43 +456,57 @@ while(max(df.a)>eps | max(df.d)>eps |  max(df.gamma)>eps | max(df.beta)>eps)
       } else {
         add <- qr.solve(FI,minusgrad)
         direction=qr.solve(FI[3:6,3:6],as.vector(eta*gp/l2gp-grad[3:6]))
-        #deltaj= direction%*%minusgrad[3:6]+eta*sqrt(innerProduct(c(gam[,1],bet)+direction,c(gam[,1],bet)+direction))-eta*sqrt(innerProduct(c(gam[,1],bet),c(gam[,1],bet)))
-        #steplength.vec=c(0.5^c(0:24))
-        #linesch=matrix(0,length(steplength.vec),4)
-        #for (ii in 1:length(steplength.vec)){
-        #  linesch[ii,]=direction*steplength.vec[ii]
-        #}
-        #updtedtau.vec=matrix(rep(c(gam[,1],bet),length(steplength.vec)),length(steplength.vec),4,byrow=T)+linesch
-        #likelihood.vec=numeric(length(steplength.vec))
-        #for (ii in 1:length(steplength.vec)){
-        #  sumoverk2=numeric(G)
-        #  for(g in 1:G){
-        #    sumoverk2[g]=rgk2[g,]%*%log(-diff(c(1,1/(1+exp(-(d+rep(a%*%X[g,1]) + rep(updtedtau.vec[ii,1]%*%X[g,1])+ updtedtau.vec[ii,3]))),0)))
-        #  }
-        #  sumoverk3=numeric(G)
-        #  for(g in 1:G){
-        #    sumoverk3[g]=rgk3[g,]%*%log(-diff(c(1,1/(1+exp(-(d+rep(a%*%X[g,1]) + rep(updtedtau.vec[ii,2]%*%X[g,1])+ updtedtau.vec[ii,4]))),0)))
-        #  }
-        #  likelihood.vec[ii]=sum(sumoverk2)+sum(sumoverk3)
-        #}
-        #sumoverk2=numeric(G)
-        #for(g in 1:G){
-        #  sumoverk2[g]=rgk2[g,]%*%log(-diff(c(1,1/(1+exp(-(d+rep(a%*%X[g,1]) + rep(gam[1,1]%*%X[g,1])+ bet[1]))),0)))
-        #}
-        #sumoverk3=numeric(G)
-        #for(g in 1:G){
-        #  sumoverk3[g]=rgk3[g,]%*%log(-diff(c(1,1/(1+exp(-(d+rep(a%*%X[g,1]) + rep(gam[2,1]%*%X[g,1])+ bet[2]))),0)))
-        #}
-        #lh0=sum(sumoverk2)+sum(sumoverk3)
-        #Armijols=numeric(length(steplength.vec))
-        #for (ii in 1:length(steplength.vec)){
-        #  Armijols[ii]=(lh0-likelihood.vec[ii]+eta*sqrt(innerProduct(c(gam[,1],bet)+direction*steplength.vec[ii],c(gam[,1],bet)+direction*steplength.vec[ii]))-eta*sqrt(innerProduct(c(gam[,1],bet),c(gam[,1],bet)))<=steplength.vec[ii]*0.1* deltaj)
-        #}
-        #linesch.alpha=max(steplength.vec[which(Armijols==1)])
+        direction=zapsmall(c(c(gam[,1],bet),direction), digits = 9)[5:8]
+        linesch.alpha=0
+        if (direction[1] !=0 |direction[2] !=0 |direction[3] !=0 |direction[4] !=0 )
+        #Armijo line search
+        {
+          deltaj= direction%*%minusgrad[3:6]+eta*sqrt(innerProduct(c(gam[,1],bet)+direction,c(gam[,1],bet)+direction))-eta*sqrt(innerProduct(c(gam[,1],bet),c(gam[,1],bet)))
+          steplength.vec=c(0.5^c(0:10))
+          linesch=matrix(0,length(steplength.vec),4)
+          for (ii in 1:length(steplength.vec)){
+            linesch[ii,]=direction*steplength.vec[ii]
+          }
+          updtedtau.vec=matrix(rep(c(gam[,1],bet),length(steplength.vec)),length(steplength.vec),4,byrow=T)+linesch
+          likelihood.vec=numeric(length(steplength.vec))
+          for (ii in 1:length(steplength.vec)){
+            sumoverk1=numeric(G)
+            for(g in 1:G){
+              sumoverk1[g]=rgk1[g,]%*%log(-diff(c(1,1/(1+exp(-(d+rep(a%*%X[g,1])))),0)))
+            }
+            sumoverk2=numeric(G)
+            for(g in 1:G){
+              sumoverk2[g]=rgk2[g,]%*%log(-diff(c(1,1/(1+exp(-(d+rep(a%*%X[g,1]) + rep(updtedtau.vec[ii,1]%*%X[g,1])+ updtedtau.vec[ii,3]))),0)))
+            }
+            sumoverk3=numeric(G)
+            for(g in 1:G){
+              sumoverk3[g]=rgk3[g,]%*%log(-diff(c(1,1/(1+exp(-(d+rep(a%*%X[g,1]) + rep(updtedtau.vec[ii,2]%*%X[g,1])+ updtedtau.vec[ii,4]))),0)))
+            }
+            likelihood.vec[ii]=sum(sumoverk1)+sum(sumoverk2)+sum(sumoverk3)
+          }
+          sumoverk2=numeric(G)
+          for(g in 1:G){
+            sumoverk2[g]=rgk2[g,]%*%log(-diff(c(1,1/(1+exp(-(d+rep(a%*%X[g,1]) + rep(gam[1,1]%*%X[g,1])+ bet[1]))),0)))
+          }
+          sumoverk3=numeric(G)
+          for(g in 1:G){
+            sumoverk3[g]=rgk3[g,]%*%log(-diff(c(1,1/(1+exp(-(d+rep(a%*%X[g,1]) + rep(gam[2,1]%*%X[g,1])+ bet[2]))),0)))
+          }
+          lh0=sum(sumoverk1)+sum(sumoverk2)+sum(sumoverk3)
+          Armijols=numeric(length(steplength.vec))
+          for (ii in 1:length(steplength.vec)){
+            Armijols[ii]=(lh0-likelihood.vec[ii]+eta*sqrt(innerProduct(c(gam[,1],bet)+direction*steplength.vec[ii],c(gam[,1],bet)+direction*steplength.vec[ii]))-eta*sqrt(innerProduct(c(gam[,1],bet),c(gam[,1],bet)))<=steplength.vec[ii]*0.1* deltaj)
+          }
+          if (max(Armijols)==0){
+            linesch.alpha=0
+          } else {
+            linesch.alpha=max(steplength.vec[which(Armijols==1)])
+            }
+        }
         d=d+add[1:(m-1)]
         a=a+add[m]
-        #add[3:6]=linesch.alpha*direction
-        add[3:6]=direction
+        add[3:6]=linesch.alpha*direction
+        #add[3:6]=direction
         gam[,1]=gam[,1]+add[3:4]
         bet=bet+add[5:6]
       }
@@ -651,43 +665,52 @@ while(max(df.a)>eps | max(df.d)>eps |  max(df.gamma)>eps | max(df.beta)>eps)
       } else {
         add <- qr.solve(FI,minusgrad)
         direction=qr.solve(FI[3:6,3:6],as.vector(eta*gp/l2gp-grad[3:6]))
-        #deltaj= direction%*%minusgrad[3:6]+eta*sqrt(innerProduct(c(gam[,1],bet)+direction,c(gam[,1],bet)+direction))-eta*sqrt(innerProduct(c(gam[,1],bet),c(gam[,1],bet)))
-        #steplength.vec=c(0.5^c(0:24))
-        #linesch=matrix(0,length(steplength.vec),4)
-        #for (ii in 1:length(steplength.vec)){
-        #  linesch[ii,]=direction*steplength.vec[ii]
-        #}
-        #updtedtau.vec=matrix(rep(c(gam[,1],bet),length(steplength.vec)),length(steplength.vec),4,byrow=T)+linesch
-        #likelihood.vec=numeric(length(steplength.vec))
-        #for (ii in 1:length(steplength.vec)){
-        #  sumoverk2=numeric(G)
-        #  for(g in 1:G){
-        #    sumoverk2[g]=rgk2[g,]%*%log(-diff(c(1,1/(1+exp(-(d+rep(a%*%X[g,1]) + rep(updtedtau.vec[ii,1]%*%X[g,1])+ updtedtau.vec[ii,3]))),0)))
-        #  }
-        #  sumoverk3=numeric(G)
-        #  for(g in 1:G){
-        #    sumoverk3[g]=rgk3[g,]%*%log(-diff(c(1,1/(1+exp(-(d+rep(a%*%X[g,1]) + rep(updtedtau.vec[ii,2]%*%X[g,1])+ updtedtau.vec[ii,4]))),0)))
-        #  }
-        #  likelihood.vec[ii]=sum(sumoverk2)+sum(sumoverk3)
-        #}
-        #sumoverk2=numeric(G)
-        #for(g in 1:G){
-        #  sumoverk2[g]=rgk2[g,]%*%log(-diff(c(1,1/(1+exp(-(d+rep(a%*%X[g,1]) + rep(gam[1,1]%*%X[g,1])+ bet[1]))),0)))
-        #}
-        #sumoverk3=numeric(G)
-        #for(g in 1:G){
-        #  sumoverk3[g]=rgk3[g,]%*%log(-diff(c(1,1/(1+exp(-(d+rep(a%*%X[g,1]) + rep(gam[2,1]%*%X[g,1])+ bet[2]))),0)))
-        #}
-        #lh0=sum(sumoverk2)+sum(sumoverk3)
-        #Armijols=numeric(length(steplength.vec))
-        #for (ii in 1:length(steplength.vec)){
-        #  Armijols[ii]=(lh0-likelihood.vec[ii]+eta*sqrt(innerProduct(c(gam[,1],bet)+direction*steplength.vec[ii],c(gam[,1],bet)+direction*steplength.vec[ii]))-eta*sqrt(innerProduct(c(gam[,1],bet),c(gam[,1],bet)))<=steplength.vec[ii]*0.1* deltaj)
-        #}
-        #linesch.alpha=max(steplength.vec[which(Armijols==1)])
+        direction=zapsmall(c(c(gam[,2],bet),direction), digits = 9)[5:8]
+        linesch.alpha=0
+        if (direction[1] !=0 |direction[2] !=0 |direction[3] !=0 |direction[4] !=0 )
+        {
+          deltaj= direction%*%minusgrad[3:6]+eta*sqrt(innerProduct(c(gam[,2],bet)+direction,c(gam[,2],bet)+direction))-eta*sqrt(innerProduct(c(gam[,2],bet),c(gam[,2],bet)))
+          steplength.vec=c(0.5^c(0:10))
+          linesch=matrix(0,length(steplength.vec),4)
+          for (ii in 1:length(steplength.vec)){
+            linesch[ii,]=direction*steplength.vec[ii]
+          }
+          updtedtau.vec=matrix(rep(c(gam[,2],bet),length(steplength.vec)),length(steplength.vec),4,byrow=T)+linesch
+          likelihood.vec=numeric(length(steplength.vec))
+          for (ii in 1:length(steplength.vec)){
+            sumoverk2=numeric(G)
+            for(g in 1:G){
+              sumoverk2[g]=rgk2[g,]%*%log(-diff(c(1,1/(1+exp(-(d+rep(a%*%X[g,2]) + rep(updtedtau.vec[ii,1]%*%X[g,2])+ updtedtau.vec[ii,3]))),0)))
+            }
+            sumoverk3=numeric(G)
+            for(g in 1:G){
+              sumoverk3[g]=rgk3[g,]%*%log(-diff(c(1,1/(1+exp(-(d+rep(a%*%X[g,2]) + rep(updtedtau.vec[ii,2]%*%X[g,2])+ updtedtau.vec[ii,4]))),0)))
+            }
+            likelihood.vec[ii]=sum(sumoverk2)+sum(sumoverk3)
+          }
+          sumoverk2=numeric(G)
+          for(g in 1:G){
+            sumoverk2[g]=rgk2[g,]%*%log(-diff(c(1,1/(1+exp(-(d+rep(a%*%X[g,2]) + rep(gam[1,2]%*%X[g,2])+ bet[1]))),0)))
+          }
+          sumoverk3=numeric(G)
+          for(g in 1:G){
+            sumoverk3[g]=rgk3[g,]%*%log(-diff(c(1,1/(1+exp(-(d+rep(a%*%X[g,2]) + rep(gam[2,2]%*%X[g,2])+ bet[2]))),0)))
+          }
+          lh0=sum(sumoverk2)+sum(sumoverk3)
+          Armijols=numeric(length(steplength.vec))
+          for (ii in 1:length(steplength.vec)){
+            Armijols[ii]=(lh0-likelihood.vec[ii]+eta*sqrt(innerProduct(c(gam[,2],bet)+direction*steplength.vec[ii],c(gam[,2],bet)+direction*steplength.vec[ii]))-eta*sqrt(innerProduct(c(gam[,2],bet),c(gam[,2],bet)))<=steplength.vec[ii]*0.1* deltaj)
+          }
+          if (max(Armijols)==0){
+            linesch.alpha=0
+          } else {
+            linesch.alpha=max(steplength.vec[which(Armijols==1)])
+          }
+        }
         d=d+add[1:(m-1)]
         a=a+add[m]
-        #add[3:6]=linesch.alpha*direction
-        add[3:6]=direction
+        add[3:6]=linesch.alpha*direction
+        #add[3:6]=direction
         gam[,2]=gam[,2]+add[3:4]
         bet=bet+add[5:6]
       }
@@ -703,7 +726,6 @@ while(max(df.a)>eps | max(df.d)>eps |  max(df.gamma)>eps | max(df.beta)>eps)
     grgamma[,,j] <-gam
     grbeta[j,]=bet
   }
-  
   
   df.d <- abs(dold-grd)
   df.a <- abs(aold-gra)
@@ -1093,43 +1115,57 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=T,gra00=gra00,
         } else {
           add <- qr.solve(FI,minusgrad)
           direction=qr.solve(FI[3:6,3:6],as.vector(eta*gp/l2gp-grad[3:6]))
-          #deltaj= direction%*%minusgrad[3:6]+eta*sqrt(innerProduct(c(gam[,1],bet)+direction,c(gam[,1],bet)+direction))-eta*sqrt(innerProduct(c(gam[,1],bet),c(gam[,1],bet)))
-          #steplength.vec=c(0.5^c(0:24))
-          #linesch=matrix(0,length(steplength.vec),4)
-          #for (ii in 1:length(steplength.vec)){
-          #  linesch[ii,]=direction*steplength.vec[ii]
-          #}
-          #updtedtau.vec=matrix(rep(c(gam[,1],bet),length(steplength.vec)),length(steplength.vec),4,byrow=T)+linesch
-          #likelihood.vec=numeric(length(steplength.vec))
-          #for (ii in 1:length(steplength.vec)){
-          #  sumoverk2=numeric(G)
-          #  for(g in 1:G){
-          #    sumoverk2[g]=rgk2[g,]%*%log(-diff(c(1,1/(1+exp(-(d+rep(a%*%X[g,1]) + rep(updtedtau.vec[ii,1]%*%X[g,1])+ updtedtau.vec[ii,3]))),0)))
-          #  }
-          #  sumoverk3=numeric(G)
-          #  for(g in 1:G){
-          #    sumoverk3[g]=rgk3[g,]%*%log(-diff(c(1,1/(1+exp(-(d+rep(a%*%X[g,1]) + rep(updtedtau.vec[ii,2]%*%X[g,1])+ updtedtau.vec[ii,4]))),0)))
-          #  }
-          #  likelihood.vec[ii]=sum(sumoverk2)+sum(sumoverk3)
-          #}
-          #sumoverk2=numeric(G)
-          #for(g in 1:G){
-          #  sumoverk2[g]=rgk2[g,]%*%log(-diff(c(1,1/(1+exp(-(d+rep(a%*%X[g,1]) + rep(gam[1,1]%*%X[g,1])+ bet[1]))),0)))
-          #}
-          #sumoverk3=numeric(G)
-          #for(g in 1:G){
-          #  sumoverk3[g]=rgk3[g,]%*%log(-diff(c(1,1/(1+exp(-(d+rep(a%*%X[g,1]) + rep(gam[2,1]%*%X[g,1])+ bet[2]))),0)))
-          #}
-          #lh0=sum(sumoverk2)+sum(sumoverk3)
-          #Armijols=numeric(length(steplength.vec))
-          #for (ii in 1:length(steplength.vec)){
-          #  Armijols[ii]=(lh0-likelihood.vec[ii]+eta*sqrt(innerProduct(c(gam[,1],bet)+direction*steplength.vec[ii],c(gam[,1],bet)+direction*steplength.vec[ii]))-eta*sqrt(innerProduct(c(gam[,1],bet),c(gam[,1],bet)))<=steplength.vec[ii]*0.1* deltaj)
-          #}
-          #linesch.alpha=max(steplength.vec[which(Armijols==1)])
+          direction=zapsmall(c(c(gam[,1],bet),direction), digits = 9)[5:8]
+          linesch.alpha=0
+          if (direction[1] !=0 |direction[2] !=0 |direction[3] !=0 |direction[4] !=0 )
+            #Armijo line search
+          {
+            deltaj= direction%*%minusgrad[3:6]+eta*sqrt(innerProduct(c(gam[,1],bet)+direction,c(gam[,1],bet)+direction))-eta*sqrt(innerProduct(c(gam[,1],bet),c(gam[,1],bet)))
+            steplength.vec=c(0.5^c(0:10))
+            linesch=matrix(0,length(steplength.vec),4)
+            for (ii in 1:length(steplength.vec)){
+              linesch[ii,]=direction*steplength.vec[ii]
+            }
+            updtedtau.vec=matrix(rep(c(gam[,1],bet),length(steplength.vec)),length(steplength.vec),4,byrow=T)+linesch
+            likelihood.vec=numeric(length(steplength.vec))
+            for (ii in 1:length(steplength.vec)){
+              sumoverk1=numeric(G)
+              for(g in 1:G){
+                sumoverk1[g]=rgk1[g,]%*%log(-diff(c(1,1/(1+exp(-(d+rep(a%*%X[g,1])))),0)))
+              }
+              sumoverk2=numeric(G)
+              for(g in 1:G){
+                sumoverk2[g]=rgk2[g,]%*%log(-diff(c(1,1/(1+exp(-(d+rep(a%*%X[g,1]) + rep(updtedtau.vec[ii,1]%*%X[g,1])+ updtedtau.vec[ii,3]))),0)))
+              }
+              sumoverk3=numeric(G)
+              for(g in 1:G){
+                sumoverk3[g]=rgk3[g,]%*%log(-diff(c(1,1/(1+exp(-(d+rep(a%*%X[g,1]) + rep(updtedtau.vec[ii,2]%*%X[g,1])+ updtedtau.vec[ii,4]))),0)))
+              }
+              likelihood.vec[ii]=sum(sumoverk1)+sum(sumoverk2)+sum(sumoverk3)
+            }
+            sumoverk2=numeric(G)
+            for(g in 1:G){
+              sumoverk2[g]=rgk2[g,]%*%log(-diff(c(1,1/(1+exp(-(d+rep(a%*%X[g,1]) + rep(gam[1,1]%*%X[g,1])+ bet[1]))),0)))
+            }
+            sumoverk3=numeric(G)
+            for(g in 1:G){
+              sumoverk3[g]=rgk3[g,]%*%log(-diff(c(1,1/(1+exp(-(d+rep(a%*%X[g,1]) + rep(gam[2,1]%*%X[g,1])+ bet[2]))),0)))
+            }
+            lh0=sum(sumoverk1)+sum(sumoverk2)+sum(sumoverk3)
+            Armijols=numeric(length(steplength.vec))
+            for (ii in 1:length(steplength.vec)){
+              Armijols[ii]=(lh0-likelihood.vec[ii]+eta*sqrt(innerProduct(c(gam[,1],bet)+direction*steplength.vec[ii],c(gam[,1],bet)+direction*steplength.vec[ii]))-eta*sqrt(innerProduct(c(gam[,1],bet),c(gam[,1],bet)))<=steplength.vec[ii]*0.1* deltaj)
+            }
+            if (max(Armijols)==0){
+              linesch.alpha=0
+            } else {
+              linesch.alpha=max(steplength.vec[which(Armijols==1)])
+            }
+          }
           d=d+add[1:(m-1)]
           a=a+add[m]
-          #add[3:6]=linesch.alpha*direction
-          add[3:6]=direction
+          add[3:6]=linesch.alpha*direction
+          #add[3:6]=direction
           gam[,1]=gam[,1]+add[3:4]
           bet=bet+add[5:6]
         }
@@ -1288,43 +1324,52 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=T,gra00=gra00,
         } else {
           add <- qr.solve(FI,minusgrad)
           direction=qr.solve(FI[3:6,3:6],as.vector(eta*gp/l2gp-grad[3:6]))
-          #deltaj= direction%*%minusgrad[3:6]+eta*sqrt(innerProduct(c(gam[,1],bet)+direction,c(gam[,1],bet)+direction))-eta*sqrt(innerProduct(c(gam[,1],bet),c(gam[,1],bet)))
-          #steplength.vec=c(0.5^c(0:24))
-          #linesch=matrix(0,length(steplength.vec),4)
-          #for (ii in 1:length(steplength.vec)){
-          #  linesch[ii,]=direction*steplength.vec[ii]
-          #}
-          #updtedtau.vec=matrix(rep(c(gam[,1],bet),length(steplength.vec)),length(steplength.vec),4,byrow=T)+linesch
-          #likelihood.vec=numeric(length(steplength.vec))
-          #for (ii in 1:length(steplength.vec)){
-          #  sumoverk2=numeric(G)
-          #  for(g in 1:G){
-          #    sumoverk2[g]=rgk2[g,]%*%log(-diff(c(1,1/(1+exp(-(d+rep(a%*%X[g,1]) + rep(updtedtau.vec[ii,1]%*%X[g,1])+ updtedtau.vec[ii,3]))),0)))
-          #  }
-          #  sumoverk3=numeric(G)
-          #  for(g in 1:G){
-          #    sumoverk3[g]=rgk3[g,]%*%log(-diff(c(1,1/(1+exp(-(d+rep(a%*%X[g,1]) + rep(updtedtau.vec[ii,2]%*%X[g,1])+ updtedtau.vec[ii,4]))),0)))
-          #  }
-          #  likelihood.vec[ii]=sum(sumoverk2)+sum(sumoverk3)
-          #}
-          #sumoverk2=numeric(G)
-          #for(g in 1:G){
-          #  sumoverk2[g]=rgk2[g,]%*%log(-diff(c(1,1/(1+exp(-(d+rep(a%*%X[g,1]) + rep(gam[1,1]%*%X[g,1])+ bet[1]))),0)))
-          #}
-          #sumoverk3=numeric(G)
-          #for(g in 1:G){
-          #  sumoverk3[g]=rgk3[g,]%*%log(-diff(c(1,1/(1+exp(-(d+rep(a%*%X[g,1]) + rep(gam[2,1]%*%X[g,1])+ bet[2]))),0)))
-          #}
-          #lh0=sum(sumoverk2)+sum(sumoverk3)
-          #Armijols=numeric(length(steplength.vec))
-          #for (ii in 1:length(steplength.vec)){
-          #  Armijols[ii]=(lh0-likelihood.vec[ii]+eta*sqrt(innerProduct(c(gam[,1],bet)+direction*steplength.vec[ii],c(gam[,1],bet)+direction*steplength.vec[ii]))-eta*sqrt(innerProduct(c(gam[,1],bet),c(gam[,1],bet)))<=steplength.vec[ii]*0.1* deltaj)
-          #}
-          #linesch.alpha=max(steplength.vec[which(Armijols==1)])
+          direction=zapsmall(c(c(gam[,2],bet),direction), digits = 9)[5:8]
+          linesch.alpha=0
+          if (direction[1] !=0 |direction[2] !=0 |direction[3] !=0 |direction[4] !=0 )
+          {
+            deltaj= direction%*%minusgrad[3:6]+eta*sqrt(innerProduct(c(gam[,2],bet)+direction,c(gam[,2],bet)+direction))-eta*sqrt(innerProduct(c(gam[,2],bet),c(gam[,2],bet)))
+            steplength.vec=c(0.5^c(0:10))
+            linesch=matrix(0,length(steplength.vec),4)
+            for (ii in 1:length(steplength.vec)){
+              linesch[ii,]=direction*steplength.vec[ii]
+            }
+            updtedtau.vec=matrix(rep(c(gam[,2],bet),length(steplength.vec)),length(steplength.vec),4,byrow=T)+linesch
+            likelihood.vec=numeric(length(steplength.vec))
+            for (ii in 1:length(steplength.vec)){
+              sumoverk2=numeric(G)
+              for(g in 1:G){
+                sumoverk2[g]=rgk2[g,]%*%log(-diff(c(1,1/(1+exp(-(d+rep(a%*%X[g,2]) + rep(updtedtau.vec[ii,1]%*%X[g,2])+ updtedtau.vec[ii,3]))),0)))
+              }
+              sumoverk3=numeric(G)
+              for(g in 1:G){
+                sumoverk3[g]=rgk3[g,]%*%log(-diff(c(1,1/(1+exp(-(d+rep(a%*%X[g,2]) + rep(updtedtau.vec[ii,2]%*%X[g,2])+ updtedtau.vec[ii,4]))),0)))
+              }
+              likelihood.vec[ii]=sum(sumoverk2)+sum(sumoverk3)
+            }
+            sumoverk2=numeric(G)
+            for(g in 1:G){
+              sumoverk2[g]=rgk2[g,]%*%log(-diff(c(1,1/(1+exp(-(d+rep(a%*%X[g,2]) + rep(gam[1,2]%*%X[g,2])+ bet[1]))),0)))
+            }
+            sumoverk3=numeric(G)
+            for(g in 1:G){
+              sumoverk3[g]=rgk3[g,]%*%log(-diff(c(1,1/(1+exp(-(d+rep(a%*%X[g,2]) + rep(gam[2,2]%*%X[g,2])+ bet[2]))),0)))
+            }
+            lh0=sum(sumoverk2)+sum(sumoverk3)
+            Armijols=numeric(length(steplength.vec))
+            for (ii in 1:length(steplength.vec)){
+              Armijols[ii]=(lh0-likelihood.vec[ii]+eta*sqrt(innerProduct(c(gam[,2],bet)+direction*steplength.vec[ii],c(gam[,2],bet)+direction*steplength.vec[ii]))-eta*sqrt(innerProduct(c(gam[,2],bet),c(gam[,2],bet)))<=steplength.vec[ii]*0.1* deltaj)
+            }
+            if (max(Armijols)==0){
+              linesch.alpha=0
+            } else {
+              linesch.alpha=max(steplength.vec[which(Armijols==1)])
+            }
+          }
           d=d+add[1:(m-1)]
           a=a+add[m]
-          #add[3:6]=linesch.alpha*direction
-          add[3:6]=direction
+          add[3:6]=linesch.alpha*direction
+          #add[3:6]=direction
           gam[,2]=gam[,2]+add[3:4]
           bet=bet+add[5:6]
         }
