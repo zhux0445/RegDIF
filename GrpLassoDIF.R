@@ -17,6 +17,14 @@ A13[4]=A11[4]- 1
 A13[5]=A11[5]- 1
 A23[12]=A21[12]- 1
 A23[13]=A21[13]- 1
+A12[4]=A11[4]- 0.3
+A12[5]=A11[5]- 0.3
+A22[12]=A21[12]- 0.3
+A22[13]=A21[13]- 0.3
+A13[4]=A11[4]- 0.6
+A13[5]=A11[5]- 0.6
+A23[12]=A21[12]- 0.6
+A23[13]=A21[13]- 0.6
 D12[4]=D11[4]+ 0.5
 D12[5]=D11[5]+ 0.5
 D13[4]=D11[4]+ 1
@@ -32,7 +40,7 @@ Dmat1=cbind(D11)
 Dmat2=cbind(D12)
 Dmat3=cbind(D13)
 
-N1=N2=N3=1000
+N1=N2=N3=500
 Group=c(rep('G1', N1), rep('G2', N2), rep('G3', N3))
 N=N1+N2+N3
 
@@ -456,11 +464,11 @@ while(max(df.a)>eps | max(df.d)>eps |  max(df.gamma)>eps | max(df.beta)>eps)
       } else {
         add <- qr.solve(FI,minusgrad)
         direction=qr.solve(FI[3:6,3:6],as.vector(eta*gp/l2gp-grad[3:6]))
-        for (ii in 1:4){
-          if (abs(direction[ii])<1e-3){
-            direction[ii]=0
-          }
-        }
+        #for (ii in 1:4){
+        #  if (abs(direction[ii])<1e-3){
+        #    direction[ii]=0
+        #  }
+        #}
         #direction=zapsmall(c(c(gam[,1],bet),direction), digits = 9)[5:8]
         linesch.alpha=1
         #if (direction[1] !=0 |direction[2] !=0 |direction[3] !=0 |direction[4] !=0 )
@@ -669,11 +677,11 @@ while(max(df.a)>eps | max(df.d)>eps |  max(df.gamma)>eps | max(df.beta)>eps)
       } else {
         add <- qr.solve(FI,minusgrad)
         direction=qr.solve(FI[3:6,3:6],as.vector(eta*gp/l2gp-grad[3:6]))
-        for (ii in 1:4){
-          if (abs(direction[ii])<1e-3){
-            direction[ii]=0
-          }
-        }
+        #for (ii in 1:4){
+        #  if (abs(direction[ii])<1e-3){
+        #    direction[ii]=0
+        #  }
+        #}
         #direction=zapsmall(c(c(gam[,2],bet),direction), digits = 9)[5:8]
         linesch.alpha=1
         #if (direction[1] !=0 |direction[2] !=0 |direction[3] !=0 |direction[4] !=0 )
@@ -1125,11 +1133,11 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=T,gra00=gra00,
           add <- qr.solve(FI,minusgrad)
           direction=qr.solve(FI[3:6,3:6],as.vector(eta*gp/l2gp-grad[3:6]))
           #direction=zapsmall(c(c(gam[,1],bet),direction), digits = 9)[5:8]
-          for (ii in 1:4){
-            if (abs(direction[ii])<1e-5){
-              direction[ii]=0
-            }
-          }
+          #for (ii in 1:4){
+          #  if (abs(direction[ii])<1e-5){
+          #    direction[ii]=0
+          #  }
+          #}
           linesch.alpha=1
           #if (direction[1] !=0 |direction[2] !=0 |direction[3] !=0 |direction[4] !=0 )
             #Armijo line search
@@ -1339,11 +1347,11 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=T,gra00=gra00,
           add <- qr.solve(FI,minusgrad)
           direction=qr.solve(FI[3:6,3:6],as.vector(eta*gp/l2gp-grad[3:6]))
           #direction=zapsmall(c(c(gam[,2],bet),direction), digits = 9)[5:8]
-          for (ii in 1:4){
-            if (abs(direction[ii])<1e-5){
-              direction[ii]=0
-            }
-          }
+          #for (ii in 1:4){
+          #  if (abs(direction[ii])<1e-5){
+          #    direction[ii]=0
+          #  }
+          #}
           linesch.alpha=1
           #if (direction[1] !=0 |direction[2] !=0 |direction[3] !=0 |direction[4] !=0 )
           #{
@@ -1611,9 +1619,10 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=T,gra00=gra00,
 
 r=2
 m=2
-eta.vec=seq(30,42,3)
+eta.vec=seq(30,60,3)
 bics=rep(0,length(eta.vec))
 Gammas=array(double(2*J*m*length(eta.vec)),dim = c(2,2,J,length(eta.vec)))
+Betas
 biass=matrix(0,length(eta.vec),3)
 RMSEs=matrix(0,length(eta.vec),3)
 for (k in 1:length(eta.vec))
@@ -1622,10 +1631,11 @@ for (k in 1:length(eta.vec))
   sim=ipest1(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=T,gra00=gra00,grd00=grd00,grgamma00=grgamma00,grbeta00=grbeta00,mu100=mu100,mu200=mu200,mu300=mu300,Sig100=Sig100,Sig200=Sig200,Sig300=Sig300)
   bics[k]=sim$bic
   Gammas[,,,k]=sim$Gamma
+  Betas
   biass[k,]=sim$bias
   RMSEs[k,]=sim$RMSE
 }
-
+ 
 
 kk=which.min(bics)
 eta.vec[kk]
