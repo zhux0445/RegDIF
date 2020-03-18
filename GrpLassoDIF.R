@@ -1622,7 +1622,7 @@ m=2
 eta.vec=seq(30,60,3)
 bics=rep(0,length(eta.vec))
 Gammas=array(double(2*J*m*length(eta.vec)),dim = c(2,2,J,length(eta.vec)))
-Betas
+Betas=array(double(J*m*length(eta.vec)),dim = c(J,m,length(eta.vec)))
 biass=matrix(0,length(eta.vec),3)
 RMSEs=matrix(0,length(eta.vec),3)
 for (k in 1:length(eta.vec))
@@ -1631,7 +1631,7 @@ for (k in 1:length(eta.vec))
   sim=ipest1(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=T,gra00=gra00,grd00=grd00,grgamma00=grgamma00,grbeta00=grbeta00,mu100=mu100,mu200=mu200,mu300=mu300,Sig100=Sig100,Sig200=Sig200,Sig300=Sig300)
   bics[k]=sim$bic
   Gammas[,,,k]=sim$Gamma
-  Betas
+  Betas[k,]=sim$Beta
   biass[k,]=sim$bias
   RMSEs[k,]=sim$RMSE
 }
@@ -1640,13 +1640,22 @@ for (k in 1:length(eta.vec))
 kk=which.min(bics)
 eta.vec[kk]
 Gammas[,,,kk]
+Betas[,,kk]
 biass[kk,]
 RMSEs[kk,]
 
-
-
-
-
+kk.13=numeric(50)
+eta.13=numeric(50)
+Gammas.13=array(double(2*J*m*50),dim = c(2,2,J,50))
+Betas.13=array(double(J*m*50),dim = c(J,m,50))
+biass.13=matrix(0,50,3)
+RMSEs.13=matrix(0,50,3)
+kk.13[1]=kk
+eta.13[1]=eta.vec[kk]
+Gammas.13[,,,1]=Gammas[,,,kk]
+Betas.13[,,1]=Betas[,,k]
+biass.13[1,]=biass[kk,]
+RMSEs.13[1,]=RMSEs[kk,]
 
 #########################################
 #####                               #####
