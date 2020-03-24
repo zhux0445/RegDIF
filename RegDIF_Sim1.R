@@ -84,9 +84,9 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=F,gra00=gra00,
     dold <- grd
     #gammaold=grgamma
     betaold=grbeta
-    A1=dmvnorm(X,Mu.gp1,matrix(Sig.gp1,2,2))
-    A2=dmvnorm(X,Mu.gp2,matrix(Sig.gp2,2,2))
-    A3=dmvnorm(X,Mu.gp3,matrix(Sig.gp3,2,2))
+    A1=dmvnorm(X,Mu.gp1,Sig.gp1)
+    A2=dmvnorm(X,Mu.gp2,Sig.gp2)
+    A3=dmvnorm(X,Mu.gp3,Sig.gp3)
     
     #calculation of n_g 
     axmat=gra%*%t(X) #a%*%X
@@ -621,9 +621,9 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=F,gra00=gra00,
     dold <- grd
     #gammaold=grgamma
     betaold=grbeta
-    A1=dmvnorm(X,Mu.gp1,matrix(Sig.gp1,2,2))
-    A2=dmvnorm(X,Mu.gp2,matrix(Sig.gp2,2,2))
-    A3=dmvnorm(X,Mu.gp3,matrix(Sig.gp3,2,2))
+    A1=dmvnorm(X,Mu.gp1,Sig.gp1)
+    A2=dmvnorm(X,Mu.gp2,Sig.gp2)
+    A3=dmvnorm(X,Mu.gp3,Sig.gp3)
     
     #calculation of n_g 
     axmat=gra%*%t(X) #a%*%X
@@ -1388,9 +1388,9 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=F,gra00=gra00,
   gh=t(matrix(rep(X1,r),r,length(X1),byrow = T))
   idx <- as.matrix(expand.grid(rep(list(1:length(X1)),r)))
   X <- matrix(gh[idx,1],nrow(idx),r)
-  A1=dmvnorm(X,Mu.gp1,matrix(Sig.gp1,2,2))
-  A2=dmvnorm(X,Mu.gp2,matrix(Sig.gp2,2,2))
-  A3=dmvnorm(X,Mu.gp3,matrix(Sig.gp3,2,2))
+  A1=dmvnorm(X,Mu.gp1,Sig.gp1)
+  A2=dmvnorm(X,Mu.gp2,Sig.gp2)
+  A3=dmvnorm(X,Mu.gp3,Sig.gp3)
   
   
   ##compute ng
@@ -1577,7 +1577,7 @@ grd0=matrix(coef(md0,simplify=T)$items[,3],J,1)
 grbeta0=matrix(0,J,2)
 grbeta0[,1]=matrix(c(0,0,rep(0.7,18)),J,1)
 grbeta0[,2]=matrix(c(0,0,rep(1.4,18)),J,1)
-Sig0=coef(md0,simplify=T)$cov
+Sig0=matrix(c(1,coef(md0,simplify=T)$cov[2,1],coef(md0,simplify=T)$cov[2,1],1),2,2)
 
 
 eta=0
@@ -1622,9 +1622,9 @@ while(max(df.a)>eps | max(df.d)>eps | max(df.beta)>eps) # max(df.Mu)>eps | max(d
   dold <- grd
   #gammaold=grgamma
   betaold=grbeta
-  A1=dmvnorm(X,Mu.gp1,matrix(Sig.gp1,2,2))
-  A2=dmvnorm(X,Mu.gp2,matrix(Sig.gp2,2,2))
-  A3=dmvnorm(X,Mu.gp3,matrix(Sig.gp3,2,2))
+  A1=dmvnorm(X,Mu.gp1,Sig.gp1)
+  A2=dmvnorm(X,Mu.gp2,Sig.gp2)
+  A3=dmvnorm(X,Mu.gp3,Sig.gp3)
   
   #calculation of n_g 
   axmat=gra%*%t(X) #a%*%X
