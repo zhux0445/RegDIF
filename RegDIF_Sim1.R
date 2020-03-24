@@ -2150,8 +2150,8 @@ Sig300=Sig.gp3
 
 
 
-for (reps in 1:50){
-  resp=responses[((reps-1)*N+1):((reps-1)*N+N1+N2+N3),]
+for (rep in 1:reps){
+  resp=responses[((rep-1)*N+1):((rep-1)*N+N1+N2+N3),]
   r=2
   m=2
   eta.vec=seq(21,48,3)
@@ -2175,12 +2175,12 @@ for (reps in 1:50){
   
   kk=which.min(bics)
   
-  eta.1[reps]=eta.vec[kk]
+  eta.1[rep]=eta.vec[kk]
   #Gammas.13[,,,i]=Gammas[,,,kk]
-  ADmat.1[,,reps]=ADmat[,,kk]
-  Betas.1[,,reps]=Betas[,,kk]
-  biass.1[reps,]=biass[kk,]
-  RMSEs.1[reps,]=RMSEs[kk,]
+  ADmat.1[,,rep]=ADmat[,,kk]
+  Betas.1[,,rep]=Betas[,,kk]
+  biass.1[rep,]=biass[kk,]
+  RMSEs.1[rep,]=RMSEs[kk,]
 }
 
 sparsity.t=array(double(J*2*reps),dim = c(J,2,reps))
