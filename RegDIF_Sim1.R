@@ -15,7 +15,7 @@ soft=function(s, tau) {
 # Dataset #4 (2 Non-uniform DIF items per scale)
 J=20
 
-N1=N2=N3=500
+N1=N2=N3=500 
 Group=c(rep('G1', N1), rep('G2', N2), rep('G3', N3))
 N=N1+N2+N3
 
@@ -2183,3 +2183,13 @@ for (reps in 1:50){
   RMSEs.1[reps,]=RMSEs[kk,]
 }
 
+sparsity.t=array(double(J*2*reps),dim = c(J,2,reps))
+for (aa in 1:J){
+  for (rr in 1:2){
+    for (cc in 1:reps)
+    sparsity.t[aa,rr,cc]=ifelse(Betas.1[aa,rr,cc]==0,0,1)
+  }
+}
+
+power = c(sum(sparsity.t[c(4,5,12,13),1,])/(4*reps),sum(sparsity.t[c(4,5,12,13),2,])/(4*reps))
+typeI = c(sum(sparsity.t[-c(4,5,12,13),1,])/(14*reps),sum(sparsity.t[-c(4,5,12,13),2,])/(14*reps))
