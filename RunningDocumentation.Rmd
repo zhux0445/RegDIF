@@ -650,9 +650,9 @@ $\emph Test$ $\emph Length.$ $m=20.$ Simple structure. 10 items per dimension.
 
 $\emph Proportion \ of \ DIF.$ 4 items with DIF. 2 DIF items per dimension.
 
-$\emph Magnitude \ of \ DIF.$ The first focal group with larger difficulty parameters (+0.5) on the 4 DIF items. 
+$\emph Magnitude \ of \ DIF.$ The first focal group with less difficulty (+0.5) on the 4 DIF items. 
 
-The second focal group with much larger difficulty parameters (+1) on the 4 DIF items.
+The second focal group with much smaller difficulty parameters (+1) on the 4 DIF items.
 
 $\emph Generated \ parameters.$
 
@@ -958,7 +958,7 @@ $\emph Proportion \ of \ DIF.$ 4 items with DIF. 2 DIF items per dimension.
 
 $\emph Magnitude \ of \ DIF.$ The first focal group with smaller discrimination parameter (-0.5) on the 4 DIF items. 
 
-The second focal group with much smaller difficulty parameter (-1) on the 4 DIF items.
+The second focal group with much smaller discrimination parameter (-1) on the 4 DIF items.
 
 $\emph Generated \ parameters.$
 
@@ -1315,9 +1315,9 @@ $\emph Test$ $\emph Length.$ $m=20.$ Simple structure. 10 items per dimension.
 
 $\emph Proportion \ of \ DIF.$ 4 items with DIF. 2 DIF items per dimension.
 
-$\emph Magnitude \ of \ DIF.$ The first focal group with smaller discrimination parameter (-0.5) and larger difficulty parameters (+0.5) on the 4 DIF items. 
+$\emph Magnitude \ of \ DIF.$ The first focal group with smaller discrimination parameter (-0.5) and smaller difficulty parameters (+0.5) on the 4 DIF items. 
 
-The second focal group with much smaller difficulty parameter (-1) and much larger difficulty parameters (+1) on the 4 DIF items.
+The second focal group with much smaller discrimination parameter (-1) and much smaller difficulty parameters (+1) on the 4 DIF items.
 
 $\emph Generated \ parameters.$
 

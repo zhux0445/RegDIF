@@ -7,6 +7,7 @@ library(dmutate)
 setwd('/Users/ruoyizhu/Documents/GitHub/RegDIF_SimData')
 params=read.csv("Para1.csv",row.names = 1)
 responses=read.csv("RESP1.csv",row.names = 1)
+resss=as.matrix(responses)[2,]
 
 soft=function(s, tau) {
   val=sign(s)*max(c(abs(s) - tau,0))
@@ -133,7 +134,7 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=F,gra00=gra00,
       {
         for (g in 1:G)
         {
-          pij[j,g] <- p1[j,respi[j],g]
+          pij[j,g] <- p1[j,as.numeric(respi[j]),g]
           
         }
       }
@@ -147,7 +148,7 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=F,gra00=gra00,
       {
         for (g in 1:G)
         {
-          pij[j,g] <- p2[j,respi[j],g]
+          pij[j,g] <- p2[j,as.numeric(respi[j]),g]
           
         }
       }
@@ -161,7 +162,7 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=F,gra00=gra00,
       {
         for (g in 1:G)
         {
-          pij[j,g] <- p3[j,respi[j],g]
+          pij[j,g] <- p3[j,as.numeric(respi[j]),g]
           
         }
       }
@@ -670,7 +671,7 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=F,gra00=gra00,
       {
         for (g in 1:G)
         {
-          pij[j,g] <- p1[j,respi[j],g]
+          pij[j,g] <- p1[j,as.numeric(respi[j]),g]
           
         }
       }
@@ -684,7 +685,7 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=F,gra00=gra00,
       {
         for (g in 1:G)
         {
-          pij[j,g] <- p2[j,respi[j],g]
+          pij[j,g] <- p2[j,as.numeric(respi[j]),g]
           
         }
       }
@@ -698,7 +699,7 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=F,gra00=gra00,
       {
         for (g in 1:G)
         {
-          pij[j,g] <- p3[j,respi[j],g]
+          pij[j,g] <- p3[j,as.numeric(respi[j]),g]
           
         }
       }
@@ -1440,7 +1441,7 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=F,gra00=gra00,
     {
       for (g in 1:G)
       {
-        pij[j,g] <- p1[j,respi[j],g]
+        pij[j,g] <- p1[j,as.numeric(respi[j]),g]
         
       }
     }
@@ -1454,7 +1455,7 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=F,gra00=gra00,
     {
       for (g in 1:G)
       {
-        pij[j,g] <- p2[j,respi[j],g]
+        pij[j,g] <- p2[j,as.numeric(respi[j]),g]
         
       }
     }
@@ -1468,7 +1469,7 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=F,gra00=gra00,
     {
       for (g in 1:G)
       {
-        pij[j,g] <- p3[j,respi[j],g]
+        pij[j,g] <- p3[j,as.numeric(respi[j]),g]
         
       }
     }
@@ -1542,11 +1543,14 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=F,gra00=gra00,
 ###                                                ###
 ###                                                ###
 ######################################################
-eta.1=numeric(50)
+
+reps=50
+eta.1=numeric(reps)
 #Gammas.1=array(double(2*J*m*50),dim = c(2,2,J,50))
-Betas.1=array(double(J*m*50),dim = c(J,m,50))
-biass.1=matrix(0,50,3)
-RMSEs.1=matrix(0,50,3)
+Betas.1=array(double(J*2*reps),dim = c(J,2,reps))
+ADmat.1=array(double(J*3*reps),dim = c(J,3,reps)) #a has 2 columns, d has 1 column
+biass.1=matrix(0,reps,3)
+RMSEs.1=matrix(0,reps,3)
 
 
 #biass.lrt.1=matrix(0,50,3)
@@ -1559,6 +1563,11 @@ RMSEs.1=matrix(0,50,3)
 #Power.wald.1=numeric(50)
 #TypeI.wald.1=numeric(50)
 
+###################################################################
+#  starting values at eta=0 for later eta's for all replications  #
+###################################################################
+
+resp=responses[1:1500,]
 s <- 'F1 = 1,3-11
           F2 = 2,12-20
           COV = F1*F2'
@@ -1572,11 +1581,6 @@ grbeta0[,2]=matrix(c(0,0,rep(1.4,18)),J,1)
 Sig0=coef(md0,simplify=T)$cov
 
 
-
-##############################################
-#  starting values at eta=0 for later eta's  #
-##############################################
-resp=responses[1:1500,]
 eta=0
 eps =1e-3
 max.tol=1e-7
@@ -1668,7 +1672,7 @@ while(max(df.a)>eps | max(df.d)>eps | max(df.beta)>eps) # max(df.Mu)>eps | max(d
     {
       for (g in 1:G)
       {
-        pij[j,g] <- p1[j,respi[j],g]
+        pij[j,g] <- p1[j,as.numeric(respi[j]),g]
         
       }
     }
@@ -1682,7 +1686,7 @@ while(max(df.a)>eps | max(df.d)>eps | max(df.beta)>eps) # max(df.Mu)>eps | max(d
     {
       for (g in 1:G)
       {
-        pij[j,g] <- p2[j,respi[j],g]
+        pij[j,g] <- p2[j,as.numeric(respi[j]),g]
         
       }
     }
@@ -1696,7 +1700,7 @@ while(max(df.a)>eps | max(df.d)>eps | max(df.beta)>eps) # max(df.Mu)>eps | max(d
     {
       for (g in 1:G)
       {
-        pij[j,g] <- p3[j,respi[j],g]
+        pij[j,g] <- p3[j,as.numeric(respi[j]),g]
         
       }
     }
@@ -2150,10 +2154,11 @@ for (reps in 1:50){
   resp=responses[((reps-1)*N+1):((reps-1)*N+N1+N2+N3),]
   r=2
   m=2
-  eta.vec=seq(21,51,3)
+  eta.vec=seq(21,48,3)
   bics=rep(0,length(eta.vec))
-  Gammas=array(double(2*J*m*length(eta.vec)),dim = c(2,2,J,length(eta.vec)))
-  Betas=array(double(J*m*length(eta.vec)),dim = c(J,m,length(eta.vec)))
+  ADmat=array(double(J*3*length(eta.vec)),dim = c(J,3,length(eta.vec)))
+  #Gammas=array(double(2*J*m*length(eta.vec)),dim = c(2,2,J,length(eta.vec)))
+  Betas=array(double(J*2*length(eta.vec)),dim = c(J,2,length(eta.vec)))
   biass=matrix(0,length(eta.vec),3)
   RMSEs=matrix(0,length(eta.vec),3)
   for (k in 1:length(eta.vec))
@@ -2162,20 +2167,17 @@ for (reps in 1:50){
     sim=ipest1(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=F,gra00=gra00,grd00=grd00,grbeta00=grbeta00,mu100=mu100,mu200=mu200,mu300=mu300,Sig100=Sig100,Sig200=Sig200,Sig300=Sig300)
     bics[k]=sim$bic
     #Gammas[,,,k]=sim$Gamma
+    ADmat=sim$est
     Betas[,,k]=sim$Beta
     biass[k,]=sim$bias
     RMSEs[k,]=sim$RMSE
   }
   
   kk=which.min(bics)
-  eta.vec[kk]
-  #Gammas[,,,kk]
-  Betas[,,kk]
-  biass[kk,]
-  RMSEs[kk,]
   
   eta.1[reps]=eta.vec[kk]
   #Gammas.13[,,,i]=Gammas[,,,kk]
+  ADmat.1[,,reps]=ADmat[,,kk]
   Betas.1[,,reps]=Betas[,,kk]
   biass.1[reps,]=biass[kk,]
   RMSEs.1[reps,]=RMSEs[kk,]
