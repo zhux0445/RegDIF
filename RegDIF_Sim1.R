@@ -1562,6 +1562,7 @@ RMSEs.1=matrix(0,reps,3)
 #Power.wald.1=numeric(50)
 #TypeI.wald.1=numeric(50)
 
+
 ###################################################################
 #  starting values at eta=0 for later eta's for all replications  #
 ###################################################################
@@ -2148,6 +2149,45 @@ Sig200=Sig.gp2
 Sig300=Sig.gp3
 
 
+########################################################
+#    starting values by multiplegroup for all etas     #
+########################################################
+resp=responses[1:1500,]
+s <- 'F1 = 1,3-11
+          F2 = 2,12-20
+          COV = F1*F2'
+Group=c(rep('G1', N1), rep('G2', N2), rep('G3', N3))
+md00 <- multipleGroup(resp, s, group = Group,SE=TRUE,invariance=c('free_means', 'free_var','slopes',colnames(resp)[1:r]))
+gra00=coef(md00,simplify=T)$G1$items[,c("a1","a2")]
+grd00=matrix(coef(md00,simplify=T)$G1$items[,c("d")],20,1)
+#grgamma00=array(0,dim=c(r,r,J))
+#grgamma00[1,1,3:11]=(coef(md00,simplify=T)$G2$items[,c("a1","a2")]-coef(md00,simplify=T)$G1$items[,c("a1","a2")])[3:11,1]
+#grgamma00[2,1,3:11]=(coef(md00,simplify=T)$G3$items[,c("a1","a2")]-coef(md00,simplify=T)$G1$items[,c("a1","a2")])[3:11,1]
+#grgamma00[1,2,12:20]=(coef(md00,simplify=T)$G2$items[,c("a1","a2")]-coef(md00,simplify=T)$G1$items[,c("a1","a2")])[12:20,2]
+#grgamma00[2,2,12:20]=(coef(md00,simplify=T)$G3$items[,c("a1","a2")]-coef(md00,simplify=T)$G1$items[,c("a1","a2")])[12:20,2]
+grbeta00=matrix(0,J,2)
+grbeta00[,1]=matrix(coef(md00,simplify=T)$G2$items[,c("d")],20,1)-matrix(coef(md00,simplify=T)$G1$items[,c("d")],20,1)
+grbeta00[,2]=matrix(coef(md00,simplify=T)$G3$items[,c("d")],20,1)-matrix(coef(md00,simplify=T)$G1$items[,c("d")],20,1)
+Sig100=coef(md00,simplify=T)$G1$cov
+Sig200=coef(md00,simplify=T)$G2$cov
+Sig300=coef(md00,simplify=T)$G3$cov
+Mu100=coef(md00,simplify=T)$G1$means
+Mu200=coef(md00,simplify=T)$G2$means
+Mu300=coef(md00,simplify=T)$G3$means
+
+#write.csv(cbind(gra00,grd00,grbeta00),file = "StartingValues1.csv")
+StartVals=params=read.csv("StartingValues1.csv",row.names = 1)
+gra00=StartVals[,1:2]
+grd00=matrix(StartVals[,3],20,1)
+grbeta00=StartVals[,4:5]
+Mu100=c(0,0)
+Mu200=c(-0.08327321,0.15499812)
+Mu300=c(0.05295601,0.08627475)
+Sig100=matrix(c(1,0.8512375,0.8512375,1),2,2)
+Sig200=matrix(c(0.9879547,0.9057388,0.9057388,0.9879547),2,2)
+Sig300=matrix(c(0.8639551,0.8207746,0.8207746,0.8639551),2,2)
+
+
 
 for (rep in 1:reps){
   resp=responses[((rep-1)*N+1):((rep-1)*N+N1+N2+N3),]
@@ -2185,6 +2225,9 @@ for (rep in 1:reps){
   print(Betas.1[,,rep])
   print(biass.1[rep,])
   print(RMSEs.1[rep,])
+  write.csv(eta.1[rep],file = paste("eta",rep))
+  write.csv(ADmat.1[,,rep],file = paste("ADmat",rep))
+  write.csv(Betas.1[,,rep],file = paste("Beta",rep))
 }
 
 sparsity.t=array(double(J*2*reps),dim = c(J,2,reps))
@@ -2197,6 +2240,10 @@ for (aa in 1:J){
 
 power = c(sum(sparsity.t[c(4,5,12,13),1,])/(4*reps),sum(sparsity.t[c(4,5,12,13),2,])/(4*reps))
 typeI = c(sum(sparsity.t[-c(4,5,12,13),1,])/(14*reps),sum(sparsity.t[-c(4,5,12,13),2,])/(14*reps))
+
+
+
+
 
 
 

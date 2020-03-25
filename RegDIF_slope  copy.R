@@ -9,19 +9,19 @@ A22=A23=A21
 D11=rnorm(J,0,1)
 D12=D13=D11
 # focal group has smaller slopes and more extreme intercepts
-A12[4]=A11[4]- 0.5
-A12[5]=A11[5]- 0.5
-A22[12]=A21[12]- 0.5
-A22[13]=A21[13]- 0.5
+A12[4]=A11[4]- 0.3
+A12[5]=A11[5]- 0.3
+A22[12]=A21[12]- 0.3
+A22[13]=A21[13]- 0.3
 #only the second focal group has DIF
 A12[4]=A11[4]
 A12[5]=A11[5]
 A22[12]=A21[12]
 A22[13]=A21[13]
-A13[4]=A11[4]- 1
-A13[5]=A11[5]- 1
-A23[12]=A21[12]- 1
-A23[13]=A21[13]- 1
+A13[4]=A11[4]- 0.6
+A13[5]=A11[5]- 0.6
+A23[12]=A21[12]- 0.6
+A23[13]=A21[13]- 0.6
 Amat1=cbind(A11,A21)
 Amat2=cbind(A12,A22)
 Amat3=cbind(A13,A23)
@@ -1992,7 +1992,7 @@ for (i in 5:18){
   md.noncons0 <- multipleGroup(resp, s, group = Group,SE=TRUE,invariance=c('free_means', 'free_var','intercepts',colnames(resp)[1:r]))
   mirt.p.mat1[(i),1:9]=DIF(md.noncons0, which.par = c('a1'), p.adjust = 'fdr',scheme = 'add',items2test=c(3:11))[,"adj_pvals"]
   mirt.p.mat1[(i),10:18]=DIF(md.noncons0, which.par = c('a2'), p.adjust = 'fdr',scheme = 'add',items2test=c(12:20))[,"adj_pvals"]
-  md.refit0 <- multipleGroup(resp, s, group = Group,SE=TRUE,invariance=c('free_means', 'free_var','intercepts',colnames(resp)[-(which(mirt.p.mat[i,]<0.05)+2)]))
+  md.refit0 <- multipleGroup(resp, s, group = Group,SE=TRUE,invariance=c('free_means', 'free_var','intercepts',colnames(resp)[-(which(mirt.p.mat1[i,]<0.05)+2)]))
   bias.mirt1[i,1:2]=colSums(coef(md.refit0,simplify=T)$G1$items[,1:r]-Amat1)/10
   rmse.mirt1[i,1:2]=sqrt(colSums((coef(md.refit0,simplify=T)$G1$items[,1:r]-Amat1)^2)/10)
   bias.mirt1[i,3]=colMeans(coef(md.refit0,simplify=T)$G1$items[,3]-Dmat1)
