@@ -2180,6 +2180,11 @@ for (rep in 1:reps){
   Betas.1[,,rep]=Betas[,,kk]
   biass.1[rep,]=biass[kk,]
   RMSEs.1[rep,]=RMSEs[kk,]
+  print(ADmat.1[,,rep])
+  print(eta.1[rep])
+  print(Betas.1[,,rep])
+  print(biass.1[rep,])
+  print(RMSEs.1[rep,])
 }
 
 sparsity.t=array(double(J*2*reps),dim = c(J,2,reps))
@@ -2192,3 +2197,7 @@ for (aa in 1:J){
 
 power = c(sum(sparsity.t[c(4,5,12,13),1,])/(4*reps),sum(sparsity.t[c(4,5,12,13),2,])/(4*reps))
 typeI = c(sum(sparsity.t[-c(4,5,12,13),1,])/(14*reps),sum(sparsity.t[-c(4,5,12,13),2,])/(14*reps))
+
+
+
+
