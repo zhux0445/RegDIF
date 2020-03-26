@@ -1556,7 +1556,7 @@ StartVals=read.csv("StartingValues2.csv",row.names = 1)
 gra00=as.matrix(StartVals[,1:2])
 rownames(gra00) <- c()
 grd00=matrix(StartVals[,3],20,1)
-grbeta00=StartVals[,4:5]
+grbeta00=as.matrix(StartVals[,4:5])
 rownames(grbeta00) <- c()
 colnames(grbeta00) <- c()
 
