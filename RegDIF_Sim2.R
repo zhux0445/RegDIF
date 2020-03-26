@@ -1552,12 +1552,13 @@ biass.2=matrix(0,reps,3)
 RMSEs.2=matrix(0,reps,3)
 
 #write.csv(cbind(gra00,grd00,grbeta00),file = "StartingValues2.csv")
-StartVals=read.csv("StartingValues1.csv",row.names = 1)
+StartVals=read.csv("StartingValues2.csv",row.names = 1)
 gra00=as.matrix(StartVals[,1:2])
 rownames(gra00) <- c()
 grd00=matrix(StartVals[,3],20,1)
 grbeta00=StartVals[,4:5]
 rownames(grbeta00) <- c()
+colnames(grbeta00) <- c()
 
 # 6 dif per dim
 mu100=c(0,0)
