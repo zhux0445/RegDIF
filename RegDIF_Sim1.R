@@ -2175,17 +2175,29 @@ Mu100=coef(md00,simplify=T)$G1$means
 Mu200=coef(md00,simplify=T)$G2$means
 Mu300=coef(md00,simplify=T)$G3$means
 
-#write.csv(cbind(gra00,grd00,grbeta00),file = "StartingValues1.csv")
-StartVals=params=read.csv("StartingValues1.csv",row.names = 1)
-gra00=StartVals[,1:2]
+#write.csv(cbind(gra00,grd00,grbeta00),file = "StartingValues2.csv")
+StartVals=read.csv("StartingValues1.csv",row.names = 1)
+gra00=as.matrix(StartVals[,1:2])
+rownames(gra00) <- c()
 grd00=matrix(StartVals[,3],20,1)
 grbeta00=StartVals[,4:5]
-Mu100=c(0,0)
-Mu200=c(-0.08327321,0.15499812)
-Mu300=c(0.05295601,0.08627475)
+rownames(grbeta00) <- c()
+
+# 6 dif per dim
+mu100=c(0,0)
+mu200=c(-0.08327321,0.15499812)
+mu300=c(0.05295601,0.08627475)
 Sig100=matrix(c(1,0.8512375,0.8512375,1),2,2)
-Sig200=matrix(c(0.9879547,0.9057388,0.9057388,0.9879547),2,2)
-Sig300=matrix(c(0.8639551,0.8207746,0.8207746,0.8639551),2,2)
+Sig200=matrix(c(0.9879547,0.9057388,0.9057388,1.0868444),2,2)
+Sig300=matrix(c(0.8639551,0.8207746,0.8207746,1.0167214),2,2)
+
+# 6 dif per dim
+mu100=c(0,0)
+mu200=c(-0.08529306,0.14288081)
+mu300=c(0.04908935,0.08511124)
+Sig100=matrix(c(1,0.8512153,0.8512153,1),2,2)
+Sig200=matrix(c(0.9392050,0.8958364,0.8958364,1.1288337),2,2)
+Sig300=matrix(c(0.8331097,0.8098532,0.8098532,1.0092335),2,2)
 
 
 
