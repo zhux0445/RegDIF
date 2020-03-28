@@ -1494,7 +1494,7 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=F,gra00=gra00,
 ###                                                ###
 ######################################################
 
-reps=30
+reps=50
 eta.1=numeric(reps)
 #Gammas.1=array(double(2*J*m*50),dim = c(2,2,J,50))
 Betas.1=array(double(J*2*reps),dim = c(J,2,reps))
@@ -1550,6 +1550,14 @@ gh=t(matrix(rep(X1,r),r,length(X1),byrow = T))
 idx <- as.matrix(expand.grid(rep(list(1:length(X1)),r)))
 X <- matrix(gh[idx,1],nrow(idx),r)
 ng <-  numeric(G)
+Xijk=array(double(N*J*m),dim = c(N,J,m))
+for(i in 1:N){
+  for(j in 1:J){
+    for(k in 1:m){
+      Xijk[i,j,k]=ifelse(resp[i,j]==k,1,0)
+    }
+  }
+}
 #gra = azero
 #grd = matrix(0,J,1)
 gra=gra0
@@ -1567,7 +1575,7 @@ P<-P1<-P2<-P3<- matrix(double(G*m),G,m)
 df.a <- df.d  <- df.gamma <- df.beta <- df.Sig <- 1
 
 iter <- 0
-
+ptm <- proc.time()
 while(max(df.a)>eps | max(df.d)>eps | max(df.beta)>eps) # max(df.Mu)>eps | max(df.Sig)>eps |
 {
   aold <- gra
@@ -1701,11 +1709,8 @@ while(max(df.a)>eps | max(df.d)>eps | max(df.beta)>eps) # max(df.Mu)>eps | max(d
     d <- grd[j,]
     a <- gra[j,j]
     rLiA <- array(double(N*G*m),dim = c(N,G,m))
-    for(i in 1:N){
-      for (g in 1:G){
-        rLiA[i,g,resp[i,j]] <- LiA[i,g]
-      }
-      rLiA[i,,] <- rLiA[i,,]/Pi[i]
+    for(k in 1:m){
+      rLiA[,,k]=Xijk[,j,k]*LiA/Pi
     }
     rgk <- apply(rLiA,c(2,3),sum)
     
@@ -1778,11 +1783,8 @@ while(max(df.a)>eps | max(df.d)>eps | max(df.beta)>eps) # max(df.Mu)>eps | max(d
     #gam=grgamma[,,j]
     bet=grbeta[j,]
     rLiA <- array(double(N*G*m),dim = c(N,G,m))
-    for(i in 1:N){
-      for (g in 1:G){
-        rLiA[i,g,resp[i,j]] <- LiA[i,g]
-      }
-      rLiA[i,,] <- rLiA[i,,]/Pi[i]
+    for(k in 1:m){
+      rLiA[,,k]=Xijk[,j,k]*LiA/Pi
     }
     rgk <- apply(rLiA,c(2,3),sum)
     rgk1 <- apply(rLiA[1:N1,,],c(2,3),sum)
@@ -1926,11 +1928,8 @@ while(max(df.a)>eps | max(df.d)>eps | max(df.beta)>eps) # max(df.Mu)>eps | max(d
     #gam=grgamma[,,j]
     bet=grbeta[j,]
     rLiA <- array(double(N*G*m),dim = c(N,G,m))
-    for(i in 1:N){
-      for (g in 1:G){
-        rLiA[i,g,resp[i,j]] <- LiA[i,g]
-      }
-      rLiA[i,,] <- rLiA[i,,]/Pi[i]
+    for(k in 1:m){
+      rLiA[,,k]=Xijk[,j,k]*LiA/Pi
     }
     rgk <- apply(rLiA,c(2,3),sum)
     rgk1 <- apply(rLiA[1:N1,,],c(2,3),sum)
@@ -2072,6 +2071,7 @@ while(max(df.a)>eps | max(df.d)>eps | max(df.beta)>eps) # max(df.Mu)>eps | max(d
   df.beta <- abs(betaold-grbeta)
   iter <- iter+1
 }
+print(proc.time() - ptm)
 
 
 gra00=gra
@@ -2111,7 +2111,7 @@ Mu100=coef(md00,simplify=T)$G1$means
 Mu200=coef(md00,simplify=T)$G2$means
 Mu300=coef(md00,simplify=T)$G3$means
 
-#write.csv(cbind(gra00,grd00,grbeta00),file = "StartingValues2.csv")
+#write.csv(cbind(gra00,grd00,grbeta00),file = "StartingValues1.csv")
 StartVals=read.csv("StartingValues1.csv",row.names = 1)
 gra00=as.matrix(StartVals[,1:2])
 rownames(gra00) <- c()
@@ -2122,11 +2122,11 @@ colnames(grbeta00) <- c()
 
 # 2 dif per dim
 mu100=c(0,0)
-mu200=c(-0.08327321,0.15499812)
-mu300=c(0.05295601,0.08627475)
+mu200=c(-0.1022104,0.1383983)
+mu300=c(0.03270989,0.06991659)
 Sig100=matrix(c(1,0.8512375,0.8512375,1),2,2)
-Sig200=matrix(c(0.9879547,0.9057388,0.9057388,1.0868444),2,2)
-Sig300=matrix(c(0.8639551,0.8207746,0.8207746,1.0167214),2,2)
+Sig200=matrix(c(0.9879547,0.8953391,0.8953391,1.0742965),2,2)
+Sig300=matrix(c(0.8755486,0.8193335,0.8193335,1.0120597),2,2)
 
 for (rep in 1:reps){
   resp=responses[((rep-1)*N+1):((rep-1)*N+N1+N2+N3),]
@@ -2148,7 +2148,7 @@ for (rep in 1:reps){
     print(proc.time() - ptm)
     bics[k]=sim$bic
     #Gammas[,,,k]=sim$Gamma
-    ADmat=sim$est
+    ADmat[,,k]=sim$est
     Betas[,,k]=sim$Beta
     biass[k,]=sim$bias
     RMSEs[k,]=sim$RMSE
