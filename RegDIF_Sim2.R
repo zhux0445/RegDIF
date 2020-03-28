@@ -60,6 +60,14 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=F,gra00=gra00,
   idx <- as.matrix(expand.grid(rep(list(1:length(X1)),r)))
   X <- matrix(gh[idx,1],nrow(idx),r)
   ng <-  numeric(G)
+  Xijk=array(double(N*J*m),dim = c(N,J,m))
+  for(i in 1:N){
+    for(j in 1:J){
+      for(k in 1:m){
+        Xijk[i,j,k]=ifelse(resp[i,j]==k,1,0)
+      }
+    }
+  }
   #gra = azero
   #grd = matrix(0,J,1)
   gra=gra00
@@ -211,11 +219,8 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=F,gra00=gra00,
       d <- grd[j,]
       a <- gra[j,j]
       rLiA <- array(double(N*G*m),dim = c(N,G,m))
-      for(i in 1:N){
-        for (g in 1:G){
-          rLiA[i,g,resp[i,j]] <- LiA[i,g]
-        }
-        rLiA[i,,] <- rLiA[i,,]/Pi[i]
+      for(k in 1:m){
+        rLiA[,,k]=Xijk[,j,k]*LiA/Pi
       }
       rgk <- apply(rLiA,c(2,3),sum)
       
@@ -288,11 +293,8 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=F,gra00=gra00,
       #gam=grgamma[,,j]
       bet=grbeta[j,]
       rLiA <- array(double(N*G*m),dim = c(N,G,m))
-      for(i in 1:N){
-        for (g in 1:G){
-          rLiA[i,g,resp[i,j]] <- LiA[i,g]
-        }
-        rLiA[i,,] <- rLiA[i,,]/Pi[i]
+      for(k in 1:m){
+        rLiA[,,k]=Xijk[,j,k]*LiA/Pi
       }
       rgk <- apply(rLiA,c(2,3),sum)
       rgk1 <- apply(rLiA[1:N1,,],c(2,3),sum)
@@ -436,11 +438,8 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=F,gra00=gra00,
       #gam=grgamma[,,j]
       bet=grbeta[j,]
       rLiA <- array(double(N*G*m),dim = c(N,G,m))
-      for(i in 1:N){
-        for (g in 1:G){
-          rLiA[i,g,resp[i,j]] <- LiA[i,g]
-        }
-        rLiA[i,,] <- rLiA[i,,]/Pi[i]
+      for(k in 1:m){
+        rLiA[,,k]=Xijk[,j,k]*LiA/Pi
       }
       rgk <- apply(rLiA,c(2,3),sum)
       rgk1 <- apply(rLiA[1:N1,,],c(2,3),sum)
@@ -733,11 +732,8 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=F,gra00=gra00,
       d <- grd[j,]
       a <- gra[j,j]
       rLiA <- array(double(N*G*m),dim = c(N,G,m))
-      for(i in 1:N){
-        for (g in 1:G){
-          rLiA[i,g,resp[i,j]] <- LiA[i,g]
-        }
-        rLiA[i,,] <- rLiA[i,,]/Pi[i]
+      for(k in 1:m){
+        rLiA[,,k]=Xijk[,j,k]*LiA/Pi
       }
       rgk <- apply(rLiA,c(2,3),sum)
       
@@ -815,11 +811,8 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=F,gra00=gra00,
         l0normbetaj=l0normbetaj+(sparsity[j,l]!=0)
       }
       rLiA <- array(double(N*G*m),dim = c(N,G,m))
-      for(i in 1:N){
-        for (g in 1:G){
-          rLiA[i,g,resp[i,j]] <- LiA[i,g]
-        }
-        rLiA[i,,] <- rLiA[i,,]/Pi[i]
+      for(k in 1:m){
+        rLiA[,,k]=Xijk[,j,k]*LiA/Pi
       }
       rgk <- apply(rLiA,c(2,3),sum)
       rgk1 <- apply(rLiA[1:N1,,],c(2,3),sum)
@@ -1082,11 +1075,8 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=F,gra00=gra00,
         l0normbetaj=l0normbetaj+(sparsity[j,l]!=0)
       }
       rLiA <- array(double(N*G*m),dim = c(N,G,m))
-      for(i in 1:N){
-        for (g in 1:G){
-          rLiA[i,g,resp[i,j]] <- LiA[i,g]
-        }
-        rLiA[i,,] <- rLiA[i,,]/Pi[i]
+      for(k in 1:m){
+        rLiA[,,k]=Xijk[,j,k]*LiA/Pi
       }
       rgk <- apply(rLiA,c(2,3),sum)
       rgk1 <- apply(rLiA[1:N1,,],c(2,3),sum)
@@ -1446,11 +1436,8 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=F,gra00=gra00,
     beta3=grbeta3[j,]
     
     rLiA <- array(double(N*G*m),dim = c(N,G,m))
-    for(i in 1:N){
-      for (g in 1:G){
-        rLiA[i,g,resp[i,j]] <- LiA[i,g]
-      }
-      rLiA[i,,] <- rLiA[i,,]/Pi[i]
+    for(k in 1:m){
+      rLiA[,,k]=Xijk[,j,k]*LiA/Pi
     }
     rgk <- apply(rLiA,c(2,3),sum)
     rgk1 <- apply(rLiA[1:N1,,],c(2,3),sum)
