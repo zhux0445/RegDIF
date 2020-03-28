@@ -1559,9 +1559,9 @@ for (rep in 1:reps){
   print(Betas.2[,,rep])
   print(biass.2[rep,])
   print(RMSEs.2[rep,])
-  write.csv(eta.2[rep],file = paste("eta2",rep))
-  write.csv(ADmat.2[,,rep],file = paste("ADmat2",rep))
-  write.csv(Betas.2[,,rep],file = paste("Beta2",rep))
+  write.csv(eta.2[rep],file = paste("eta2_",rep))
+  write.csv(ADmat.2[,,rep],file = paste("ADmat2_",rep))
+  write.csv(Betas.2[,,rep],file = paste("Beta2_",rep))
 }
 
 sparsity.t=array(double(J*2*reps),dim = c(J,2,reps))
