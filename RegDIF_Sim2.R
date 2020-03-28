@@ -123,50 +123,35 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=F,gra00=gra00,
       pstar3[,,g] = 1/(1+exp(-(grd+axmat[,g]+ygamat3[,g]+grbeta3)))
       p3[,,g] = t(-diff(rbind(rep(1,J),t(pstar3[,,g]),rep(0,J))))
     }
-    pij=matrix(double(J*G),J,G)
+    pij=array(double(J*G*N1),dim=c(J,G,N1))
     LiA=matrix(double(N*G),N,G)
     
-    for (i in 1:N1)
+    for (j in 1:J)
     {
-      respi=resp[i,]
-      for (j in 1:J)
+      for (g in 1:G)
       {
-        for (g in 1:G)
-        {
-          pij[j,g] <- p1[j,as.numeric(respi[j]),g]
-          
-        }
+        pij[j,g,]=p1[j,(resp[1:N1,j]),g]
       }
-      LiA[i,]=apply(pij, 2, prod)*A1
     }
+    LiA[1:N1,]=t(apply(pij, c(2,3), prod)*A1)
     
-    for (i in (N1+1):(N1+N2))
+    for (j in 1:J)
     {
-      respi=resp[i,]
-      for (j in 1:J)
+      for (g in 1:G)
       {
-        for (g in 1:G)
-        {
-          pij[j,g] <- p2[j,as.numeric(respi[j]),g]
-          
-        }
+        pij[j,g,]=p2[j,(resp[(N1+1):(N1+N2),j]),g]
       }
-      LiA[i,]=apply(pij, 2, prod)*A2
     }
+    LiA[(N1+1):(N1+N2),]=t(apply(pij, c(2,3), prod)*A2)
     
-    for (i in (N1+N2+1):(N1+N2+N3))
+    for (j in 1:J)
     {
-      respi=resp[i,]
-      for (j in 1:J)
+      for (g in 1:G)
       {
-        for (g in 1:G)
-        {
-          pij[j,g] <- p3[j,as.numeric(respi[j]),g]
-          
-        }
+        pij[j,g,]=p3[j,(resp[(N1+N2+1):(N1+N2+N3),j]),g]
       }
-      LiA[i,]=apply(pij, 2, prod)*A3
     }
+    LiA[(N1+N2+1):(N1+N2+N3),]=t(apply(pij, c(2,3), prod)*A3)
     
     Pi = apply(LiA,1,sum)
     ng = apply(LiA/Pi,2,sum)
@@ -660,50 +645,35 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=F,gra00=gra00,
       pstar3[,,g] = 1/(1+exp(-(grd+axmat[,g]+ygamat3[,g]+grbeta3)))
       p3[,,g] = t(-diff(rbind(rep(1,J),t(pstar3[,,g]),rep(0,J))))
     }
-    pij=matrix(double(J*G),J,G)
+    pij=array(double(J*G*N1),dim=c(J,G,N1))
     LiA=matrix(double(N*G),N,G)
     
-    for (i in 1:N1)
+    for (j in 1:J)
     {
-      respi=resp[i,]
-      for (j in 1:J)
+      for (g in 1:G)
       {
-        for (g in 1:G)
-        {
-          pij[j,g] <- p1[j,as.numeric(respi[j]),g]
-          
-        }
+        pij[j,g,]=p1[j,(resp[1:N1,j]),g]
       }
-      LiA[i,]=apply(pij, 2, prod)*A1
     }
+    LiA[1:N1,]=t(apply(pij, c(2,3), prod)*A1)
     
-    for (i in (N1+1):(N1+N2))
+    for (j in 1:J)
     {
-      respi=resp[i,]
-      for (j in 1:J)
+      for (g in 1:G)
       {
-        for (g in 1:G)
-        {
-          pij[j,g] <- p2[j,as.numeric(respi[j]),g]
-          
-        }
+        pij[j,g,]=p2[j,(resp[(N1+1):(N1+N2),j]),g]
       }
-      LiA[i,]=apply(pij, 2, prod)*A2
     }
+    LiA[(N1+1):(N1+N2),]=t(apply(pij, c(2,3), prod)*A2)
     
-    for (i in (N1+N2+1):(N1+N2+N3))
+    for (j in 1:J)
     {
-      respi=resp[i,]
-      for (j in 1:J)
+      for (g in 1:G)
       {
-        for (g in 1:G)
-        {
-          pij[j,g] <- p3[j,as.numeric(respi[j]),g]
-          
-        }
+        pij[j,g,]=p3[j,(resp[(N1+N2+1):(N1+N2+N3),j]),g]
       }
-      LiA[i,]=apply(pij, 2, prod)*A3
     }
+    LiA[(N1+N2+1):(N1+N2+N3),]=t(apply(pij, c(2,3), prod)*A3)
     
     Pi = apply(LiA,1,sum)
     ng = apply(LiA/Pi,2,sum)
@@ -1430,50 +1400,35 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=F,gra00=gra00,
     pstar3[,,g] = 1/(1+exp(-(grd+axmat[,g]+grbeta3)))#+ygamat3[,g]
     p3[,,g] = t(-diff(rbind(rep(1,J),t(pstar3[,,g]),rep(0,J))))
   }
-  pij=matrix(double(J*G),J,G)
+  pij=array(double(J*G*N1),dim=c(J,G,N1))
   LiA=matrix(double(N*G),N,G)
   
-  for (i in 1:N1)
+  for (j in 1:J)
   {
-    respi=resp[i,]
-    for (j in 1:J)
+    for (g in 1:G)
     {
-      for (g in 1:G)
-      {
-        pij[j,g] <- p1[j,as.numeric(respi[j]),g]
-        
-      }
+      pij[j,g,]=p1[j,(resp[1:N1,j]),g]
     }
-    LiA[i,]=apply(pij, 2, prod)*A1
   }
+  LiA[1:N1,]=t(apply(pij, c(2,3), prod)*A1)
   
-  for (i in (N1+1):(N1+N2))
+  for (j in 1:J)
   {
-    respi=resp[i,]
-    for (j in 1:J)
+    for (g in 1:G)
     {
-      for (g in 1:G)
-      {
-        pij[j,g] <- p2[j,as.numeric(respi[j]),g]
-        
-      }
+      pij[j,g,]=p2[j,(resp[(N1+1):(N1+N2),j]),g]
     }
-    LiA[i,]=apply(pij, 2, prod)*A2
   }
+  LiA[(N1+1):(N1+N2),]=t(apply(pij, c(2,3), prod)*A2)
   
-  for (i in (N1+N2+1):(N1+N2+N3))
+  for (j in 1:J)
   {
-    respi=resp[i,]
-    for (j in 1:J)
+    for (g in 1:G)
     {
-      for (g in 1:G)
-      {
-        pij[j,g] <- p3[j,as.numeric(respi[j]),g]
-        
-      }
+      pij[j,g,]=p3[j,(resp[(N1+N2+1):(N1+N2+N3),j]),g]
     }
-    LiA[i,]=apply(pij, 2, prod)*A3
   }
+  LiA[(N1+N2+1):(N1+N2+N3),]=t(apply(pij, c(2,3), prod)*A3)
   
   Pi = apply(LiA,1,sum)
   ng = apply(LiA/Pi,2,sum)
