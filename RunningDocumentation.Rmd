@@ -7,6 +7,10 @@ header-includes:
   - \usepackage[ruled,vlined,linesnumbered]{algorithm2e}
 ---
 
+# Methods for DIF Detesction
+
+
+
 # Multidimensional 2PL Model with DIF
 
 Assume a total sample size $N=N_1+N_2+N_3$, where $N_1$, $N_2$ and $N_3$ are sample sizes of the reference group and two focal groups, respectively. Also assume a test length *m* and trait dimension *q*. For a dichotomously scored item *j*, the probability that examinee *i* with ability vector $\boldsymbol\theta_i$ giving a correct response to item *j* is

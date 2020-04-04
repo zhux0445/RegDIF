@@ -6,9 +6,7 @@ library(graphics)
 library(dmutate)
 setwd('/Users/ruoyizhu/Documents/GitHub/RegDIF_SimData')
 params=read.csv("Para1.csv",row.names = 1)
-responses=read.csv("RESP1.csv",row.names = 1)
-beta.1=read.csv("Beta1_ 1.dms",row.names = 1)
-ad.1=read.csv("ADmat1_ 1.dms",row.names = 1)
+responses=read.csv("RESP3.csv",row.names = 1)
 
 soft=function(s, tau) {
   val=sign(s)*max(c(abs(s) - tau,0))
@@ -16,7 +14,7 @@ soft=function(s, tau) {
 # Dataset #4 (2 Non-uniform DIF items per scale)
 J=20
 
-N1=N2=N3=500 
+N1=N2=N3=1000 
 Group=c(rep('G1', N1), rep('G2', N2), rep('G3', N3))
 N=N1+N2+N3
 
@@ -1480,7 +1478,7 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=F,gra00=gra00,
   }
   
   BIC=-2*sum(lh)+l0norm*log(N)
-
+  
   Bias=c(colSums(gra-Amat1)/10,colMeans(grd-Dmat1))
   RMSE=c(sqrt(colSums((gra-Amat1)^2)/10),sqrt(colMeans((grd-Dmat1)^2)))
   
@@ -1497,12 +1495,12 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=F,gra00=gra00,
 ######################################################
 
 reps=50
-eta.1=numeric(reps)
+eta.3=numeric(reps)
 #Gammas.1=array(double(2*J*m*50),dim = c(2,2,J,50))
-Betas.1=array(double(J*2*reps),dim = c(J,2,reps))
-ADmat.1=array(double(J*3*reps),dim = c(J,3,reps)) #a has 2 columns, d has 1 column
-biass.1=matrix(0,reps,3)
-RMSEs.1=matrix(0,reps,3)
+Betas.3=array(double(J*2*reps),dim = c(J,2,reps))
+ADmat.3=array(double(J*3*reps),dim = c(J,3,reps)) #a has 2 columns, d has 1 column
+biass.3=matrix(0,reps,3)
+RMSEs.3=matrix(0,reps,3)
 
 
 #biass.lrt.1=matrix(0,50,3)
@@ -1520,7 +1518,7 @@ RMSEs.1=matrix(0,reps,3)
 #  starting values at eta=0 for later eta's for all replications  #
 ###################################################################
 
-resp=responses[1:1500,]
+resp=responses[1:3000,]
 s <- 'F1 = 1,3-11
           F2 = 2,12-20
           COV = F1*F2'
@@ -2113,8 +2111,8 @@ Mu100=coef(md00,simplify=T)$G1$means
 Mu200=coef(md00,simplify=T)$G2$means
 Mu300=coef(md00,simplify=T)$G3$means
 
-#write.csv(cbind(gra00,grd00,grbeta00),file = "StartingValues2.csv")
-StartVals=read.csv("StartingValues1.csv",row.names = 1)
+#write.csv(cbind(gra00,grd00,grbeta00),file = "StartingValues3.csv")
+StartVals=read.csv("StartingValues3.csv",row.names = 1)
 gra00=as.matrix(StartVals[,1:2])
 rownames(gra00) <- c()
 grd00=matrix(StartVals[,3],20,1)
@@ -2124,11 +2122,11 @@ colnames(grbeta00) <- c()
 
 # 2 dif per dim
 mu100=c(0,0)
-mu200=c(-0.1022104,0.1383983)
-mu300=c(0.03270989,0.06991659)
+mu200=c(0.01,-0.04)
+mu300=c(-0.04,-0.06)
 Sig100=matrix(c(1,0.8512375,0.8512375,1),2,2)
-Sig200=matrix(c(0.9879547,0.8953391,0.8953391,1.0742965),2,2)
-Sig300=matrix(c(0.8755486,0.8193335,0.8193335,1.0120597),2,2)
+Sig200=matrix(c(0.9879547,0.853391,0.853391,0.95),2,2)
+Sig300=matrix(c(1.06,0.86,0.86,1),2,2)
 
 for (rep in 1:reps){
   resp=responses[((rep-1)*N+1):((rep-1)*N+N1+N2+N3),]
@@ -2157,27 +2155,27 @@ for (rep in 1:reps){
   }
   
   kk=which.min(bics)
-  eta.1[rep]=eta.vec[kk]
+  eta.3[rep]=eta.vec[kk]
   #Gammas.13[,,,i]=Gammas[,,,kk]
-  ADmat.1[,,rep]=ADmat[,,kk]
-  Betas.1[,,rep]=Betas[,,kk]
-  biass.1[rep,]=biass[kk,]
-  RMSEs.1[rep,]=RMSEs[kk,]
-  print(ADmat.1[,,rep])
-  print(eta.1[rep])
-  print(Betas.1[,,rep])
-  print(biass.1[rep,])
-  print(RMSEs.1[rep,])
-  write.csv(eta.1[rep],file = paste("eta1_",rep))
-  write.csv(ADmat.1[,,rep],file = paste("ADmat1_",rep))
-  write.csv(Betas.1[,,rep],file = paste("Beta1_",rep))
+  ADmat.3[,,rep]=ADmat[,,kk]
+  Betas.3[,,rep]=Betas[,,kk]
+  biass.3[rep,]=biass[kk,]
+  RMSEs.3[rep,]=RMSEs[kk,]
+  print(ADmat.3[,,rep])
+  print(eta.3[rep])
+  print(Betas.3[,,rep])
+  print(biass.3[rep,])
+  print(RMSEs.3[rep,])
+  write.csv(eta.3[rep],file = paste("eta3_",rep))
+  write.csv(ADmat.3[,,rep],file = paste("ADmat3_",rep))
+  write.csv(Betas.3[,,rep],file = paste("Beta3_",rep))
 }
 
 sparsity.t=array(double(J*2*reps),dim = c(J,2,reps))
 for (aa in 1:J){
   for (rr in 1:2){
     for (cc in 1:reps)
-    sparsity.t[aa,rr,cc]=ifelse(Betas.1[aa,rr,cc]==0,0,1)
+      sparsity.t[aa,rr,cc]=ifelse(Betas.1[aa,rr,cc]==0,0,1)
   }
 }
 
@@ -2188,6 +2186,3 @@ typeI = c(sum(sparsity.t[-c(4,5,12,13),1,])/(14*reps),sum(sparsity.t[-c(4,5,12,1
 write.csv(eta.1,file = paste("eta1"))
 write.csv(ADmat.1,file = paste("ADmat1"))
 write.csv(Betas.1,file = paste("Beta1_"))
-
-
-

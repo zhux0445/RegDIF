@@ -1504,8 +1504,8 @@ colnames(grbeta00) <- c()
 
 # 6 dif per dim
 mu100=c(0,0)
-mu200=c(-0.08529306,0.14288081)
-mu300=c(0.04908935,0.08511124)
+mu200=c(0,0)
+mu300=c(0,0)
 Sig100=matrix(c(1,0.8512153,0.8512153,1),2,2)
 Sig200=matrix(c(0.9392050,0.8958364,0.8958364,1.1288337),2,2)
 Sig300=matrix(c(0.8331097,0.8098532,0.8098532,1.0092335),2,2)
@@ -1514,7 +1514,7 @@ for (rep in 1:reps){
   resp=responses[((rep-1)*N+1):((rep-1)*N+N1+N2+N3),]
   r=2
   m=2
-  eta.vec=seq(3,30,3)
+  eta.vec=seq(4,5,0.2)
   bics=rep(0,length(eta.vec))
   ADmat=array(double(J*3*length(eta.vec)),dim = c(J,3,length(eta.vec)))
   #Gammas=array(double(2*J*m*length(eta.vec)),dim = c(2,2,J,length(eta.vec)))
@@ -1527,7 +1527,7 @@ for (rep in 1:reps){
     sim=ipest1(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=F,gra00=gra00,grd00=grd00,grbeta00=grbeta00,mu100=mu100,mu200=mu200,mu300=mu300,Sig100=Sig100,Sig200=Sig200,Sig300=Sig300)
     bics[k]=sim$bic
     #Gammas[,,,k]=sim$Gamma
-    ADmat=sim$est
+    ADmat[,,k]=sim$est
     Betas[,,k]=sim$Beta
     biass[k,]=sim$bias
     RMSEs[k,]=sim$RMSE
@@ -1563,9 +1563,43 @@ power = c(sum(sparsity.t[c(4:9,12:17),1,])/(12*reps),sum(sparsity.t[c(4:9,12:17)
 typeI = c(sum(sparsity.t[-c(4:9,12:17),1,])/(6*reps),sum(sparsity.t[-c(4:9,12:17),2,])/(6*reps))
 
 
-
-
-
-
-
-
+mirt.p.mat1=matrix(0,5,18) # 16 is the number of replications
+bias.mirt1=matrix(0,5,3)
+rmse.mirt1=matrix(0,5,3)
+difrec.mirt.fn1=matrix(0,5,3) # DIF magnitude recovery with false negative included
+mirt.p.mat2=matrix(0,5,18) # 16 is the number of replications
+bias.mirt2=matrix(0,5,3)
+rmse.mirt2=matrix(0,5,3)
+difrec.mirt.fn2=matrix(0,5,3) # 
+mirt.p.mat3=matrix(0,5,18) # 16 is the number of replications
+bias.mirt3=matrix(0,5,3)
+rmse.mirt3=matrix(0,5,3)
+difrec.mirt.fn3=matrix(0,5,3) 
+for (rep in 2:5){
+  resp=responses[((rep-1)*N+1):((rep-1)*N+N1+N2+N3),]
+  resp01=resp[1:1000,]
+  resp02=resp[c(1:500,1001:1500),]
+  s <- 'D1 = 1,3-11
+          D2 = 2,12-20
+          COV = D1*D2'
+  #omnibus
+  md.noncons0 <- multipleGroup(resp, s, group = Group,SE=TRUE,invariance=c('free_means', 'free_var','slopes',colnames(resp)[1:r]))
+  mirt.p.mat1[(rep),]=DIF(md.noncons0, which.par = c('d'), p.adjust = 'fdr',scheme = 'add',items2test=c(3:20))[,"adj_pvals"]
+  md.refit0 <- multipleGroup(resp, s, group = Group,SE=TRUE,invariance=c('free_means', 'free_var','slopes',colnames(resp)[-(which(mirt.p.mat1[rep,]<0.05)+2)]))
+  bias.mirt1[rep,1:2]=colSums(coef(md.refit0,simplify=T)$G1$items[,1:r]-Amat1)/10
+  rmse.mirt1[rep,1:2]=sqrt(colSums((coef(md.refit0,simplify=T)$G1$items[,1:r]-Amat1)^2)/10)
+  bias.mirt1[rep,3]=colMeans(coef(md.refit0,simplify=T)$G1$items[,3]-Dmat1)
+  rmse.mirt1[rep,3]=sqrt(colMeans((coef(md.refit0,simplify=T)$G1$items[,3]-Dmat1)^2))
+  #ref vs focal1
+  md.noncons01 <- multipleGroup(resp01, s, group = Group01,SE=TRUE,invariance=c('free_means', 'free_var','slopes',colnames(resp01)[1:r]))
+  mirt.p.mat2[(rep),]=DIF(md.noncons01, which.par = c('d'), p.adjust = 'fdr',scheme = 'add',items2test=c(3:20))[,"adj_pvals"]
+  md.refit01 <- multipleGroup(resp01, s, group = Group01,SE=TRUE,invariance=c('free_means', 'free_var','slopes',colnames(resp01)[-(which(mirt.p.mat2[rep,]<0.05)+2)]))
+  bias.mirt2[rep,1:2]=colSums(coef(md.refit01,simplify=T)$G1$items[,1:r]-Amat1)/10
+  rmse.mirt2[rep,1:2]=sqrt(colSums((coef(md.refit01,simplify=T)$G1$items[,1:r]-Amat1)^2)/10)
+  bias.mirt2[rep,3]=colMeans(coef(md.refit01,simplify=T)$G1$items[,3]-Dmat1)
+  rmse.mirt2[rep,3]=sqrt(colMeans((coef(md.refit01,simplify=T)$G1$items[,3]-Dmat1)^2))
+  #ref vs focal2
+  md.noncons02 <- multipleGroup(resp02, s, group = Group02,SE=TRUE,invariance=c('free_means', 'free_var','slopes',colnames(resp02)[1:r]))
+  mirt.p.mat3[(rep),]=DIF(md.noncons02, which.par = c('d'), p.adjust = 'fdr',scheme = 'add',items2test=c(3:20))[,"adj_pvals"]
+}
+(which(mirt.p.mat3[rep,]<0.05)+2)
