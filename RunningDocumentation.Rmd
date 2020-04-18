@@ -7,9 +7,11 @@ header-includes:
   - \usepackage[ruled,vlined,linesnumbered]{algorithm2e}
 ---
 
-# Methods for DIF Detesction
+# DIF Detection Methods
 
+## Likelihood Ratio Test
 
+In likelihood ratio test, DIF will be tested one item at a time. The null hypothesis is that all but the anchor items are DIF. To test whether the *j*th item is DIF, the alternative hypothesis is that the anchor items and the *j*th item is DIF free, and all other items are DIF. If the null hypothesis is rejected (adjust p-value <0.05), the tested item will be flagged as DIF. Since we are testing several hypotheses, multiple comparisons need to be performed. The adjust p-values are the family-wise error rate. We assume the latent traits in reference and focal groups follow normal distributions. The mean and variance of reference group are fixed to be 0 and 1, respectively. The means and variances of focal groups can be freely estimated.
 
 # Multidimensional 2PL Model with DIF
 
@@ -646,6 +648,8 @@ set $t_1=1$, $\delta^{(t_1-1)}=$ any value greater than $\varepsilon_1$\;
 
 Note that $\mathrm{diag}(\hat{\boldsymbol\Sigma}_{1r})$ is the *r*th element on the diagonal of the estimated covariance matrix of the reference group $\hat{\boldsymbol {\boldsymbol\Sigma}_1}$.
 
+$\varepsilon_1=10^{-3}$ and $\varepsilon_2=10^{-7}$.
+
 ## Simulation
 
 $\emph Sample$ $\emph Size.$ The total sample size is $N=1500$, and the group sample sizes are $N_1=N_2=N_3=500$.
@@ -654,9 +658,9 @@ $\emph Test$ $\emph Length.$ $m=20.$ Simple structure. 10 items per dimension.
 
 $\emph Proportion \ of \ DIF.$ 4 items with DIF. 2 DIF items per dimension.
 
-$\emph Magnitude \ of \ DIF.$ The first focal group with less difficulty (+0.5) on the 4 DIF items. 
+$\emph Magnitude \ of \ DIF.$ The first focal group with larger difficulty parameters (+0.5) on the 4 DIF items. 
 
-The second focal group with much smaller difficulty parameters (+1) on the 4 DIF items.
+The second focal group with much larger difficulty parameters (+1) on the 4 DIF items.
 
 $\emph Generated \ parameters.$
 
@@ -737,14 +741,16 @@ $$\boldsymbol\beta=\begin{pmatrix}
 
 No impact. $\theta_i\sim N(\begin{pmatrix}0\\0\\\end{pmatrix}, \begin{pmatrix}1&0.85\\0.85&1\\\end{pmatrix})$
 
-### Results of 16 Replications
+$\emph Tuning \ parameters.$ Tuning parameters $\eta$ are chosen from a sequence starting from 21 to 51 with increment 3.
+
+### Results of 50 Replications (N=1500)
 
 $\emph Table \ 1. \ Type \ I \ error \ and \ Power \ of \ regularization \ method$
 
 Group | Omnibus DIF| Group with DIF=0.5| Group with DIF=1| 
 ------|------|------|------|
-Power| 1 | 0.5 | 1 |
-Type I| 0.049 | 0.01875 | 0.022 |
+Power| 0.985 | 0.34 | 0.985 |
+Type I| 0.047 | 0.024 | 0.024 |
 
 Omnibus DIF is defined as if at least one focal group showd DIF on an item, then that item is flagged as DIF.
 
@@ -752,10 +758,9 @@ $\emph Table \ 2. \ Type \ I \ error \ and \ Power \ of \ mirt \ LRT \ (0.05 \ s
 
 Group | Omnibus DIF| Group with DIF=0.5| Group with DIF=1| 
 ------|------|------|------|
-Power| 0.9063 | 0.2031 | 0.9531 |
-Type I| 0.0179 | 0.0089 | 0.022 |
+Power| 0.86 | 0.23 | 0.91 |
+Type I| 0.00714 | 0.0085 | 0.002857 |
 
-mirt LRT can only do the omnibus DIF test.
 
 mirt wald
 
@@ -768,15 +773,15 @@ $\emph Table \ 3. \  Item \ parameter \ estimates \ by \ regularization$
 
 Item Parameters |$\boldsymbol a_1$| $\boldsymbol a_2$| $\boldsymbol d$| 
 ------------------ | -----|------|------|------|------|------|
-Bias|-0.0160795| -0.0099595|0.02939|
-RMSE|0.141|0.145|0.146|
+Bias|-0.011145| -0.00684|-0.04356|
+RMSE|0.1676937|0.1614306|0.1576307|
 
 $\emph Table \ 4. \ Item \ parameter \ estimates \ by \ mirt \ LRT \ (0.05 \ significance \ level)$
 
 Item Parameters |$\boldsymbol a_1$| $\boldsymbol a_2$| $\boldsymbol d$| 
 ------------------ | -----|------|------|------|------|------|
-Bias|0.002604| 0.0118656|-0.040605|
-RMSE|0.14481|0.1484|0.15307|
+Bias|0.01262| 0.00636|-0.00532|
+RMSE|0.17259|0.16686|0.15026|
 
 Our regularization method has slightly better non-DIF item parameter estimates.
 
@@ -784,9 +789,8 @@ $\emph Table \ 5. \ Absolute \ bias \ for \ DIF \ magnitude \ recoveries \ that 
 
 Group | Omnibus DIF| Group with DIF=0.5| Group with DIF=1| 
 ------|------|------|------|
-Regularization (include false negative)| 0.255 | 0.302 | 0.208 |
-Regularization (exclude false negative)| 0.173 | 0.104 | 0.208 |
-mirt LRT (include false negative)| 0.1746 | 0.1666 | 0.1826 |
+Regularization (include false negative)| 0.1529 | 0.3779 | 0.2284 |
+mirt LRT (include false negative)| 0.2222 | 0.4181 | 0.2181 |
 
 $\emph Table \ 6. \ Absolute \ bias \ for \ DIF \ magnitude \ recoveries \ that \ were \ non-DIF$
 
@@ -795,7 +799,65 @@ Group | Omnibus DIF| Group with DIF=0.5| Group with DIF=1|
 Regularization | 0.336 | 0.33 | 0.341 |
 mirt LRT | 0.15696 | 0.1516 | 0.1622 |
 
+```{r eval=FALSE, include=FALSE}
+for (rep in 1:50){
+  resp=responses[((rep-1)*N+1):((rep-1)*N+N1+N2+N3),]
+  resp01=resp[1:(N1+N2),]
+  resp02=rbind(resp[1:N1,],resp[(N1+N2+1):(N1+N2+N3),])
+  s <- 'D1 = 1,3-11
+          D2 = 2,12-20
+          COV = D1*D2'
+  #omnibus
+  md.refit.r <- multipleGroup(resp, s, group = Group,SE=TRUE,invariance=c('free_means', 'free_var','slopes',colnames(resp)[-c(4,5,12,13)]))
+  difrec.mirt.fn1.r[rep,2:3]= c(mean(abs((coef(md.refit.r,simplify=T)$G2$items[,3]-coef(md.refit.r,simplify=T)$G1$items[,3])[c(4,5,12,13)]-0.5)),mean(abs((coef(md.refit.r,simplify=T)$G3$items[,3]-coef(md.refit.r,simplify=T)$G1$items[,3])[c(4,5,12,13)]-1)))
+  difrec.mirt.fn1.r[rep,1]=mean(c(difrec.mirt.fn1.r[rep,2],difrec.mirt.fn1.r[rep,3])) #omnibus DIF recovery in report (only need this)
+  }
+
+```
 The results in Table 6 are the average of estimated DIF for false positive items. LRT by mirt performs better when type I error happens. The type I error is low, so the probability to have these bias is low.
+
+### Results of 50 Replications (N=3000)
+
+$\emph Table \ 7. \ Type \ I \ error \ and \ Power \ of \ regularization \ method$
+
+Group | Omnibus DIF| Group with DIF=0.5| Group with DIF=1| 
+------|------|------|------|
+Power| 1 | 0.775 | 1 |
+Type I| 0.051 | 0.027 | 0.028 |
+
+Omnibus DIF is defined as if at least one focal group showd DIF on an item, then that item is flagged as DIF.
+
+$\emph Table \ 8. \ Type \ I \ error \ and \ Power \ of \ mirt \ LRT \ (0.05 \ significance \ level)$
+
+Group | Omnibus DIF| Group with DIF=0.5| Group with DIF=1| 
+------|------|------|------|
+Power| 0.995 | 0.63 | 0.995 |
+Type I| 0.008 | 0.01 | 0.012 |
+
+
+$\emph Table \ 9. \  Item \ parameter \ estimates \ by \ regularization$
+
+Item Parameters |$\boldsymbol a_1$| $\boldsymbol a_2$| $\boldsymbol d$| 
+------------------ | -----|------|------|------|------|------|
+Bias|-0.01364| -0.00353|-0.0316|
+RMSE|0.11486|0.11917|0.111221|
+
+$\emph Table \ 10. \ Item \ parameter \ estimates \ by \ mirt \ LRT \ (0.05 \ significance \ level)$
+
+Item Parameters |$\boldsymbol a_1$| $\boldsymbol a_2$| $\boldsymbol d$| 
+------------------ | -----|------|------|------|------|------|
+Bias|0.00612| 0.01542|0.009|
+RMSE|0.11613|0.12292|0.0953|
+
+
+$\emph Table \ 11. \ Absolute \ bias \ for \ DIF \ magnitude \ recoveries \ that \ were \ true \ DIF$
+
+Group | Omnibus DIF| Group with DIF=0.5| Group with DIF=1| 
+------|------|------|------|
+Regularization (include false negative)| 0.1111 | 0.1884 | 0.1451 |
+mirt LRT (include false negative)| 0.1145 | 0.2557 | 0.1155 |
+
+
 
 # Non-uniform DIF Detection via LASSO 
 
@@ -952,6 +1014,8 @@ set $t_1=1$, $\delta^{(t_1-1)}=$ any value greater than $\varepsilon_1$\;
 
 Note that $\mathrm{diag}(\hat{\boldsymbol\Sigma}_{1r})$ is the *r*th element on the diagonal of the estimated covariance matrix of the reference group $\hat{\boldsymbol {\boldsymbol\Sigma}_1}$.
 
+$\varepsilon_1=10^{-3}$ and $\varepsilon_2=10^{-7}$.
+
 ## Simulation
 
 $\emph Sample$ $\emph Size.$ The total sample size is $N=3000$, and the group sample sizes are $N_1=N_2=N_3=1000$.
@@ -962,7 +1026,7 @@ $\emph Proportion \ of \ DIF.$ 4 items with DIF. 2 DIF items per dimension.
 
 $\emph Magnitude \ of \ DIF.$ The first focal group with smaller discrimination parameter (-0.5) on the 4 DIF items. 
 
-The second focal group with much smaller discrimination parameter (-1) on the 4 DIF items.
+The second focal group with much smaller difficulty parameter (-1) on the 4 DIF items.
 
 $\emph Generated \ parameters.$
 
@@ -1034,6 +1098,8 @@ $$\boldsymbol\Gamma_j=\begin{pmatrix}
 \end{pmatrix}, for \ j=12,13$$ 
 
 No impact. $\theta_i\sim N(\begin{pmatrix}0\\0\\\end{pmatrix}, \begin{pmatrix}1&0.85\\0.85&1\\\end{pmatrix})$
+
+$\emph Tuning \ parameters.$ Tuning parameters $\eta$ are chosen from a sequence starting from 21 to 51 with increment 3.
 
 ### Results of 20 Replications
 
@@ -1185,9 +1251,9 @@ The equations are same as in section 3.2. The Block co-ordinate gradient descent
 
 Using a second-order Taylor series expansion at $\hat{\boldsymbol\tau}^{(t-1)}$ we define
 
-$$M_{\eta}^{(t-1)}(\boldsymbol \epsilon)=-\lbrace\log M + \boldsymbol \epsilon^T \nabla\log M+\frac{1}{2}\boldsymbol \epsilon^TH^{(t-1)}\boldsymbol \epsilon \rbrace+  \eta \sum_j^m ||\hat{\boldsymbol\tau}_j^{(t-1)}+\boldsymbol \epsilon_j||_2,$$
+$$M_{\eta}^{(t-1)}(\boldsymbol \epsilon^{(t)})=-\lbrace\log M + \boldsymbol \epsilon^{(t)T} \nabla\log M+\frac{1}{2}\boldsymbol \epsilon^{(t)T}H^{(t-1)}\boldsymbol \epsilon^{(t)} \rbrace+  \eta \sum_j^m ||\hat{\boldsymbol\tau}_j^{(t-1)}+\boldsymbol \epsilon_j^{(t)}||_2,$$
 
-where $\boldsymbol \epsilon=\boldsymbol\tau-\boldsymbol\tau^{(t-1)}$, and $$\nabla\log M=(\frac{\partial \log M}{\partial \boldsymbol \Gamma},\frac{\partial \log M}{\partial \boldsymbol \beta})$$ and 
+where $\boldsymbol\tau^{(t)}=\boldsymbol\tau^{(t-1)}+\boldsymbol \epsilon^{(t)}$, and $$\nabla\log M=(\frac{\partial \log M}{\partial \boldsymbol \Gamma},\frac{\partial \log M}{\partial \boldsymbol \beta})$$ and 
 
 $$H^{(t-1)}=
 \begin{pmatrix}
@@ -1195,66 +1261,93 @@ $$H^{(t-1)}=
 \frac{\partial^2 \log M}{\partial \boldsymbol \Gamma \partial \boldsymbol \beta} & \frac{\partial^2 \log M}{\partial \boldsymbol \beta^2}\\
 \end{pmatrix}.$$
 
-We have $M_{\eta}^{(t-1)}(\boldsymbol \epsilon)\approx S_\eta(\hat{\boldsymbol\tau}^{(t-1)}+\boldsymbol \epsilon)$.
+We have $M_{\eta}^{(t-1)}(\boldsymbol \epsilon)\approx S_\eta(\hat{\boldsymbol\tau}^{(t-1)}+\boldsymbol \epsilon^{(t)})$.
 
 We run a block co-ordinate gradient descent algorithm for each group (item) with all other groups fixed. 
 
-For item *j*, denote $u$ to be the subgradient of $||\boldsymbol\tau_j^{(t-1)}+\boldsymbol \epsilon_j||_2$. We have
+For item *j*, denote $u$ to be the subgradient of $||\boldsymbol\tau_j^{(t-1)}+\boldsymbol \epsilon_j^{(t)}||_2$. We have
 
-$$u =\begin{cases} \frac{\hat{\boldsymbol\tau}_j^{(t-1)}+\boldsymbol \epsilon_j}{||\hat{\boldsymbol\tau}_j^{(t-1)}+\boldsymbol \epsilon_j||_2}, & \mbox{if } \hat{\boldsymbol\tau}_j^{(t-1)}+\boldsymbol \epsilon_j \neq \boldsymbol 0 \\ \in\lbrace u: ||u||_2\leq1\rbrace, & \mbox{if } \hat{\boldsymbol\tau}_j^{(t-1)}+\boldsymbol \epsilon_j = \boldsymbol 0 \end{cases}.$$
+$$u =\begin{cases} \frac{\hat{\boldsymbol\tau}_j^{(t-1)}+\boldsymbol \epsilon_j^{(t)}}{||\hat{\boldsymbol\tau}_j^{(t-1)}+\boldsymbol \epsilon_j^{(t)}||_2}, & \mbox{if } \hat{\boldsymbol\tau}_j^{(t-1)}+\boldsymbol \epsilon_j^{(t)} \neq \boldsymbol 0 \\ \in\lbrace u: ||u||_2\leq1\rbrace, & \mbox{if } \hat{\boldsymbol\tau}_j^{(t-1)}+\boldsymbol \epsilon_j^{(t)} = \boldsymbol 0 \end{cases}.$$
 
-The subgradient equation $\partial_{\epsilon_j} M_{\eta}^{(t-1)}(\boldsymbol \epsilon)=-\nabla\log M_j-\boldsymbol \epsilon^T_jH^{(t-1)}_{j}+\eta u=0$ is satisfied with $\boldsymbol\tau_j^{(t-1)}+\boldsymbol \epsilon_j=0$ if
+The subgradient equation $\partial_{\epsilon_j} M_{\eta}^{(t-1)}(\boldsymbol \epsilon^{(t)})=-\nabla\log M_j-\boldsymbol \epsilon^{(t)T}_jH^{(t-1)}_{j}+\eta u=0$ is satisfied with $\boldsymbol\tau_j^{(t-1)}+\boldsymbol \epsilon_j=0$ if
 
-$$||u||_2=||\frac{\nabla\log M_j+\boldsymbol \epsilon^T_jH^{(t-1)}_{j}}{\eta}||_2 \leq1$$
+$$||u||_2=||\frac{\nabla\log M_j+\boldsymbol \epsilon^{(t)T}_jH^{(t-1)}_{j}}{\eta}||_2 \leq1$$
 
 
-$$||\nabla\log M_j+\boldsymbol \epsilon^T_jH^{(t-1)}_{j}||_2 \leq\eta$$
+$$||\nabla\log M_j+\boldsymbol \epsilon^{(t)T}_jH^{(t-1)}_{j}||_2 \leq\eta$$
 
 $$||\nabla\log M_j-\hat{\boldsymbol\tau}_j^{(t-1)}H^{(t-1)}_{j}||_2 \leq\eta,$$
 
 the minimizer of $M_{\eta}^{(t-1)}(\boldsymbol \epsilon)$ is 
 
-$$\boldsymbol \epsilon_j^{(t-1)}=-\hat{\boldsymbol\tau}_j^{(t-1)}.$$
+$$\hat{\boldsymbol \epsilon}^{(t)}_j=-\hat{\boldsymbol\tau}_j^{(t-1)}.$$
 
 Otherwise,
 
 Then the subgradient equation is 
 
-$$\partial_{\epsilon_j} M_{\eta}^{(t-1)}(\boldsymbol \epsilon)=-\nabla\log M_j-\boldsymbol \epsilon^T_jH^{(t-1)}_{j}+\eta \frac{\hat{\boldsymbol\tau}_j^{(t-1)}+\boldsymbol \epsilon_j}{||\hat{\boldsymbol\tau}_j^{(t-1)}+\boldsymbol \epsilon_j||_2}=0$$
+\begin{equation}
+\begin{aligned}
+\partial_{\epsilon_j} M_{\eta}^{(t-1)}(\boldsymbol \epsilon^{(t)})=-\nabla\log M_j-\boldsymbol \epsilon^{(t)T}_jH^{(t-1)}_{j}+\eta \frac{\hat{\boldsymbol\tau}_j^{(t-1)}+\boldsymbol \epsilon^{(t)}_j}{||\hat{\boldsymbol\tau}_j^{(t-1)}+\boldsymbol \epsilon^{(t)}_j||_2}=0
+\end{aligned}
+\end{equation}
 
 
-$$-\nabla\log M_j-\boldsymbol \epsilon^T_jH^{(t-1)}_{j}+\eta \frac{(\hat{\boldsymbol\tau}_j^{(t-1)}+\boldsymbol \epsilon_j)(-H^{(t-1)}_{j})}{||\hat{\boldsymbol\tau}_j^{(t-1)}+\boldsymbol \epsilon_j||_2(-H^{(t-1)}_{j})}=0$$
-
-$$-\nabla\log M_j-\boldsymbol \epsilon^T_jH^{(t-1)}_{j}+\eta \frac{\nabla\log M_j-\hat{\boldsymbol\tau}_j^{(t-1)}H^{(t-1)}_{j}}{||\nabla\log M_j-\hat{\boldsymbol\tau}_j^{(t-1)}H^{(t-1)}_{j}||_2}=0$$
+$$\partial_{\epsilon_j} M_{\eta}^{(t-1)}(\boldsymbol \epsilon^{(t)})=-\nabla\log M_j-(\hat{\boldsymbol\tau}_j^{(t-1)}+\boldsymbol \epsilon^{(t)}_j) H^{(t-1)}_{j}+ \hat{\boldsymbol\tau}_j^{(t-1)} H^{(t-1)}_{j} +\eta \frac{\hat{\boldsymbol\tau}_j^{(t-1)}+\boldsymbol \epsilon^{(t)}_j}{||\hat{\boldsymbol\tau}_j^{(t-1)}+\boldsymbol \epsilon^{(t)}_j||_2}=0$$
 
 \begin{equation}
 \begin{aligned}
-\boldsymbol \epsilon_j^{(t-1)}=-(H^{(t-1)}_{j})^{-1}\lbrace\nabla\log M_j-\eta \frac{\nabla\log M_j-\hat{\boldsymbol\tau}_j^{(t-1)}H^{(t-1)}_{j}}{||\nabla\log M_j-\hat{\boldsymbol\tau}_j^{(t-1)}H^{(t-1)}_{j}||_2}\rbrace.
+\nabla\log M_j - \hat{\boldsymbol\tau}_j^{(t-1)} H^{(t-1)}_{j}= -(\hat{\boldsymbol\tau}_j^{(t-1)}+\boldsymbol \epsilon^{(t)}_j) H^{(t-1)}_{j} +\eta \frac{\hat{\boldsymbol\tau}_j^{(t-1)}+\boldsymbol \epsilon^{(t)}_j}{||\hat{\boldsymbol\tau}_j^{(t-1)}+\boldsymbol \epsilon^{(t)}_j||_2}
+\end{aligned}
+\end{equation}
+
+\begin{equation}
+\begin{aligned}
+\boldsymbol \tau = \hat{\boldsymbol\tau}_j^{(t-1)}+\boldsymbol \epsilon^{(t)}_j = \frac{(\nabla\log M_j - \hat{\boldsymbol\tau}_j^{(t-1)} H^{(t-1)}_{j})||\hat{\boldsymbol\tau}_j^{(t-1)}+\boldsymbol \epsilon^{(t)}_j||_2}{\eta-H^{(t-1)}_{j}||\hat{\boldsymbol\tau}_j^{(t-1)}+\boldsymbol \epsilon^{(t)}_j||_2}
+\end{aligned}
+\end{equation}
+
+
+Taking the norm of both sides of (57) we see that
+
+$$||\nabla\log M_j - \hat{\boldsymbol\tau}_j^{(t-1)} H^{(t-1)}_{j}||_2=( \frac{\eta}{||\hat{\boldsymbol\tau}_j^{(t-1)}+\boldsymbol \epsilon^{(t)}_j||_2} - H^{(t-1)}_{j}) ||\hat{\boldsymbol\tau}_j^{(t-1)}+\boldsymbol \epsilon^{(t)}_j||_2$$
+
+\begin{equation}
+\begin{aligned}
+||\hat{\boldsymbol\tau}_j^{(t-1)}+\boldsymbol \epsilon^{(t)}_j||_2=\frac{\eta-||\nabla\log M_j - \hat{\boldsymbol\tau}_j^{(t-1)} H^{(t-1)}_{j}||_2}{H^{(t-1)}_{j}} 
+\end{aligned}
+\end{equation}
+
+Plugging (59) into (58), we have
+
+\begin{equation}
+\begin{aligned}
+\boldsymbol \epsilon^{(t)}_j=-(H^{(t-1)}_{j})^{-1}\lbrace\nabla\log M_j-\eta \frac{\nabla\log M_j-\hat{\boldsymbol\tau}_j^{(t-1)}H^{(t-1)}_{j}}{||\nabla\log M_j-\hat{\boldsymbol\tau}_j^{(t-1)}H^{(t-1)}_{j}||_2}\rbrace.
 \end{aligned}
 \end{equation}
 
 
 $$\nabla\log M_j=(\frac{\partial \log M}{\partial \gamma_{j11}},...,\frac{\partial \log M}{\partial \gamma_{jyr}},...,\frac{\partial \log M}{\partial \gamma_{j3q}},\frac{\partial \log M}{\partial \beta_{j11}},...,\frac{\partial \log M}{\partial \beta_{jyk}},...\frac{\partial \log M}{\partial \beta_{j3(p-1)}}), r=1,...,q; k=1,...,p-1; y=2,3.$$
 
-If $\boldsymbol \epsilon^{(t-1)}_j\neq0$, performing a Backtracking-Armijo line search: let $\alpha^{(t-1)}$ be the largest value in $\lbrace\alpha_0\delta^l\rbrace_{l\geq 0}$ s.t.
+If $\boldsymbol \epsilon^{(t)}_j\neq0$, performing a Backtracking-Armijo line search: let $\alpha^{(t)}$ be the largest value in $\lbrace\alpha_0\delta^l\rbrace_{l\geq 0}$ s.t.
 
 \begin{equation}
 \begin{aligned}
-S_{\eta}(\hat{\boldsymbol\tau}^{(t-1)}_j+\alpha^{(t-1)}\boldsymbol \epsilon^{(t-1)}_j)-S_{\eta}(\hat{\boldsymbol\tau}^{(t-1)}_j)\leq\alpha^{(t-1)}\sigma\Delta^{(t-1)},
+S_{\eta}(\hat{\boldsymbol\tau}^{(t-1)}_j+\alpha^{(t)} \boldsymbol \epsilon^{(t)}_j)-S_{\eta}(\hat{\boldsymbol\tau}^{(t-1)}_j)\leq\alpha^{(t)}\sigma\Delta^{(t)},
 \end{aligned}
 \end{equation}
 
 
-where $\alpha_0=1$, $\delta=0.5$ and $\sigma=0.1$, and $\Delta^{(t-1)}$ is the improvement in the objective function $S_{\eta}(\cdot)$ when using a linear approximation for the log-likelihood, i.e.
+where $\alpha_0=1$, $\delta=0.5$ and $\sigma=0.1$, and $\Delta$ is the improvement in the objective function $S_{\eta}(\cdot)$ when using a linear approximation for the log-likelihood, i.e.
 
 \begin{equation}
 \begin{aligned}
-\Delta_j^{(t-1)}=-\boldsymbol \epsilon_j^{(t-1)T}\nabla\log M_j+\eta||\hat{\boldsymbol\tau}_j^{(t-1)}+\boldsymbol \epsilon_j^{(t-1)}||_2-\eta||\hat{\boldsymbol\tau}_j^{(t-1)}||_2.
+\Delta^{(t)}_j=-\boldsymbol \epsilon^{(t)T}_j\nabla\log M_j+\eta||\hat{\boldsymbol\tau}_j^{(t-1)}+\boldsymbol \epsilon^{(t)}_j||_2-\eta||\hat{\boldsymbol\tau}_j^{(t-1)}||_2.
 \end{aligned}
 \end{equation}
 
 
-$$\hat{\boldsymbol\tau}^{(t)}_j=(\hat{\boldsymbol\Gamma}^{(t)}_j,\hat{\boldsymbol\beta}^{(t)}_j)=\hat{\boldsymbol\tau}^{(t-1)}_j+\alpha^{(t-1)}\boldsymbol \epsilon^{(t-1)}_j$$
+$$\hat{\boldsymbol\tau}^{(t)}_j=(\hat{\boldsymbol\Gamma}^{(t)}_j,\hat{\boldsymbol\beta}^{(t)}_j)=\hat{\boldsymbol\tau}^{(t-1)}_j+\alpha^{(t)}\boldsymbol \epsilon^{(t)}_j$$
 
 
 
@@ -1291,10 +1384,10 @@ set $t_1=1$, $\delta^{(t_1-1)}=$ any value greater than $\varepsilon_1$\;
         ${d}_{jk}^{(t_2)}=  d_{jk}^{(t_2-1)}-\frac{\partial_{ d_{jk}}\log M}{\partial^2_{ d_{jk}}\log M}$\;
         \eIf{$||\nabla\log M_j-\hat{\boldsymbol\tau}_j^{(t_2-1)}H^{(t_2-1)}_{j}||_2 \leq\eta$}{
         ${\boldsymbol \tau}_{j}=\boldsymbol 0$\;
-        }{$\boldsymbol \epsilon_j^{(t_2-1)}=-(H^{(t_2-1)}_{j})^{-1}\lbrace\nabla\log M_j-\eta \frac{\nabla\log M_j-\hat{\boldsymbol\tau}_j^{(t_2-1)}H^{(t_2-1)}_{j}}{||\nabla\log M_j-\hat{\boldsymbol\tau}_j^{(t_2-1)}H^{(t_2-1)}_{j}||_2}\rbrace$\;
-        $\Delta_j^{(t_2-1)}=-\boldsymbol \epsilon_j^{(t_2-1)T}\nabla\log M_j+\eta||\hat{\boldsymbol\tau}_j^{(t_2-1)}+\boldsymbol \epsilon_j^{(t_2-1)}||_2-\eta||\hat{\boldsymbol\tau}_j^{(t_2-1)}||_2$\;
-        $\alpha^{(t_2-1)}$ is the max value in $\lbrace\alpha^{(0)}\delta^l\rbrace_{l\geq 0}$ such that $S_{\eta}(\hat{\boldsymbol\tau}^{(t_2-1)}_j+\alpha^{(t_2-1)}\boldsymbol \epsilon^{(t_2-1)}_j)-S_{\eta}(\hat{\boldsymbol\tau}^{(t_2-1)}_j)\leq\alpha^{(t_2-1)}\sigma\Delta^{(t_2-1)}.$\;
-        $\boldsymbol\tau^{(t_2)}_j=\boldsymbol\tau^{(t_2-1)}_j+\alpha^{(t_2-1)}\boldsymbol \epsilon^{(t_2-1)}_j$\;}
+        }{$\boldsymbol \epsilon_j^{(t_2)}=-(H^{(t_2-1)}_{j})^{-1}\lbrace\nabla\log M_j-\eta \frac{\nabla\log M_j-\hat{\boldsymbol\tau}_j^{(t_2-1)}H^{(t_2-1)}_{j}}{||\nabla\log M_j-\hat{\boldsymbol\tau}_j^{(t_2-1)}H^{(t_2-1)}_{j}||_2}\rbrace$\;
+        $\Delta_j^{(t_2)}=-\boldsymbol \epsilon_j^{(t_2)T}\nabla\log M_j+\eta||\hat{\boldsymbol\tau}_j^{(t_2-1)}+\boldsymbol \epsilon_j^{(t_2)}||_2-\eta||\hat{\boldsymbol\tau}_j^{(t_2-1)}||_2$\;
+        $\alpha^{(t_2)}$ is the max value in $\lbrace\alpha^{(0)}\delta^l\rbrace_{l\geq 0}$ such that $S_{\eta}(\hat{\boldsymbol\tau}^{(t_2-1)}_j+\alpha^{(t_2)}\boldsymbol \epsilon^{(t_2)}_j)-S_{\eta}(\hat{\boldsymbol\tau}^{(t_2-1)}_j)\leq\alpha^{(t_2)}\sigma\Delta^{(t_2)}.$\;
+        $\boldsymbol\tau^{(t_2)}_j=\boldsymbol\tau^{(t_2-1)}_j+\alpha^{(t_2)}\boldsymbol \epsilon^{(t_2)}_j$\;}
         $\delta_2^{(t_2)}=||\boldsymbol A_j^{(t_2)}-\boldsymbol A_{j}^{(t_2-1)}||+||\boldsymbol D_j^{(t_2)}-\boldsymbol D_{j}^{(t_2-1)}||+||\alpha^{(t_2-1)}\boldsymbol \epsilon^{(t_2-1)}_j||$\;
         $t_2=t_2+1$\; 
     }
@@ -1310,6 +1403,8 @@ set $t_1=1$, $\delta^{(t_1-1)}=$ any value greater than $\varepsilon_1$\;
 
 Note that $\mathrm{diag}(\hat{\boldsymbol\Sigma}_{1r})$ is the *r*th element on the diagonal of the estimated covariance matrix of the reference group $\hat{\boldsymbol {\boldsymbol\Sigma}_1}$.
 
+$\varepsilon_1=10^{-3}$ and $\varepsilon_2=10^{-7}$.
+
 
 ## Simulation
 
@@ -1319,9 +1414,9 @@ $\emph Test$ $\emph Length.$ $m=20.$ Simple structure. 10 items per dimension.
 
 $\emph Proportion \ of \ DIF.$ 4 items with DIF. 2 DIF items per dimension.
 
-$\emph Magnitude \ of \ DIF.$ The first focal group with smaller discrimination parameter (-0.5) and smaller difficulty parameters (+0.5) on the 4 DIF items. 
+$\emph Magnitude \ of \ DIF.$ The first focal group with smaller discrimination parameter (-0.5) and larger difficulty parameters (+0.5) on the 4 DIF items. 
 
-The second focal group with much smaller discrimination parameter (-1) and much smaller difficulty parameters (+1) on the 4 DIF items.
+The second focal group with much smaller difficulty parameter (-1) and much larger difficulty parameters (+1) on the 4 DIF items.
 
 $\emph Generated \ parameters.$
 
@@ -1384,12 +1479,12 @@ $$\boldsymbol\Gamma_j=\begin{pmatrix}
 \end{pmatrix}, for \ j=1,2,3,6,7,8,9,10,11,14,15,16,17,18,19,20$$ 
 
 $$\boldsymbol\Gamma_j=\begin{pmatrix}
--0.5 & 0\\
--1 & 0 \\
+-0.3 & 0\\
+-0.6 & 0 \\
 \end{pmatrix}, for \ j=4,5$$ 
 $$\boldsymbol\Gamma_j=\begin{pmatrix}
-0 & -0.5\\
-0 & -1 \\
+0 & -0.3\\
+0 & -0.6 \\
 \end{pmatrix}, for \ j=12,13$$ 
 
 $$\boldsymbol\beta=\begin{pmatrix}
@@ -1418,17 +1513,18 @@ $$\boldsymbol\beta=\begin{pmatrix}
 
 No impact. $\theta_i\sim N(\begin{pmatrix}0\\0\\\end{pmatrix}, \begin{pmatrix}1&0.85\\0.85&1\\\end{pmatrix})$
 
-### Results of 8 Replications
+$\emph Tuning \ parameters.$ Tuning parameters $\eta$ are chosen from a sequence starting from 21 to 51 with increment 3.
+
+### Results of 20 Replications
 
 $\emph Table \ 14. \ Type \ I \ error \ and \ Power \ of \ regularization \ method$
 
 Group | Omnibus DIF| 
 ------|------|
-Power| 1 | 
-Type I| 0 | 
+Power| 0.975 | 
+Type I| 0.065 | 
 
 Omnibus DIF is defined as if at least one focal group showd DIF on an item, then that item is flagged as DIF.
-
 
 
 
