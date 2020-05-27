@@ -1,35 +1,112 @@
+# high DIF proportion in diffenrent structure ("simple" structure)
+#  beta1  beta2 
+#    0      0
+#    0      0
+#    0      0
+#   0.5     0
+#   0.5     0
+#   0.5     0
+#   0.5     0
+#   0.5     0
+#   0.5     0
+#    0      0
+#    0      0
+#    0      1
+#    0      1
+#    0      1
+#    0      1
+#    0      1
+#    0      1
+#    0      0
+#    0      0
+#    0      0
+
+
+set.seed(1)
+A11=c(runif(J/2,1.5,2.5),rep(0,J/2))
+A12=A13=A11
+A21=c(rep(0,J/2),runif(J/2,1.5,2.5))
+A22=A23=A21
+D11=rnorm(J,0,1)
+D12=D13=D11
+# focal group has more extreme intercepts
+D12[4]=D11[4]+ 1
+D12[5]=D11[5]+ 1
+D12[6]=D11[6]+ 1
+D12[7]=D11[7]+ 1
+D12[8]=D11[8]+ 1
+D12[9]=D11[9]+ 1
+D12[10]=D11[10]+ 1
+#D12[11]=D11[11]+ 1
+D13[12]=D11[12]+ 1
+D13[13]=D11[13]+ 1
+D13[14]=D11[14]+ 1
+D13[15]=D11[15]+ 1
+D13[16]=D11[16]+ 1
+D13[17]=D11[17]+ 1
+D13[18]=D11[18]+ 1
+#D13[19]=D11[19]+ 1
+Amat01=cbind(A11,A21)
+Amat1=Amat01
+Amat1[2,]=Amat01[11,]
+Amat1[11,]=Amat01[2,]
+Amat02=cbind(A12,A22)
+Amat2=Amat02
+Amat2[2,]=Amat02[11,]
+Amat2[11,]=Amat02[2,]
+Amat03=cbind(A13,A23)
+Amat3=Amat03
+Amat3[2,]=Amat03[11,]
+Amat3[11,]=Amat03[2,]
+Dmat1=cbind(D11)
+Dmat2=cbind(D12)
+Dmat3=cbind(D13)
+
+N1=N2=N3=500 
+Group=c(rep('G1', N1), rep('G2', N2), rep('G3', N3))
+N=N1+N2+N3
+
+set.seed(100)
+Theta=mvrnorm(n=N1+N2+N3,mu=c(0,0),Sigma = matrix(c(1,0.85,0.85,1),2,2))
+Theta1=Theta[1:N1,]
+Theta2=Theta[(N1+1):(N1+N2),]
+Theta3=Theta[(N1+N2+1):(N1+N2+N3),]
+datasetR=simdata(Amat1,Dmat1,itemtype = "dich",Theta=Theta1)
+datasetF1=simdata(Amat2,Dmat2,itemtype = "dich",Theta=Theta2)
+datasetF2=simdata(Amat3,Dmat3,itemtype = "dich",Theta=Theta3)
+resp=rbind(datasetR,datasetF1,datasetF2)
+
 library(MASS)
 library(mirt) 
 library(cacIRT)
 library(mvtnorm)
 library(graphics)
 library(dmutate)
-setwd('/Users/ruoyizhu/Documents/GitHub/RegDIF_SimData')
-params=read.csv("Para2.csv",row.names = 1)
-responses=read.csv("RESP2.csv",row.names = 1)
+
 
 soft=function(s, tau) {
   val=sign(s)*max(c(abs(s) - tau,0))
   return(val) }
 # Dataset #4 (2 Non-uniform DIF items per scale)
 J=20
-
-N1=N2=N3=500 
-Group=c(rep('G1', N1), rep('G2', N2), rep('G3', N3))
-N=N1+N2+N3
-
 m=2
 r=2
 y1=c(0,0)
 y2=c(1,0)
 y3=c(0,1)
 
-Amat1=params[,1:2]
-Amat2=params[,3:4]
-Amat3=params[,5:6]
-Dmat1=matrix(params[,7],J,(m-1))
-Dmat2=matrix(params[,8],J,(m-1))
-Dmat3=matrix(params[,9],J,(m-1))
+s <- 'F1 = 1,3-11
+          F2 = 2,12-20
+          COV = F1*F2'
+cmodel <- mirt.model(s)
+md0 <- mirt(resp, cmodel, itemtype = "2PL")
+gra0=coef(md0,simplify=T)$items[,1:r]
+grd0=matrix(coef(md0,simplify=T)$items[,3],J,1)
+grbeta0=matrix(0,J,2)
+grbeta0[,1]=matrix(c(0,0,rep(1.4,18)),J,1)
+grbeta0[,2]=matrix(c(0,0,rep(1.4,18)),J,1)
+Sig0=coef(md0,simplify=T)$cov
+
 
 #########################
 ##     For \eta>0      ##
@@ -39,9 +116,9 @@ Dmat3=matrix(params[,9],J,(m-1))
 ####### r=2, m=2 #######
 ########################
 
-###############################
-##  Start of function (EMM)  ##
-###############################
+#########################
+##  start of function  ##
+#########################
 
 ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=F,gra00=gra00,grd00=grd00,grbeta00=grbeta00,mu100=mu100,mu200=mu200,mu300=mu300,Sig100=Sig100,Sig200=Sig200,Sig300=Sig300)
 {
@@ -70,14 +147,14 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=F,gra00=gra00,
   }
   #gra = azero
   #grd = matrix(0,J,1)
-  gra=gra00
-  grd=grd00
-  grbeta=grbeta00
-  Sig.gp1=Sig100; Sig.gp2=Sig200; Sig.gp3=Sig300
+  gra=gra0
+  grd=grd0
+  grbeta=grbeta0
+  Sig.gp1=Sig0; Sig.gp2=Sig0; Sig.gp3=Sig0
   grgamma=array(0,dim=c(r,r,J))
   
   #starting values for the MC samples form the prior
-  Mu.gp1=mu100; Mu.gp2=mu200; Mu.gp3=mu300
+  Mu.gp1=Mu.gp2= Mu.gp3=c(0,0)
   #X=theta #for check later
   
   Pstar <- Qstar <-Pstar1 <- Qstar1 <-Pstar2 <- Qstar2 <-Pstar3 <- Qstar3 <- matrix(double(G*(m-1)),G,m-1)
@@ -419,7 +496,7 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=F,gra00=gra00,
         for (mm in (m+r-1):(m+r)){
           bet[mm-m]=soft(bet0[mm-m],-eta/FI[mm,mm])
         }
-        #print(c(miter,bet))
+        print(c(miter,bet))
       }
       #end of M step loop
       
@@ -565,7 +642,7 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=F,gra00=gra00,
         for (mm in (m+r-1):(m+r)){
           bet[mm-m]=soft(bet0[mm-m],-eta/FI[mm,mm])
         }
-        # print(c(miter,bet))
+        print(c(miter,bet))
       }
       #end of M step loop
       
@@ -576,16 +653,231 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=F,gra00=gra00,
       grd[j,] <- d
       grbeta[j,] <- bet
     }
-    #get the sparsity structure
-    sparsity=grbeta
-    for (j in 1:J){
-      for (rr in 1:2){
-        sparsity[j,rr]=ifelse(grbeta[j,rr]==0,0,1)
+    
+    df.d <- abs(dold-grd)
+    df.a <- abs(aold-gra)
+    df.beta <- abs(betaold-grbeta)
+    iter <- iter+1
+  }
+  
+  ###############
+  # Refit model #
+  ###############
+  
+  #get the sparsity structure
+  sparsity=grbeta
+  for (j in 1:J){
+    for (rr in 1:2){
+      sparsity[j,rr]=ifelse(grbeta[j,rr]==0,0,1)
+    }
+  }
+  Pstar <- Qstar <-Pstar1 <- Qstar1 <-Pstar2 <- Qstar2 <-Pstar3 <- Qstar3 <- matrix(double(G*(m-1)),G,m-1)
+  P<-P1<-P2<-P3<- matrix(double(G*m),G,m)
+  df.a <- df.d  <- df.gamma <- df.beta <- df.Sig <- 1
+  
+  iter <- 0
+  
+  #start of the main loop
+  while(max(df.a)>eps | max(df.d)>eps | max(df.beta)>eps)
+  {
+    aold <- gra
+    dold <- grd
+    #gammaold=grgamma
+    betaold=grbeta
+    A1=dmvnorm(X,Mu.gp1,Sig.gp1)
+    A2=dmvnorm(X,Mu.gp2,Sig.gp2)
+    A3=dmvnorm(X,Mu.gp3,Sig.gp3)
+    
+    #calculation of n_g 
+    axmat=gra%*%t(X) #a%*%X
+    #ygam1=ygam2=ygam3=matrix(0,20,2)
+    #for (j in 1:20){
+    #  ygam1[j,]=y1%*%grgamma[,,j]
+    #}
+    #for (j in 1:20){
+    #  ygam2[j,]=y2%*%grgamma[,,j]
+    #}
+    #for (j in 1:20){
+    #  ygam3[j,]=y3%*%grgamma[,,j]
+    #}
+    #ygamat1=ygam1%*%t(X)
+    #ygamat2=ygam2%*%t(X)
+    #ygamat3=ygam3%*%t(X)
+    grbeta1=t(y1%*%t(grbeta))
+    grbeta2=t(y2%*%t(grbeta))
+    grbeta3=t(y3%*%t(grbeta))
+    pstar1=pstar2=pstar3=array(double(J*(m-1)*G),dim = c(J,(m-1),G))
+    p1=p2=p3=array(double(J*m*G),dim = c(J,m,G))
+    for (g in 1:G)
+    {
+      pstar1[,,g] = 1/(1+exp(-(grd+axmat[,g]+ygamat1[,g]+grbeta1)))
+      p1[,,g] = t(-diff(rbind(rep(1,J),t(pstar1[,,g]),rep(0,J))))
+    }
+    for (g in 1:G)
+    {
+      pstar2[,,g] = 1/(1+exp(-(grd+axmat[,g]+ygamat2[,g]+grbeta2)))
+      p2[,,g] = t(-diff(rbind(rep(1,J),t(pstar2[,,g]),rep(0,J))))
+    }
+    for (g in 1:G)
+    {
+      pstar3[,,g] = 1/(1+exp(-(grd+axmat[,g]+ygamat3[,g]+grbeta3)))
+      p3[,,g] = t(-diff(rbind(rep(1,J),t(pstar3[,,g]),rep(0,J))))
+    }
+    pij=array(double(J*G*N1),dim=c(J,G,N1))
+    LiA=matrix(double(N*G),N,G)
+    
+    for (j in 1:J)
+    {
+      for (g in 1:G)
+      {
+        pij[j,g,]=p1[j,(resp[1:N1,j]),g]
       }
     }
+    LiA[1:N1,]=t(apply(pij, c(2,3), prod)*A1)
     
-    ##random part (re-est)
+    for (j in 1:J)
+    {
+      for (g in 1:G)
+      {
+        pij[j,g,]=p2[j,(resp[(N1+1):(N1+N2),j]),g]
+      }
+    }
+    LiA[(N1+1):(N1+N2),]=t(apply(pij, c(2,3), prod)*A2)
+    
+    for (j in 1:J)
+    {
+      for (g in 1:G)
+      {
+        pij[j,g,]=p3[j,(resp[(N1+N2+1):(N1+N2+N3),j]),g]
+      }
+    }
+    LiA[(N1+N2+1):(N1+N2+N3),]=t(apply(pij, c(2,3), prod)*A3)
+    
+    Pi = apply(LiA,1,sum)
+    ng = apply(LiA/Pi,2,sum)
+    ng1=apply(LiA[1:N1,]/Pi[1:N1],2,sum)
+    ng2=apply(LiA[(N1+1):(N1+N2),]/Pi[(N1+1):(N1+N2)],2,sum)
+    ng3=apply(LiA[(N1+N2+1):(N1+N2+N3),]/Pi[(N1+N2+1):(N1+N2+N3)],2,sum)
+    
+    #update mu hat and Sigma hat
+    Mu.gp2=colSums(X*ng2)/N2
+    Mu.gp3=colSums(X*ng3)/N3
+    
+    #update mu hat and Sigma hat
+    Sigg1=Sigg2=Sigg3=matrix(0,r,r)
+    for (g in 1:G){
+      Sigg1=Sigg1+X[g,]%*%t(X[g,])*ng1[g]
+    }
+    Sig.hat1=Sigg1/N1
+    
+    for (g in 1:G){
+      Sigg2=Sigg2+(X[g,]-Mu.gp2)%*%t(X[g,]-Mu.gp2)*ng2[g]
+    }
+    Sig.hat2=Sigg2/N2
+    
+    for (g in 1:G){
+      Sigg3=Sigg3+(X[g,]-Mu.gp3)%*%t(X[g,]-Mu.gp3)*ng3[g]
+    }
+    Sig.hat3=Sigg3/N3
+    
+    #scale 
+    #mu.hat.mat=matrix(rep(mu.hat,G),G,r,byrow = T)
+    Tau=sqrt(diag(Sig.hat1))
+    Tau.mat=matrix(rep(Tau,G),G,r,byrow = T)
+    #q_g_star
+    #X=(X-mu.hat.mat)/Tau.mat
+    Xstar=X/Tau.mat
+    
+    Sigg1=Sigg2=Sigg3=matrix(0,r,r)
+    for (g in 1:G){
+      Sigg1=Sigg1+Xstar[g,]%*%t(Xstar[g,])*ng1[g]
+    }
+    Sig.gp1=Sigg1/N1
+    
+    for (g in 1:G){
+      Sigg2=Sigg2+(Xstar[g,]-Mu.gp2)%*%t(Xstar[g,]-Mu.gp2)*ng2[g]
+    }
+    Sig.gp2=Sigg2/N2
+    
+    for (g in 1:G){
+      Sigg3=Sigg3+(Xstar[g,]-Mu.gp3)%*%t(Xstar[g,]-Mu.gp3)*ng3[g]
+    }
+    Sig.gp3=Sigg3/N3
+    
+    ##Constraint part
+    #calculation of r_jgk
+    for (j in 1:r)
+    {
+      d <- grd[j,]
+      a <- gra[j,j]
+      rLiA <- array(double(N*G*m),dim = c(N,G,m))
+      for(k in 1:m){
+        rLiA[,,k]=Xijk[,j,k]*LiA/Pi
+      }
+      rgk <- apply(rLiA,c(2,3),sum)
+      
+      #M-step loop starts for item j
+      miter <- 0
+      add <- max.tol+1
+      while(sum(abs(add))>max.tol)
+      {
+        miter <- miter+1
+        for(g in 1:G){
+          Pstar[g,] <- 1/(1+exp(-(d+rep(a*X[g,j]))))
+          P[g,] <- -diff(c(1,Pstar[g,],0))
+        }
+        Qstar <- 1-Pstar
+        
+        #calculating the score vector
+        if (m==2){
+          Dsco <- sum(apply(rgk/P,1,diff)*Pstar*Qstar)
+        }else
+          Dsco <- apply(t(apply(rgk/P,1,diff))*Pstar*Qstar,2,sum)
+        
+        PQdif <- -t(apply(cbind(0,Pstar*Qstar,0),1, diff))
+        Asco <- sum(X[,j]*apply(rgk*PQdif/P,1,sum))
+        minusgrad <- -c(Dsco,Asco)
+        
+        FI <- matrix(0,m,m)
+        if (m==2){
+          for (mm in 1:(m-1)){
+            FI[mm,mm] <- -sum(ng*(Pstar[,mm]*Qstar[,mm])^2*(1/P[,mm]+1/P[,mm+1]))
+            FI[m,mm] <- FI[mm,m] <- sum(ng*X[,j]*Pstar[,mm]*Qstar[,mm]*(PQdif[,mm]/P[,mm]-PQdif[,mm+1]/P[,mm+1]))
+          }
+          
+        } else {
+          for (mm in 1:(m-1)){
+            FI[mm,mm] <- -sum(ng*(Pstar[,mm]*Qstar[,mm])^2*(1/P[,mm]+1/P[,mm+1]))
+            FI[m,mm] <- FI[mm,m] <- sum(ng*X[,j]*Pstar[,mm]*Qstar[,mm]*(PQdif[,mm]/P[,mm]-PQdif[,mm+1]/P[,mm+1]))
+          }
+          for (mm in 2:(m-1)){
+            FI[mm,mm-1] <- sum(ng*Pstar[,mm]*Qstar[,mm]*Pstar[,mm-1]*Qstar[,mm-1]*(1/P[,mm]))#(2,1),(3,2)
+          }
+          for (mm in 1:(m-2)){
+            FI[mm,mm+1] <- sum(ng*Pstar[,mm]*Qstar[,mm]*Pstar[,mm+1]*Qstar[,mm+1]*(1/P[,mm+1]))#(1,2),(2,3)
+          }
+        }
+        
+        FI[m,m] <- -sum(ng*X[,j]^2*apply(PQdif^2/P,1,sum))
+        
+        
+        add <- qr.solve(FI,minusgrad)
+        
+        d <- d+add[1:(m-1)]
+        a <- a+add[m]
+      }
+      #end of M step loop
+      
+      #rescale a and d
+      a=a*Tau[j]
+      gra[j,j] <- a
+      grd[j,] <- d
+    }   
+    
+    
+    ##random part
     # dimension1
+    #calculation of r_jgk
     for (j in (r+1):(r+J/2-1))
     {
       d <- grd[j,] 
@@ -849,7 +1141,7 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=F,gra00=gra00,
       grbeta[j,] <- bet
     }
     
-    # dimension2 (re-est)
+    # dimension2
     for (j in (r+J/2):J)
     {
       d <- grd[j,] 
@@ -1099,6 +1391,7 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=F,gra00=gra00,
           }
         }
         #end of M step loop
+        
       }
       
       
@@ -1110,13 +1403,14 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=F,gra00=gra00,
       grbeta[j,] <- bet
     }
     
+    
     df.d <- abs(dold-grd)
     df.a <- abs(aold-gra)
     df.beta <- abs(betaold-grbeta)
+    #df.Sig = abs(Sigold-Sig)
     iter <- iter+1
   }
-  
-  
+  #output esimates and number of iterations
   
   ######################
   ###       BIC      ###
@@ -1262,7 +1556,6 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=F,gra00=gra00,
 }
 #end of function
 
-
 ######################################################
 ###                                                ###
 ###                                                ###
@@ -1300,7 +1593,7 @@ for (rep in 1:reps){
   resp=responses[((rep-1)*N+1):((rep-1)*N+N1+N2+N3),]
   r=2
   m=2
-  eta.vec=seq(18,48,3)
+  eta.vec=seq(4,5,0.2)
   bics=rep(0,length(eta.vec))
   ADmat=array(double(J*3*length(eta.vec)),dim = c(J,3,length(eta.vec)))
   #Gammas=array(double(2*J*m*length(eta.vec)),dim = c(2,2,J,length(eta.vec)))

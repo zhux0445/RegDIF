@@ -1,3 +1,4 @@
+# EMM for high DIF proportion
 library(MASS)
 library(mirt) 
 library(cacIRT)
@@ -39,9 +40,9 @@ Dmat3=matrix(params[,9],J,(m-1))
 ####### r=2, m=2 #######
 ########################
 
-###############################
-##  Start of function (EMM)  ##
-###############################
+#########################
+##  start of function  ##
+#########################
 
 ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=F,gra00=gra00,grd00=grd00,grbeta00=grbeta00,mu100=mu100,mu200=mu200,mu300=mu300,Sig100=Sig100,Sig200=Sig200,Sig300=Sig300)
 {
@@ -565,7 +566,7 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=F,gra00=gra00,
         for (mm in (m+r-1):(m+r)){
           bet[mm-m]=soft(bet0[mm-m],-eta/FI[mm,mm])
         }
-        # print(c(miter,bet))
+       # print(c(miter,bet))
       }
       #end of M step loop
       
@@ -1262,7 +1263,6 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=F,gra00=gra00,
 }
 #end of function
 
-
 ######################################################
 ###                                                ###
 ###                                                ###
@@ -1300,7 +1300,7 @@ for (rep in 1:reps){
   resp=responses[((rep-1)*N+1):((rep-1)*N+N1+N2+N3),]
   r=2
   m=2
-  eta.vec=seq(18,48,3)
+  eta.vec=seq(4,5,0.2)
   bics=rep(0,length(eta.vec))
   ADmat=array(double(J*3*length(eta.vec)),dim = c(J,3,length(eta.vec)))
   #Gammas=array(double(2*J*m*length(eta.vec)),dim = c(2,2,J,length(eta.vec)))
