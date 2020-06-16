@@ -1052,7 +1052,7 @@ ADmat.5=array(double(J*3*reps),dim = c(J,3,reps)) #a has 2 columns, d has 1 colu
 biass.5=matrix(0,reps,3)
 RMSEs.5=matrix(0,reps,3)
 
-StartVals=read.csv("StartingValues5.csv",row.names = 1)
+StartVals=read.csv("StartingValues6.csv",row.names = 1)
 gra00=as.matrix(StartVals[,1:2])
 rownames(gra00) <- c()
 grd00=matrix(StartVals[,3],20,1)
