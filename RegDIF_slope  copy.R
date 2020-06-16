@@ -9,19 +9,35 @@ A22=A23=A21
 D11=rnorm(J,0,1)
 D12=D13=D11
 # focal group has smaller slopes and more extreme intercepts
-A12[4]=A11[4]- 0.3
-A12[5]=A11[5]- 0.3
-A22[12]=A21[12]- 0.3
-A22[13]=A21[13]- 0.3
+A12[4]=A11[4]- 0.5
+A12[5]=A11[5]- 0.5
+A12[6]=A11[6]- 0.5
+A12[7]=A11[7]- 0.5
+A12[8]=A11[8]- 0.5
+A12[9]=A11[9]- 0.5
+A22[12]=A21[12]- 0.5
+A22[13]=A21[13]- 0.5
+A22[14]=A21[14]- 0.5
+A22[15]=A21[15]- 0.5
+A22[16]=A21[16]- 0.5
+A22[17]=A21[17]- 0.5
 #only the second focal group has DIF
 A12[4]=A11[4]
 A12[5]=A11[5]
 A22[12]=A21[12]
 A22[13]=A21[13]
-A13[4]=A11[4]- 0.6
-A13[5]=A11[5]- 0.6
-A23[12]=A21[12]- 0.6
-A23[13]=A21[13]- 0.6
+A13[4]=A11[4]- 1
+A13[5]=A11[5]- 1
+A13[6]=A11[6]- 1
+A13[7]=A11[7]- 1
+A13[8]=A11[8]- 1
+A13[9]=A11[9]- 1
+A23[12]=A21[12]- 1
+A23[13]=A21[13]- 1
+A23[14]=A21[14]- 1
+A23[15]=A21[15]- 1
+A23[16]=A21[16]- 1
+A23[17]=A21[17]- 1
 Amat1=cbind(A11,A21)
 Amat2=cbind(A12,A22)
 Amat3=cbind(A13,A23)
@@ -29,7 +45,7 @@ Dmat1=cbind(D11)
 Dmat2=cbind(D12)
 Dmat3=cbind(D13)
 
-N1=N2=N3=1000
+N1=N2=N3=500
 Group=c(rep('G1', N1), rep('G2', N2), rep('G3', N3))
 Group01=c(rep('G1', N1), rep('G2', N2))
 Group02=c(rep('G1', N1), rep('G3', N3))
@@ -45,7 +61,7 @@ y3=c(0,1)
 ######################    Seed     ########################
 ######################             ########################
 ###########################################################
-set.seed(1100)
+set.seed(100)
 Theta=mvrnorm(n=N,mu=c(0,0),Sigma = matrix(c(1,0.85,0.85,1),2,2))
 Theta1=Theta[1:N1,]
 Theta2=Theta[(N1+1):(N1+N2),]
@@ -59,7 +75,7 @@ resp=rbind(datasetR,datasetF1,datasetF2)
 ### Lasso DIF Quadrature (mirt start, re-est) ####
 ##################################################
 
-library(mirt) 
+library(mirt)  
 library(cacIRT)
 library(mvtnorm)
 library(graphics)
@@ -617,6 +633,8 @@ mu300= Mu.gp3
 Sig100=Sig.gp1
 Sig200=Sig.gp2
 Sig300=Sig.gp3
+grgamma002=grgamma00[1,,]
+write.csv(cbind(gra00,grd00,grbeta00),file = "StartingValues2.csv")
 
 #########################
 ##     For \eta>0      ##

@@ -31,17 +31,9 @@ Dmat1=matrix(params[,7],J,(m-1))
 Dmat2=matrix(params[,8],J,(m-1))
 Dmat3=matrix(params[,9],J,(m-1))
 
-#########################
-##     For \eta>0      ##
-#########################
-
-########################
-####### r=2, m=2 #######
-########################
-
-#########################
-##  start of function  ##
-#########################
+######################################
+##  start of function (Original EM) ##
+######################################
 
 ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=F,gra00=gra00,grd00=grd00,grbeta00=grbeta00,mu100=mu100,mu200=mu200,mu300=mu300,Sig100=Sig100,Sig200=Sig200,Sig300=Sig300)
 {
@@ -1518,7 +1510,7 @@ RMSEs.3=matrix(0,reps,3)
 #  starting values at eta=0 for later eta's for all replications  #
 ###################################################################
 
-resp=responses[1:3000,]
+resp=responses[1:1500,]
 s <- 'F1 = 1,3-11
           F2 = 2,12-20
           COV = F1*F2'
@@ -2111,7 +2103,8 @@ Mu100=coef(md00,simplify=T)$G1$means
 Mu200=coef(md00,simplify=T)$G2$means
 Mu300=coef(md00,simplify=T)$G3$means
 
-#write.csv(cbind(gra00,grd00,grbeta00),file = "StartingValues3.csv")
+grgamma02=rbind(t(rbind(grgamma00[c(1,2),1,1:2])),t(rbind(grgamma00[c(1,2),1,3:11])),t(rbind(grgamma00[c(1,2),2,12:20])))
+write.csv(cbind(gra00,grd00,grgamma02),file = "StartingValues5.csv")
 StartVals=read.csv("StartingValues3.csv",row.names = 1)
 gra00=as.matrix(StartVals[,1:2])
 rownames(gra00) <- c()
@@ -2122,8 +2115,8 @@ colnames(grbeta00) <- c()
 
 # 2 dif per dim
 mu100=c(0,0)
-mu200=c(0.01,-0.04)
-mu300=c(-0.04,-0.06)
+mu200=c(0,0)
+mu300=c(0,0)
 Sig100=matrix(c(1,0.8512375,0.8512375,1),2,2)
 Sig200=matrix(c(0.9879547,0.853391,0.853391,0.95),2,2)
 Sig300=matrix(c(1.06,0.86,0.86,1),2,2)
@@ -2132,7 +2125,7 @@ for (rep in 1:reps){
   resp=responses[((rep-1)*N+1):((rep-1)*N+N1+N2+N3),]
   r=2
   m=2
-  eta.vec=seq(18,45,3)
+  eta.vec=seq(18,36,3)
   bics=rep(0,length(eta.vec))
   ADmat=array(double(J*3*length(eta.vec)),dim = c(J,3,length(eta.vec)))
   #Gammas=array(double(2*J*m*length(eta.vec)),dim = c(2,2,J,length(eta.vec)))

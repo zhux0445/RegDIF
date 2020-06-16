@@ -798,7 +798,7 @@ Sig300=Sig.gp3
 ##                     ##
 #########################
 
-ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=T,gra00=gra00,grd00=grd00,grgamma00=grgamma00,grbeta00=grbeta00,mu100=mu100,mu200=mu200,mu300=mu300,Sig100=Sig100,Sig200=Sig200,Sig300=Sig300)
+ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=T,gra00=gra000,grd00=grd000,grgamma00=grgamma000,grbeta00=grbeta000,mu100=mu100,mu200=mu200,mu300=mu300,Sig100=Sig100,Sig200=Sig200,Sig300=Sig300)
 {
   #make sure the responses are coded from 1 instead of 0
   if(min(resp)==0)
@@ -1600,17 +1600,16 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=T,gra00=gra00,
     temp=sum(sumoverk1)+sum(sumoverk2)+sum(sumoverk3)#-eta*norm(as.matrix(x2), type = "1")##sum over g
     lh[j]=temp
   }
-  l0norm=0
-  for(i in 1:J) 
-  {
-    for(j in 1:2)
-    {
-      for(k in 1:2){
-        l0norm=l0norm+(est.gamma[j,k,i]!=0)
-      }
-    }
+  l0norm=numeric(J) 
+  for (j in 1:20){
+    l0norm[j]=ifelse(apply(sparsity,1,sum)[j]==0,0,1)
   }
-  BIC=-2*sum(lh)+l0norm*log(N)
+  dfl=0
+  for (j in 3:J){
+    dfl=dfl+3*(sqrt(sum((grgamma^2)[,,j])+sum((grbeta^2)[j,]))/sqrt(sum((grgamma000^2)[,,j])+sum((grbeta000^2)[j,])))
+  }
+  df=J+N+(sum(l0norm)+dfl)-1
+  BIC=-2*sum(lh)+df*log(N*J)
   Bias=c(colSums(est.a-Amat1)/10,colMeans(est.d-Dmat1))
   RMSE=c(sqrt(colSums((est.a-Amat1)^2)/10),sqrt(colMeans((est.d-Dmat1)^2)))
   
@@ -1664,7 +1663,7 @@ for (rep in 2:50){
   for (k in 1:length(eta.vec))
   {
     eta=eta.vec[k]
-    sim=ipest1(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=T,gra00=gra000,grd00=grd000,grgamma00=grgamma000,grbeta00=grbeta000,mu100=mu100,mu200=mu200,mu300=mu300,Sig100=Sig100,Sig200=Sig200,Sig300=Sig300)
+    sim=ipest1(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=T,gra00=gra00,grd00=grd00,grgamma00=grgamma00,grbeta00=grbeta00,mu100=mu100,mu200=mu200,mu300=mu300,Sig100=Sig100,Sig200=Sig200,Sig300=Sig300)
     bics[k]=sim$bic
     ADmat[,,k]=sim$est
     Gammas[,,,k]=sim$Gamma
@@ -1672,6 +1671,7 @@ for (rep in 2:50){
     biass[k,]=sim$bias
     RMSEs[k,]=sim$RMSE
   }
+  
   
   
   kk=which.min(bics)
