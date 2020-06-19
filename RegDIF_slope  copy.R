@@ -633,8 +633,14 @@ mu300= Mu.gp3
 Sig100=Sig.gp1
 Sig200=Sig.gp2
 Sig300=Sig.gp3
-grgamma002=grgamma00[1,,]
-write.csv(cbind(gra00,grd00,grbeta00),file = "StartingValues2.csv")
+#write.csv(cbind(gra00,grd00,grbeta00),file = "StartingValues2.csv")
+
+#grgamma000=matrix(0,20,2)
+#for (jj in 1:11)
+#  grgamma000[jj,]=grgamma00[,1,jj]
+#for (jj in 12:20)
+#  grgamma000[jj,]=grgamma00[,2,jj]
+#write.csv(cbind(gra00,grd00,grgamma000),file = "StartingValues6.csv")
 
 #########################
 ##     For \eta>0      ##

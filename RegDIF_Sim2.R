@@ -86,7 +86,7 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=F,gra00=gra00,
   
   iter <- 0
   
-  while(max(df.a)>eps | max(df.d)>eps | max(df.beta)>eps) # max(df.Mu)>eps | max(df.Sig)>eps |
+  while((max(df.a)>eps | max(df.d)>eps | max(df.beta)>eps) & iter<500) # max(df.Mu)>eps | max(df.Sig)>eps |
   {
     aold <- gra
     dold <- grd
@@ -227,7 +227,7 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=F,gra00=gra00,
       #M-step loop starts for item j
       miter <- 0
       add <- max.tol+1
-      while(sum(abs(add))>max.tol)
+      while(sum(abs(add))>max.tol & miter<10000)
       {
         miter <- miter+1
         for(g in 1:G){
@@ -275,7 +275,7 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=F,gra00=gra00,
         a <- a+add[m]
       }
       #end of M step loop
-      
+      print(c(j,miter))
       #rescale a and d
       a=a*Tau[j]
       gra[j,j] <- a
@@ -304,7 +304,7 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=F,gra00=gra00,
       #M-step loop starts for item j
       miter <- 0
       add <- max.tol+1
-      while(sum(abs(add))>max.tol)
+      while(sum(abs(add))>max.tol & miter<10000)
       {
         miter <- miter+1
         for(g in 1:G){
@@ -419,10 +419,10 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=F,gra00=gra00,
         for (mm in (m+r-1):(m+r)){
           bet[mm-m]=soft(bet0[mm-m],-eta/FI[mm,mm])
         }
-        #print(c(miter,bet))
+        #print(c(j,miter,bet))
       }
       #end of M step loop
-      
+      print(c(j,miter,bet))
       #rescale a and d
       a=a*Tau[1]
       
@@ -450,7 +450,7 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=F,gra00=gra00,
       #M-step loop starts for item j
       miter <- 0
       add <- max.tol+1
-      while(sum(abs(add))>max.tol)
+      while(sum(abs(add))>max.tol & miter<10000)
       {
         miter <- miter+1
         for(g in 1:G){
@@ -568,7 +568,7 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=F,gra00=gra00,
         # print(c(miter,bet))
       }
       #end of M step loop
-      
+      print(c(j,miter,bet))
       #rescale a and d
       a=a*Tau[2]
       
@@ -576,6 +576,7 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=F,gra00=gra00,
       grd[j,] <- d
       grbeta[j,] <- bet
     }
+    
     #get the sparsity structure
     sparsity=grbeta
     for (j in 1:J){
@@ -610,7 +611,7 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=F,gra00=gra00,
       if (l0normbetaj==0){
         miter <- 0
         add <- max.tol+1
-        while(sum(abs(add))>max.tol)
+        while(sum(abs(add))>max.tol & miter<10000)
         {
           miter <- miter+1
           for(g in 1:G){
@@ -699,11 +700,12 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=F,gra00=gra00,
           a=a+add[m]
         }
         #end of M step loop
+        print(c(j,miter))
       } else {
         #M-step loop starts for item j
         miter <- 0
         add <- max.tol+1
-        while(sum(abs(add))>max.tol)
+        while(sum(abs(add))>max.tol & miter<10000)
         {
           miter <- miter+1
           for(g in 1:G){
@@ -838,7 +840,7 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=F,gra00=gra00,
           }
         }
         #end of M step loop
-        
+        print(c(j,miter,bet))
       }
       
       #rescale a and d
@@ -874,7 +876,7 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=F,gra00=gra00,
       if (l0normbetaj==0){
         miter <- 0
         add <- max.tol+1
-        while(sum(abs(add))>max.tol)
+        while(sum(abs(add))>max.tol & miter<10000)
         {
           miter <- miter+1
           for(g in 1:G){
@@ -963,10 +965,11 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=F,gra00=gra00,
           a=a+add[m]
         }
         #end of M step loop
+        print(c(j,miter))
       } else {
         miter <- 0
         add <- max.tol+1
-        while(sum(abs(add))>max.tol)
+        while(sum(abs(add))>max.tol & miter<10000)
         {
           miter <- miter+1
           for(g in 1:G){
@@ -1099,6 +1102,7 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=F,gra00=gra00,
           }
         }
         #end of M step loop
+        print(c(j,miter,bet))
       }
       
       
@@ -1114,8 +1118,24 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=F,gra00=gra00,
     df.a <- abs(aold-gra)
     df.beta <- abs(betaold-grbeta)
     iter <- iter+1
+    print(c(iter,max(df.a), max(df.d), max(df.beta)))
   }
-  
+  if (iter=500){
+    print("EM cycle stop at 500")
+  }X1=seq(-3,3,by=0.2)
+  G=length(X1)^r
+  gh=t(matrix(rep(X1,r),r,length(X1),byrow = T))
+  idx <- as.matrix(expand.grid(rep(list(1:length(X1)),r)))
+  X <- matrix(gh[idx,1],nrow(idx),r)
+  ng <-  numeric(G)
+  Xijk=array(double(N*J*m),dim = c(N,J,m))
+  for(i in 1:N){
+    for(j in 1:J){
+      for(k in 1:m){
+        Xijk[i,j,k]=ifelse(resp[i,j]==k,1,0)
+      }
+    }
+  }
   
   
   ######################

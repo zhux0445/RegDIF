@@ -1,40 +1,24 @@
+library(MASS)
+library(mirt)
+mirtCluster(4)
+library(cacIRT)
+library(mvtnorm)
+library(graphics)
+library(dmutate)
+library(Rcpp)
+library(RcppParallel)
+sourceCpp("/Users/ruoyizhu/Documents/GitHub/mirt/matrix.cpp")
 setwd('/Users/ruoyizhu/Documents/GitHub/RegDIF_SimData')
+params=read.csv("Para7.csv",row.names = 1)
+responses=read.csv("RESP9.csv",row.names = 1)
+gamm1=read.csv("/Users/ruoyizhu/Documents/GitHub/RegDIF_SimData/Gamma9_ 1")
+soft=function(s, tau) {
+  val=sign(s)*max(c(abs(s) - tau,0))
+  return(val) }
 # Dataset #4 (2 Non-uniform DIF items per scale)
 J=20
 
-set.seed(1)
-A11=c(runif(1,1.5,2.5),0,runif(9,1.5,2.5),rep(0,9))
-A12=A13=A11
-A21=c(0,runif(1,1.5,2.5),rep(0,9),runif(9,1.5,2.5))
-A22=A23=A21
-D11=rnorm(J,0,1)
-D12=D13=D11
-# focal group has smaller slopes and more extreme intercepts
-A12[4]=A11[4]- 0.5
-A12[5]=A11[5]- 0.5
-A22[12]=A21[12]- 0.5
-A22[13]=A21[13]- 0.5
-A13[4]=A11[4]- 1
-A13[5]=A11[5]- 1
-A23[12]=A21[12]- 1
-A23[13]=A21[13]- 1
-D12[4]=D11[4]+ 0.5
-D12[5]=D11[5]+ 0.5
-D13[4]=D11[4]+ 1
-D13[5]=D11[5]+ 1
-D12[12]=D11[12]+ 0.5
-D12[13]=D11[13]+ 0.5
-D13[12]=D11[12]+ 1
-D13[13]=D11[13]+ 1
-Amat1=cbind(A11,A21)
-Amat2=cbind(A12,A22)
-Amat3=cbind(A13,A23)
-Dmat1=cbind(D11)
-Dmat2=cbind(D12)
-Dmat3=cbind(D13)
-#write.csv(cbind(Amat1,Amat2,Amat3,Dmat1,Dmat2,Dmat3),file = "Para7.csv")
-
-N1=N2=N3=500
+N1=N2=N3=500 
 Group=c(rep('G1', N1), rep('G2', N2), rep('G3', N3))
 N=N1+N2+N3
 
@@ -43,37 +27,19 @@ r=2
 y1=c(0,0)
 y2=c(1,0)
 y3=c(0,1)
-###########################################################
-######################             ########################
-######################    Seed     ########################
-######################             ########################
-###########################################################
-set.seed(200)
-Theta=mvrnorm(n=N,mu=c(0,0),Sigma = matrix(c(1,0.85,0.85,1),2,2))
-Theta1=Theta[1:N1,]
-Theta2=Theta[(N1+1):(N1+N2),]
-Theta3=Theta[(N1+N2+1):(N1+N2+N3),]
-datasetR=simdata(Amat1,Dmat1,itemtype = "dich",Theta=Theta1)
-datasetF1=simdata(Amat2,Dmat2,itemtype = "dich",Theta=Theta2)
-datasetF2=simdata(Amat3,Dmat3,itemtype = "dich",Theta=Theta3)
-resp=rbind(datasetR,datasetF1,datasetF2)
+
+Amat1=params[,1:2]
+Amat2=params[,3:4]
+Amat3=params[,5:6]
+Dmat1=matrix(params[,7],J,(m-1))
+Dmat2=matrix(params[,8],J,(m-1))
+Dmat3=matrix(params[,9],J,(m-1))
 
 ########################################################
 ###                                                 ####
 ###    Group Lasso DIF Quadrature (mirt start)      ####
 ###                                                 ####
 ########################################################
-
-library(mirt) 
-mirtCluster(4)
-library(cacIRT)
-library(mvtnorm)
-library(graphics)
-library(dmutate)
-library(irtoys)
-library(microbenchmark)
-library(Rcpp)
-sourceCpp("/Users/ruoyizhu/Documents/GitHub/mirt/matrix.cpp")
 
 soft=function(s, tau) {      
   val=sign(s)*max(c(abs(s) - tau,0))
@@ -85,24 +51,24 @@ soft=function(s, tau) {
 s <- 'F1 = 1,3-11
           F2 = 2,12-20
           COV = F1*F2'
-Group=c(rep('G1', N1), rep('G2', N2), rep('G3', N3))
-md00 <- multipleGroup(resp, s, group = Group,SE=TRUE,invariance=c('free_means', 'free_var',colnames(resp)[1:r]))
-gra000=coef(md00,simplify=T)$G1$items[,c("a1","a2")]
-grd000=matrix(coef(md00,simplify=T)$G1$items[,c("d")],20,1)
-grgamma000=array(0,dim=c(r,r,J))
-grgamma000[1,1,3:11]=(coef(md00,simplify=T)$G2$items[,c("a1","a2")]-coef(md00,simplify=T)$G1$items[,c("a1","a2")])[3:11,1]
-grgamma000[2,1,3:11]=(coef(md00,simplify=T)$G3$items[,c("a1","a2")]-coef(md00,simplify=T)$G1$items[,c("a1","a2")])[3:11,1]
-grgamma000[1,2,12:20]=(coef(md00,simplify=T)$G2$items[,c("a1","a2")]-coef(md00,simplify=T)$G1$items[,c("a1","a2")])[12:20,2]
-grgamma000[2,2,12:20]=(coef(md00,simplify=T)$G3$items[,c("a1","a2")]-coef(md00,simplify=T)$G1$items[,c("a1","a2")])[12:20,2]
-grbeta000=matrix(0,J,2)
-grbeta000[,1]=matrix(coef(md00,simplify=T)$G2$items[,c("d")],20,1)-matrix(coef(md00,simplify=T)$G1$items[,c("d")],20,1)
-grbeta000[,2]=matrix(coef(md00,simplify=T)$G3$items[,c("d")],20,1)-matrix(coef(md00,simplify=T)$G1$items[,c("d")],20,1)
-Sig100=coef(md00,simplify=T)$G1$cov
-Sig200=coef(md00,simplify=T)$G2$cov
-Sig300=coef(md00,simplify=T)$G3$cov
-Mu100=coef(md00,simplify=T)$G1$means
-Mu200=coef(md00,simplify=T)$G2$means
-Mu300=coef(md00,simplify=T)$G3$means
+#Group=c(rep('G1', N1), rep('G2', N2), rep('G3', N3))
+#md00 <- multipleGroup(resp, s, group = Group,SE=TRUE,invariance=c('free_means', 'free_var',colnames(resp)[1:r]))
+#gra000=coef(md00,simplify=T)$G1$items[,c("a1","a2")]
+#grd000=matrix(coef(md00,simplify=T)$G1$items[,c("d")],20,1)
+#grgamma000=array(0,dim=c(r,r,J))
+#grgamma000[1,1,3:11]=(coef(md00,simplify=T)$G2$items[,c("a1","a2")]-coef(md00,simplify=T)$G1$items[,c("a1","a2")])[3:11,1]
+#grgamma000[2,1,3:11]=(coef(md00,simplify=T)$G3$items[,c("a1","a2")]-coef(md00,simplify=T)$G1$items[,c("a1","a2")])[3:11,1]
+#grgamma000[1,2,12:20]=(coef(md00,simplify=T)$G2$items[,c("a1","a2")]-coef(md00,simplify=T)$G1$items[,c("a1","a2")])[12:20,2]
+#grgamma000[2,2,12:20]=(coef(md00,simplify=T)$G3$items[,c("a1","a2")]-coef(md00,simplify=T)$G1$items[,c("a1","a2")])[12:20,2]
+#grbeta000=matrix(0,J,2)
+#grbeta000[,1]=matrix(coef(md00,simplify=T)$G2$items[,c("d")],20,1)-matrix(coef(md00,simplify=T)$G1$items[,c("d")],20,1)
+#grbeta000[,2]=matrix(coef(md00,simplify=T)$G3$items[,c("d")],20,1)-matrix(coef(md00,simplify=T)$G1$items[,c("d")],20,1)
+#Sig100=coef(md00,simplify=T)$G1$cov
+#Sig200=coef(md00,simplify=T)$G2$cov
+#Sig300=coef(md00,simplify=T)$G3$cov
+#Mu100=coef(md00,simplify=T)$G1$means
+#Mu200=coef(md00,simplify=T)$G2$means
+#Mu300=coef(md00,simplify=T)$G3$means
 
 
 ##############################################
@@ -1640,17 +1606,19 @@ mu100=coef(md00,simplify=T)$G1$means
 mu200=coef(md00,simplify=T)$G2$means
 mu300=coef(md00,simplify=T)$G3$means
 
-for (rep in 2:50){
-  set.seed(rep*100)
-  Theta=mvrnorm(n=N,mu=c(0,0),Sigma = matrix(c(1,0.85,0.85,1),2,2))
-  Theta1=Theta[1:N1,]
-  Theta2=Theta[(N1+1):(N1+N2),]
-  Theta3=Theta[(N1+N2+1):(N1+N2+N3),]
-  datasetR=simdata(Amat1,Dmat1,itemtype = "dich",Theta=Theta1)
-  datasetF1=simdata(Amat2,Dmat2,itemtype = "dich",Theta=Theta2)
-  datasetF2=simdata(Amat3,Dmat3,itemtype = "dich",Theta=Theta3)
-  resp=rbind(datasetR,datasetF1,datasetF2)
-  
+#for (rep in 2:50){
+#  set.seed(rep*100)
+#  Theta=mvrnorm(n=N,mu=c(0,0),Sigma = matrix(c(1,0.85,0.85,1),2,2))
+#  Theta1=Theta[1:N1,]
+#  Theta2=Theta[(N1+1):(N1+N2),]
+#  Theta3=Theta[(N1+N2+1):(N1+N2+N3),]
+#  datasetR=simdata(Amat1,Dmat1,itemtype = "dich",Theta=Theta1)
+#  datasetF1=simdata(Amat2,Dmat2,itemtype = "dich",Theta=Theta2)
+#  datasetF2=simdata(Amat3,Dmat3,itemtype = "dich",Theta=Theta3)
+#  resp=rbind(datasetR,datasetF1,datasetF2)
+
+for (rep in 26:reps){
+  resp=responses[((rep-1)*N+1):((rep-1)*N+N1+N2+N3),] 
   r=2
   m=2
   eta.vec=seq(21,48,3)
@@ -1663,7 +1631,7 @@ for (rep in 2:50){
   for (k in 1:length(eta.vec))
   {
     eta=eta.vec[k]
-    sim=ipest1(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=T,gra00=gra000,grd00=grd000,grgamma00=grgamma000,grbeta00=grbeta000,mu100=mu100,mu200=mu200,mu300=mu300,Sig100=Sig100,Sig200=Sig200,Sig300=Sig300)
+    sim=ipest1(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=T,gra00=gra00,grd00=grd00,grgamma00=grgamma00,grbeta00=grbeta00,mu100=mu100,mu200=mu200,mu300=mu300,Sig100=Sig100,Sig200=Sig200,Sig300=Sig300)
     bics[k]=sim$bic
     ADmat[,,k]=sim$est
     Gammas[,,,k]=sim$Gamma
@@ -1681,13 +1649,6 @@ for (rep in 2:50){
   write.csv(ADmat[,,kk],file = paste("ADmat9_",rep))
   write.csv(Gammas[,,,kk],file = paste("Gamma9_",rep))
   write.csv(Betas[,,kk],file = paste("Beta9_",rep))
-  
-  eta.13[rep]=eta.vec[kk]
-  ADmat.13[,,rep]=ADmat[,,kk]
-  Gammas.13[,,,rep]=Gammas[,,,kk]
-  Betas.13[,,rep]=Betas[,,kk]
-  biass.13[rep,]=biass[kk,]
-  RMSEs.13[rep,]=RMSEs[kk,]
 }
 
 
