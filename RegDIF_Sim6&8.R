@@ -6,8 +6,8 @@ library(graphics)
 library(dmutate)
 library(Rcpp)
 library(RcppParallel)
-sourceCpp("/Users/ruoyizhu/Documents/GitHub/mirt/matrix.cpp")
-setwd('/Users/ruoyizhu/Documents/GitHub/RegDIF_SimData')
+sourceCpp("/Users/zhux0445/Documents/GitHub/RegDIF/matrix.cpp")
+setwd('/Users/zhux0445/Documents/GitHub/RegDIF_SimData')
 params=read.csv("Para4.csv",row.names = 1)
 responses=read.csv("RESP6.csv",row.names = 1)
 
@@ -1064,13 +1064,13 @@ colnames(grbeta00) <- c()
 
 # 2 dif per dim
 mu100=c(0,0)
-mu200=c(0,0.04)
-mu300=c(0.01,0.01)
-Sig100=matrix(c(1,0.8512375,0.8512375,1),2,2)
-Sig200=matrix(c(1.19,1.05,1.05,1.3),2,2)
-Sig300=matrix(c(0.91,0.87,0.87,1.15),2,2)
+mu200=c(-0.01446951,0.02860467)
+mu300=c(-0.01246268,-0.00426051)
+Sig100=matrix(c(1,0.8452613,0.8452613,1),2,2)
+Sig200=matrix(c(1.179328,1.065364,1.065364,1.179328),2,2)
+Sig300=matrix(c(0.9202015,0.8908855,0.8908855,0.9202015),2,2)
 
-for (rep in 1:reps){
+for (rep in 1:17){
   resp=responses[((rep-1)*N+1):((rep-1)*N+N1+N2+N3),]
   r=2
   m=2
@@ -1106,9 +1106,9 @@ for (rep in 1:reps){
   print(Gammas.5[,,,rep])
   print(biass.5[rep,])
   print(RMSEs.5[rep,])
-  write.csv(eta.5[rep],file = paste("eta5_",rep))
-  write.csv(ADmat.5[,,rep],file = paste("ADmat5_",rep))
-  write.csv(rbind(t(rbind(Gammas.5[c(1,2),1,3:11,rep])),t(rbind(Gammas.5[c(1,2),2,12:20,rep]))),file = paste("Gamma5_",rep))
+  write.csv(eta.5[rep],file = paste("eta6_",rep))
+  write.csv(ADmat.5[,,rep],file = paste("ADmat6_",rep))
+  write.csv(rbind(t(rbind(Gammas.5[c(1,2),1,3:11,rep])),t(rbind(Gammas.5[c(1,2),2,12:20,rep]))),file = paste("Gamma6_",rep))
 }
 
 
