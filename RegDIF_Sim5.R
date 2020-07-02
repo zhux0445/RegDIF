@@ -1,5 +1,6 @@
 library(MASS)
 library(mirt) 
+mirtCluster(4)
 library(cacIRT)
 library(mvtnorm)
 library(graphics)
@@ -7,9 +8,9 @@ library(dmutate)
 library(Rcpp)
 library(RcppParallel)
 sourceCpp("/Users/ruoyizhu/Documents/GitHub/mirt/matrix.cpp")
-setwd('/Users/ruoyizhu/Documents/GitHub/RegDIF_SimData')
+setwd('/Users/zhux0445/Documents/GitHub/RegDIF_SimData')
 params=read.csv("Para3.csv",row.names = 1)
-responses=read.csv("RESP5.csv",row.names = 1)
+responses=read.csv("RESP7.csv",row.names = 1)
 
 soft=function(s, tau) {
   val=sign(s)*max(c(abs(s) - tau,0))
@@ -17,7 +18,7 @@ soft=function(s, tau) {
 # Dataset #4 (2 Non-uniform DIF items per scale)
 J=20
 
-N1=N2=N3=500 
+N1=N2=N3=1000 
 Group=c(rep('G1', N1), rep('G2', N2), rep('G3', N3))
 Group01=c(rep('G1', N1), rep('G2', N2))
 Group02=c(rep('G1', N1), rep('G3', N3))
@@ -1465,18 +1466,18 @@ colMeans(bias.mirt3)
 sqrt(colMeans(rmse.mirt3^2))
 colMeans(difrec.mirt.fn3)
 
-write.csv(mirt.p.mat1,file = "Sim5_LRTpvs1.csv")
-write.csv(mirt.p.mat2,file = "Sim5_LRTpvs2.csv")
-write.csv(mirt.p.mat3,file = "Sim5_LRTpvs3.csv")
-write.csv(bias.mirt1,file = "Sim5_LRTbias1.csv")
-write.csv(bias.mirt2,file = "Sim5_LRTbias2.csv")
-write.csv(bias.mirt3,file = "Sim5_LRTbias3.csv")
-write.csv(rmse.mirt1,file = "Sim5_LRTrmse1.csv")
-write.csv(rmse.mirt2,file = "Sim5_LRTrmse2.csv")
-write.csv(rmse.mirt3,file = "Sim5_LRTrmse3.csv")
-write.csv(difrec.mirt.fn1,file = "Sim5_LRTfn1.csv")
-write.csv(difrec.mirt.fn2,file = "Sim5_LRTfn2.csv")
-write.csv(difrec.mirt.fn3,file = "Sim5_LRTfn3.csv")
+write.csv(mirt.p.mat1,file = "Sim7_LRTpvs1.csv")
+write.csv(mirt.p.mat2,file = "Sim7_LRTpvs2.csv")
+write.csv(mirt.p.mat3,file = "Sim7_LRTpvs3.csv")
+write.csv(bias.mirt1,file = "Sim7_LRTbias1.csv")
+write.csv(bias.mirt2,file = "Sim7_LRTbias2.csv")
+write.csv(bias.mirt3,file = "Sim7_LRTbias3.csv")
+write.csv(rmse.mirt1,file = "Sim7_LRTrmse1.csv")
+write.csv(rmse.mirt2,file = "Sim7_LRTrmse2.csv")
+write.csv(rmse.mirt3,file = "Sim7_LRTrmse3.csv")
+write.csv(difrec.mirt.fn1,file = "Sim7_LRTfn1.csv")
+write.csv(difrec.mirt.fn2,file = "Sim7_LRTfn2.csv")
+write.csv(difrec.mirt.fn3,file = "Sim7_LRTfn3.csv")
 
 
 
