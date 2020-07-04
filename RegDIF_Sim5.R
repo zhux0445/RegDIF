@@ -1,5 +1,6 @@
 library(MASS)
 library(mirt) 
+mirtCluster(4)
 library(cacIRT)
 library(mvtnorm)
 library(graphics)
@@ -7,9 +8,9 @@ library(dmutate)
 library(Rcpp)
 library(RcppParallel)
 sourceCpp("/Users/ruoyizhu/Documents/GitHub/mirt/matrix.cpp")
-setwd('/Users/ruoyizhu/Documents/GitHub/RegDIF_SimData')
+setwd('/Users/zhux0445/Documents/GitHub/RegDIF_SimData')
 params=read.csv("Para3.csv",row.names = 1)
-responses=read.csv("RESP6.csv",row.names = 1)
+responses=read.csv("RESP7.csv",row.names = 1)
 
 soft=function(s, tau) {
   val=sign(s)*max(c(abs(s) - tau,0))
@@ -17,7 +18,7 @@ soft=function(s, tau) {
 # Dataset #4 (2 Non-uniform DIF items per scale)
 J=20
 
-N1=N2=N3=500 
+N1=N2=N3=1000 
 Group=c(rep('G1', N1), rep('G2', N2), rep('G3', N3))
 Group01=c(rep('G1', N1), rep('G2', N2))
 Group02=c(rep('G1', N1), rep('G3', N3))
@@ -1372,7 +1373,7 @@ bias.mirt3=matrix(0,50,3)
 rmse.mirt3=matrix(0,50,3)
 difrec.mirt.fn3=matrix(0,50,3) # 
 
-for (rep in 19:50){
+for (rep in 1:50){
   resp=responses[((rep-1)*N+1):((rep-1)*N+N1+N2+N3),]
   resp01=resp[1:(N1+N2),]
   resp02=rbind(resp[1:N1,],resp[(N1+N2+1):(N1+N2+N3),])
@@ -1392,8 +1393,10 @@ for (rep in 19:50){
   rmse.mirt1[rep,1:2]=sqrt(colSums((coef(md.refit0,simplify=T)$G1$items[,1:r]-Amat1)^2)/10)
   bias.mirt1[rep,3]=colMeans(coef(md.refit0,simplify=T)$G1$items[,3]-Dmat1)
   rmse.mirt1[rep,3]=sqrt(colMeans((coef(md.refit0,simplify=T)$G1$items[,3]-Dmat1)^2))
-  difrec.mirt.fn1[rep,2]= mean(c(abs((coef(md.refit0,simplify=T)$G1$items[,1]-coef(md.refit0,simplify=T)$G2$items[,1])[c(4,5,6,7,8,9)]-0.5),abs((coef(md.refit0,simplify=T)$G1$items[,2]-coef(md.refit0,simplify=T)$G2$items[,2])[c(12,13,14,15,16,17)]-0.5)))
-  difrec.mirt.fn1[rep,3]= mean(c(abs((coef(md.refit0,simplify=T)$G1$items[,1]-coef(md.refit0,simplify=T)$G3$items[,1])[c(4,5,6,7,8,9)]-1),abs((coef(md.refit0,simplify=T)$G1$items[,2]-coef(md.refit0,simplify=T)$G3$items[,2])[c(12,13,14,15,16,17)]-1)))
+  difrec.mirt.fn1[rep,2]= mean(c(abs((coef(md.refit0,simplify=T)$G1$items[,1]-coef(md.refit0,simplify=T)$G2$items[,1])[c(4,5)]-0.5),abs((coef(md.refit0,simplify=T)$G1$items[,2]-coef(md.refit0,simplify=T)$G2$items[,2])[c(12,13)]-0.5)))
+  difrec.mirt.fn1[rep,3]= mean(c(abs((coef(md.refit0,simplify=T)$G1$items[,1]-coef(md.refit0,simplify=T)$G3$items[,1])[c(4,5)]-1),abs((coef(md.refit0,simplify=T)$G1$items[,2]-coef(md.refit0,simplify=T)$G3$items[,2])[c(12,13)]-1)))
+  #difrec.mirt.fn1[rep,2]= mean(c(abs((coef(md.refit0,simplify=T)$G1$items[,1]-coef(md.refit0,simplify=T)$G2$items[,1])[c(4,5,6,7,8,9)]-0.5),abs((coef(md.refit0,simplify=T)$G1$items[,2]-coef(md.refit0,simplify=T)$G2$items[,2])[c(12,13,14,15,16,17)]-0.5)))
+  #difrec.mirt.fn1[rep,3]= mean(c(abs((coef(md.refit0,simplify=T)$G1$items[,1]-coef(md.refit0,simplify=T)$G3$items[,1])[c(4,5,6,7,8,9)]-1),abs((coef(md.refit0,simplify=T)$G1$items[,2]-coef(md.refit0,simplify=T)$G3$items[,2])[c(12,13,14,15,16,17)]-1)))
   difrec.mirt.fn1[rep,1]=mean(c(difrec.mirt.fn1[rep,2],difrec.mirt.fn1[rep,3]))
   #ref vs focal1
   md.noncons01 <- multipleGroup(resp01, s, group = Group01,SE=TRUE,invariance=c('free_means', 'free_var','intercepts',colnames(resp01)[1:r]))
@@ -1409,7 +1412,8 @@ for (rep in 19:50){
   rmse.mirt2[rep,1:2]=sqrt(colSums((coef(md.refit01,simplify=T)$G1$items[,1:r]-Amat1)^2)/10)
   bias.mirt2[rep,3]=colMeans(coef(md.refit01,simplify=T)$G1$items[,3]-Dmat1)
   rmse.mirt2[rep,3]=sqrt(colMeans((coef(md.refit01,simplify=T)$G1$items[,3]-Dmat1)^2))
-  difrec.mirt.fn2[rep,2]= mean(c(abs((coef(md.refit01,simplify=T)$G1$items[,1]-coef(md.refit01,simplify=T)$G2$items[,1])[c(4,5,6,7,8,9)]-0.5),abs((coef(md.refit01,simplify=T)$G1$items[,2]-coef(md.refit01,simplify=T)$G2$items[,2])[c(12,13,14,15,16,17)]-0.5)))
+  difrec.mirt.fn2[rep,2]= mean(c(abs((coef(md.refit01,simplify=T)$G1$items[,1]-coef(md.refit01,simplify=T)$G2$items[,1])[c(4,5)]-0.5),abs((coef(md.refit01,simplify=T)$G1$items[,2]-coef(md.refit01,simplify=T)$G2$items[,2])[c(12,13)]-0.5)))
+  #difrec.mirt.fn2[rep,2]= mean(c(abs((coef(md.refit01,simplify=T)$G1$items[,1]-coef(md.refit01,simplify=T)$G2$items[,1])[c(4,5,6,7,8,9)]-0.5),abs((coef(md.refit01,simplify=T)$G1$items[,2]-coef(md.refit01,simplify=T)$G2$items[,2])[c(12,13,14,15,16,17)]-0.5)))
   #ref vs focal2
   md.noncons02 <- multipleGroup(resp02, s, group = Group02,SE=TRUE,invariance=c('free_means', 'free_var','intercepts',colnames(resp02)[1:r]))
   mirt.p.mat3[(rep),1:9]=DIF(md.noncons02, which.par = c('a1'), p.adjust = 'fdr',scheme = 'add',items2test=c(3:11))[,"adj_pvals"]
@@ -1419,8 +1423,10 @@ for (rep in 19:50){
   rmse.mirt3[rep,1:2]=sqrt(colSums((coef(md.refit02,simplify=T)$G1$items[,1:r]-Amat1)^2)/10)
   bias.mirt3[rep,3]=colMeans(coef(md.refit02,simplify=T)$G1$items[,3]-Dmat1)
   rmse.mirt3[rep,3]=sqrt(colMeans((coef(md.refit02,simplify=T)$G1$items[,3]-Dmat1)^2))
-  difrec.mirt.fn3[rep,3]= mean(c(abs((coef(md.refit02,simplify=T)$G1$items[,1]-coef(md.refit02,simplify=T)$G3$items[,1])[c(4,5,6,7,8,9)]-1),abs((coef(md.refit02,simplify=T)$G1$items[,2]-coef(md.refit02,simplify=T)$G3$items[,2])[c(12,13,14,15,16,17)]-1)))
-}
+  difrec.mirt.fn3[rep,3]= mean(c(abs((coef(md.refit02,simplify=T)$G1$items[,1]-coef(md.refit02,simplify=T)$G3$items[,1])[c(4,5)]-1),abs((coef(md.refit02,simplify=T)$G1$items[,2]-coef(md.refit02,simplify=T)$G3$items[,2])[c(12,13)]-1)))
+  #difrec.mirt.fn3[rep,3]= mean(c(abs((coef(md.refit02,simplify=T)$G1$items[,1]-coef(md.refit02,simplify=T)$G3$items[,1])[c(4,5,6,7,8,9)]-1),abs((coef(md.refit02,simplify=T)$G1$items[,2]-coef(md.refit02,simplify=T)$G3$items[,2])[c(12,13,14,15,16,17)]-1)))
+  rep
+  }
 sum(mirt.p.mat1[,c(2,3,10,11)]<0.05)/(50*4)
 sum(mirt.p.mat1[,-c(2,3,10,11)]<0.05)/(50*14)
 colMeans(bias.mirt1)
@@ -1460,18 +1466,18 @@ colMeans(bias.mirt3)
 sqrt(colMeans(rmse.mirt3^2))
 colMeans(difrec.mirt.fn3)
 
-write.csv(mirt.p.mat1,file = "Sim2_LRTpvs1.csv")
-write.csv(mirt.p.mat2,file = "Sim2_LRTpvs2.csv")
-write.csv(mirt.p.mat3,file = "Sim2_LRTpvs3.csv")
-write.csv(bias.mirt1,file = "Sim2_LRTbias1.csv")
-write.csv(bias.mirt2,file = "Sim2_LRTbias2.csv")
-write.csv(bias.mirt3,file = "Sim2_LRTbias3.csv")
-write.csv(rmse.mirt1,file = "Sim2_LRTrmse1.csv")
-write.csv(rmse.mirt2,file = "Sim2_LRTrmse2.csv")
-write.csv(rmse.mirt3,file = "Sim2_LRTrmse3.csv")
-write.csv(difrec.mirt.fn1,file = "Sim2_LRTfn1.csv")
-write.csv(difrec.mirt.fn2,file = "Sim2_LRTfn2.csv")
-write.csv(difrec.mirt.fn3,file = "Sim2_LRTfn3.csv")
+write.csv(mirt.p.mat1,file = "Sim7_LRTpvs1.csv")
+write.csv(mirt.p.mat2,file = "Sim7_LRTpvs2.csv")
+write.csv(mirt.p.mat3,file = "Sim7_LRTpvs3.csv")
+write.csv(bias.mirt1,file = "Sim7_LRTbias1.csv")
+write.csv(bias.mirt2,file = "Sim7_LRTbias2.csv")
+write.csv(bias.mirt3,file = "Sim7_LRTbias3.csv")
+write.csv(rmse.mirt1,file = "Sim7_LRTrmse1.csv")
+write.csv(rmse.mirt2,file = "Sim7_LRTrmse2.csv")
+write.csv(rmse.mirt3,file = "Sim7_LRTrmse3.csv")
+write.csv(difrec.mirt.fn1,file = "Sim7_LRTfn1.csv")
+write.csv(difrec.mirt.fn2,file = "Sim7_LRTfn2.csv")
+write.csv(difrec.mirt.fn3,file = "Sim7_LRTfn3.csv")
 
 
 
