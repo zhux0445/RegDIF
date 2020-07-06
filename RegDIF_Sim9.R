@@ -882,12 +882,13 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=T,gra00=gra00,
   for (j in 1:20){
     l0norm[j]=ifelse(apply(sparsity,1,sum)[j]==0,0,1)
   }
-  dfl=0
-  for (j in 3:J){
-    dfl=dfl+3*(sqrt(sum((grgamma^2)[,,j])+sum((grbeta^2)[j,]))/sqrt(sum((grgamma000^2)[,,j])+sum((grbeta000^2)[j,])))
-  }
-  df=J+N+(sum(l0norm)+dfl)-1
-  BIC=-2*sum(lh)+df*log(N*J)
+  #dfl=0
+  #for (j in 3:J){
+  #  dfl=dfl+3*(sqrt(sum((grgamma^2)[,,j])+sum((grbeta^2)[j,]))/sqrt(sum((grgamma000^2)[,,j])+sum((grbeta000^2)[j,])))
+  #}
+  #df=J+N+(sum(l0norm)+dfl)-1
+  #BIC=-2*sum(lh)+df*log(N*J)
+  BIC=-2*sum(lh)+ 4*sum(l0norm)*log(N)
   Bias=c(colSums(est.a-Amat1)/10,colMeans(est.d-Dmat1))
   RMSE=c(sqrt(colSums((est.a-Amat1)^2)/10),sqrt(colMeans((est.d-Dmat1)^2)))
   
@@ -1571,21 +1572,21 @@ for (rep in 1:50){
   ##################################################################################################
   #    starting values by multiplegroup for all etas (ML estimates of DIF parameters. for BIC)     #
   ##################################################################################################
-  s <- 'F1 = 1,3-11
-          F2 = 2,12-20
-          COV = F1*F2'
-  Group=c(rep('G1', N1), rep('G2', N2), rep('G3', N3))
-  md00 <- multipleGroup(resp, s, group = Group,SE=TRUE,invariance=c('free_means', 'free_var',colnames(resp)[1:r]))
-  gra000=coef(md00,simplify=T)$G1$items[,c("a1","a2")]
-  grd000=matrix(coef(md00,simplify=T)$G1$items[,c("d")],20,1)
-  grgamma000=array(0,dim=c(r,r,J))
-  grgamma000[1,1,3:11]=(coef(md00,simplify=T)$G2$items[,c("a1","a2")]-coef(md00,simplify=T)$G1$items[,c("a1","a2")])[3:11,1]
-  grgamma000[2,1,3:11]=(coef(md00,simplify=T)$G3$items[,c("a1","a2")]-coef(md00,simplify=T)$G1$items[,c("a1","a2")])[3:11,1]
-  grgamma000[1,2,12:20]=(coef(md00,simplify=T)$G2$items[,c("a1","a2")]-coef(md00,simplify=T)$G1$items[,c("a1","a2")])[12:20,2]
-  grgamma000[2,2,12:20]=(coef(md00,simplify=T)$G3$items[,c("a1","a2")]-coef(md00,simplify=T)$G1$items[,c("a1","a2")])[12:20,2]
-  grbeta000=matrix(0,J,2)
-  grbeta000[,1]=matrix(coef(md00,simplify=T)$G2$items[,c("d")],20,1)-matrix(coef(md00,simplify=T)$G1$items[,c("d")],20,1)
-  grbeta000[,2]=matrix(coef(md00,simplify=T)$G3$items[,c("d")],20,1)-matrix(coef(md00,simplify=T)$G1$items[,c("d")],20,1)
+  #s <- 'F1 = 1,3-11
+  #        F2 = 2,12-20
+  #        COV = F1*F2'
+  #Group=c(rep('G1', N1), rep('G2', N2), rep('G3', N3))
+  #md00 <- multipleGroup(resp, s, group = Group,SE=TRUE,invariance=c('free_means', 'free_var',colnames(resp)[1:r]))
+  #gra000=coef(md00,simplify=T)$G1$items[,c("a1","a2")]
+  #grd000=matrix(coef(md00,simplify=T)$G1$items[,c("d")],20,1)
+  #grgamma000=array(0,dim=c(r,r,J))
+  #grgamma000[1,1,3:11]=(coef(md00,simplify=T)$G2$items[,c("a1","a2")]-coef(md00,simplify=T)$G1$items[,c("a1","a2")])[3:11,1]
+  #grgamma000[2,1,3:11]=(coef(md00,simplify=T)$G3$items[,c("a1","a2")]-coef(md00,simplify=T)$G1$items[,c("a1","a2")])[3:11,1]
+  #grgamma000[1,2,12:20]=(coef(md00,simplify=T)$G2$items[,c("a1","a2")]-coef(md00,simplify=T)$G1$items[,c("a1","a2")])[12:20,2]
+  #grgamma000[2,2,12:20]=(coef(md00,simplify=T)$G3$items[,c("a1","a2")]-coef(md00,simplify=T)$G1$items[,c("a1","a2")])[12:20,2]
+  #grbeta000=matrix(0,J,2)
+  #grbeta000[,1]=matrix(coef(md00,simplify=T)$G2$items[,c("d")],20,1)-matrix(coef(md00,simplify=T)$G1$items[,c("d")],20,1)
+  #grbeta000[,2]=matrix(coef(md00,simplify=T)$G3$items[,c("d")],20,1)-matrix(coef(md00,simplify=T)$G1$items[,c("d")],20,1)
   
   ##########################################################################################
   eta.vec=seq(21,51,3)
