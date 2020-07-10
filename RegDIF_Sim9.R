@@ -1613,10 +1613,10 @@ for (rep in 1:50){
   print(eta.vec[kk])
   print(Betas[,,kk])
   
-  write.csv(eta.vec[kk],file = paste("eta9m_",rep))
-  write.csv(ADmat[,,kk],file = paste("ADmat9m_",rep))
-  write.csv(Gammas[,,,kk],file = paste("Gamma9m_",rep))
-  write.csv(Betas[,,kk],file = paste("Beta9m_",rep))
+  write.csv(eta.vec[kk],file = paste("eta9mm_",rep))
+  write.csv(ADmat[,,kk],file = paste("ADmat9mm_",rep))
+  write.csv(Gammas[,,,kk],file = paste("Gamma9mm_",rep))
+  write.csv(Betas[,,kk],file = paste("Beta9mm_",rep))
 }
 
 write.csv(mirt.p.mat,file = "Sim9_LRTpvs.csv")
