@@ -909,6 +909,7 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=T,gra00=gra00,
 #  datasetF2=simdata(Amat3,Dmat3,itemtype = "dich",Theta=Theta3)
 #  resp=rbind(datasetR,datasetF1,datasetF2)
 
+<<<<<<< HEAD
 ########################################################
 ########             Starting Value            #########
 ########################################################
@@ -935,6 +936,39 @@ for(i in 1:N){
   for(j in 1:J){
     for(k in 1:m){
       Xijk[i,j,k]=ifelse(resp[i,j]==k,1,0)
+=======
+for (rep in 2:25){
+  resp=responses[((rep-1)*N+1):((rep-1)*N+N1+N2+N3),] 
+  r=2
+  m=2
+  ########################################################
+  ########             Starting Value            #########
+  ########################################################
+  eta=0
+  eps =1e-3
+  max.tol=1e-7
+  NonUniform=T
+  if(min(resp)==0)
+  { 
+    resp <- resp+1
+  }
+  #sample size and test length
+  N <- nrow(resp)
+  J <- ncol(resp)
+  
+  X1=seq(-3,3,by=0.2)
+  G=length(X1)^r
+  gh=t(matrix(rep(X1,r),r,length(X1),byrow = T))
+  idx <- as.matrix(expand.grid(rep(list(1:length(X1)),r)))
+  X <- matrix(gh[idx,1],nrow(idx),r)
+  ng = ng1 = ng2 = ng3 = numeric(G)
+  Xijk=array(double(N*J*m),dim = c(N,J,m))
+  for(i in 1:N){
+    for(j in 1:J){
+      for(k in 1:m){
+        Xijk[i,j,k]=ifelse(resp[i,j]==k,1,0)
+      }
+>>>>>>> bdc56e2cd7f2d2434530dd2545f5b957e33adcd1
     }
   }
 }
