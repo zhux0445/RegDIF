@@ -7,8 +7,8 @@ library(graphics)
 library(dmutate)
 library(Rcpp)
 library(RcppParallel)
-sourceCpp("/Users/ruoyizhu/Documents/GitHub/mirt/matrix.cpp")
-setwd('/Users/ruoyizhu/Documents/GitHub/RegDIF_SimData')
+sourceCpp("/Users/zhux0445/Documents/GitHub/RegDIF/matrix.cpp")
+setwd('/Users/zhux0445/Documents/GitHub/RegDIF_SimData')
 params=read.csv("Para8.csv",row.names = 1)
 responses=read.csv("RESP10.csv",row.names = 1)
 gamm1=read.csv("/Users/ruoyizhu/Documents/GitHub/RegDIF_SimData/Gamma9_ 1")
@@ -909,7 +909,7 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=T,gra00=gra00,
 #  datasetF2=simdata(Amat3,Dmat3,itemtype = "dich",Theta=Theta3)
 #  resp=rbind(datasetR,datasetF1,datasetF2)
 
-for (rep in 1:50){
+for (rep in 2:25){
   resp=responses[((rep-1)*N+1):((rep-1)*N+N1+N2+N3),] 
   r=2
   m=2
