@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>DIF Detection via Regularization</title>
+  <meta name="description" content="DIF Detection via Regularization" />
+  <meta name="generator" content="bookdown 0.12 and GitBook 2.6.7" />
+
+  <meta property="og:title" content="DIF Detection via Regularization" />
+  <meta property="og:type" content="book" />
+  
+  
+  
+  
+
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="DIF Detection via Regularization" />
+  
+  
+  
+
+<meta name="author" content="Ruoyi Zhu" />
+
+
+
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  
+  
+
+<link rel="next" href="multidimensional-2pl-model-with-dif.html">
+<script src="libs/jquery-2.2.3/jquery.min.js"></script>
+<link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-table.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-bookdown.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-highlight.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-search.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-fontsettings.css" rel="stylesheet" />
+
+
+
+
+
+
+
+
+
+
+</head>
+
+<body>
+
+
+
+  <div class="book without-animation with-summary font-size-2 font-family-1" data-basepath=".">
+
+    <div class="book-summary">
+      <nav role="navigation">
+
+<ul class="summary">
+<li class="chapter" data-level="1" data-path="dif-detection-methods.html"><a href="dif-detection-methods.html"><i class="fa fa-check"></i><b>1</b> DIF Detection Methods</a><ul>
+<li class="chapter" data-level="1.1" data-path="dif-detection-methods.html"><a href="dif-detection-methods.html#likelihood-ratio-test"><i class="fa fa-check"></i><b>1.1</b> Likelihood Ratio Test</a></li>
+</ul></li>
+<li class="chapter" data-level="2" data-path="multidimensional-2pl-model-with-dif.html"><a href="multidimensional-2pl-model-with-dif.html"><i class="fa fa-check"></i><b>2</b> Multidimensional 2PL Model with DIF</a></li>
+<li class="chapter" data-level="3" data-path="graded-response-model-with-dif.html"><a href="graded-response-model-with-dif.html"><i class="fa fa-check"></i><b>3</b> Graded Response Model with DIF</a></li>
+<li class="chapter" data-level="4" data-path="model-identifiability-constraint.html"><a href="model-identifiability-constraint.html"><i class="fa fa-check"></i><b>4</b> Model Identifiability Constraint</a></li>
+<li class="chapter" data-level="5" data-path="uniform-dif-detection-via-lasso.html"><a href="uniform-dif-detection-via-lasso.html"><i class="fa fa-check"></i><b>5</b> Uniform DIF Detection via LASSO</a><ul>
+<li class="chapter" data-level="5.1" data-path="uniform-dif-detection-via-lasso.html"><a href="uniform-dif-detection-via-lasso.html#e-step"><i class="fa fa-check"></i><b>5.1</b> E step</a></li>
+<li class="chapter" data-level="5.2" data-path="uniform-dif-detection-via-lasso.html"><a href="uniform-dif-detection-via-lasso.html#m-step"><i class="fa fa-check"></i><b>5.2</b> M step</a><ul>
+<li class="chapter" data-level="5.2.1" data-path="uniform-dif-detection-via-lasso.html"><a href="uniform-dif-detection-via-lasso.html#cyclical-coordinate-descent"><i class="fa fa-check"></i><b>5.2.1</b> Cyclical coordinate descent</a></li>
+</ul></li>
+<li class="chapter" data-level="5.3" data-path="uniform-dif-detection-via-lasso.html"><a href="uniform-dif-detection-via-lasso.html#simulation"><i class="fa fa-check"></i><b>5.3</b> Simulation</a><ul>
+<li class="chapter" data-level="5.3.1" data-path="uniform-dif-detection-via-lasso.html"><a href="uniform-dif-detection-via-lasso.html#results-of-50-replications-n1500"><i class="fa fa-check"></i><b>5.3.1</b> Results of 50 Replications (N=1500)</a></li>
+<li class="chapter" data-level="5.3.2" data-path="uniform-dif-detection-via-lasso.html"><a href="uniform-dif-detection-via-lasso.html#results-of-50-replications-n3000"><i class="fa fa-check"></i><b>5.3.2</b> Results of 50 Replications (N=3000)</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="6" data-path="non-uniform-dif-detection-via-lasso.html"><a href="non-uniform-dif-detection-via-lasso.html"><i class="fa fa-check"></i><b>6</b> Non-uniform DIF Detection via LASSO</a><ul>
+<li class="chapter" data-level="6.1" data-path="non-uniform-dif-detection-via-lasso.html"><a href="non-uniform-dif-detection-via-lasso.html#e-step-1"><i class="fa fa-check"></i><b>6.1</b> E step</a></li>
+<li class="chapter" data-level="6.2" data-path="non-uniform-dif-detection-via-lasso.html"><a href="non-uniform-dif-detection-via-lasso.html#m-step-1"><i class="fa fa-check"></i><b>6.2</b> M step</a><ul>
+<li class="chapter" data-level="6.2.1" data-path="non-uniform-dif-detection-via-lasso.html"><a href="non-uniform-dif-detection-via-lasso.html#cyclical-coordinate-descent-1"><i class="fa fa-check"></i><b>6.2.1</b> Cyclical coordinate descent</a></li>
+</ul></li>
+<li class="chapter" data-level="6.3" data-path="non-uniform-dif-detection-via-lasso.html"><a href="non-uniform-dif-detection-via-lasso.html#simulation-1"><i class="fa fa-check"></i><b>6.3</b> Simulation</a><ul>
+<li class="chapter" data-level="6.3.1" data-path="non-uniform-dif-detection-via-lasso.html"><a href="non-uniform-dif-detection-via-lasso.html#results-of-20-replications"><i class="fa fa-check"></i><b>6.3.1</b> Results of 20 Replications</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="7" data-path="non-uniform-dif-detection-via-group-lasso.html"><a href="non-uniform-dif-detection-via-group-lasso.html"><i class="fa fa-check"></i><b>7</b> Non-uniform DIF Detection via Group LASSO</a><ul>
+<li class="chapter" data-level="7.1" data-path="non-uniform-dif-detection-via-group-lasso.html"><a href="non-uniform-dif-detection-via-group-lasso.html#e-step-2"><i class="fa fa-check"></i><b>7.1</b> E step</a></li>
+<li class="chapter" data-level="7.2" data-path="non-uniform-dif-detection-via-group-lasso.html"><a href="non-uniform-dif-detection-via-group-lasso.html#m-step-2"><i class="fa fa-check"></i><b>7.2</b> M step</a><ul>
+<li class="chapter" data-level="7.2.1" data-path="non-uniform-dif-detection-via-group-lasso.html"><a href="non-uniform-dif-detection-via-group-lasso.html#block-co-ordinate-gradient-descent"><i class="fa fa-check"></i><b>7.2.1</b> Block co-ordinate gradient descent</a></li>
+</ul></li>
+<li class="chapter" data-level="7.3" data-path="non-uniform-dif-detection-via-group-lasso.html"><a href="non-uniform-dif-detection-via-group-lasso.html#simulation-2"><i class="fa fa-check"></i><b>7.3</b> Simulation</a><ul>
+<li class="chapter" data-level="7.3.1" data-path="non-uniform-dif-detection-via-group-lasso.html"><a href="non-uniform-dif-detection-via-group-lasso.html#results-of-20-replications-1"><i class="fa fa-check"></i><b>7.3.1</b> Results of 20 Replications</a></li>
+</ul></li>
+</ul></li>
+</ul>
+
+      </nav>
+    </div>
+
+    <div class="book-body">
+      <div class="body-inner">
+        <div class="book-header" role="navigation">
+          <h1>
+            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">DIF Detection via Regularization</a>
+          </h1>
+        </div>
+
+        <div class="page-wrapper" tabindex="-1" role="main">
+          <div class="page-inner">
+
+            <section class="normal" id="section-">
+<div id="header">
+<h1 class="title">DIF Detection via Regularization</h1>
+<p class="author"><em>Ruoyi Zhu</em></p>
+<p class="date"><em>1/6/2020</em></p>
+</div>
+<div id="dif-detection-methods" class="section level1">
+<h1><span class="header-section-number">1</span> DIF Detection Methods</h1>
+<div id="likelihood-ratio-test" class="section level2">
+<h2><span class="header-section-number">1.1</span> Likelihood Ratio Test</h2>
+<p>In likelihood ratio test, DIF will be tested one item at a time. The null hypothesis is that all but the anchor items are DIF. To test whether the <em>j</em>th item is DIF, the alternative hypothesis is that the anchor items and the <em>j</em>th item is DIF free, and all other items are DIF. If the null hypothesis is rejected (adjust p-value &lt;0.05), the tested item will be flagged as DIF. Since we are testing several hypotheses, multiple comparisons need to be performed. The adjust p-values are the family-wise error rate. We assume the latent traits in reference and focal groups follow normal distributions. The mean and variance of reference group are fixed to be 0 and 1, respectively. The means and variances of focal groups can be freely estimated.</p>
+</div>
+</div>
+            </section>
+
+          </div>
+        </div>
+      </div>
+
+<a href="multidimensional-2pl-model-with-dif.html" class="navigation navigation-next navigation-unique" aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+    </div>
+  </div>
+<script src="libs/gitbook-2.6.7/js/app.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/lunr.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-search.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-sharing.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-fontsettings.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-bookdown.js"></script>
+<script src="libs/gitbook-2.6.7/js/jquery.highlight.js"></script>
+<script>
+gitbook.require(["gitbook"], function(gitbook) {
+gitbook.start({
+"sharing": {
+"github": false,
+"facebook": true,
+"twitter": true,
+"google": false,
+"linkedin": false,
+"weibo": false,
+"instapaper": false,
+"vk": false,
+"all": ["facebook", "google", "twitter", "linkedin", "weibo", "instapaper"]
+},
+"fontsettings": {
+"theme": "white",
+"family": "sans",
+"size": 2
+},
+"edit": {
+"link": null,
+"text": null
+},
+"history": {
+"link": null,
+"text": null
+},
+"download": null,
+"toc": {
+"collapse": "subsection"
+}
+});
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    var src = "true";
+    if (src === "" || src === "true") src = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML";
+    if (location.protocol !== "file:" && /^https?:/.test(src))
+      src = src.replace(/^https?:/, '');
+    script.src = src;
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+</body>
+
+</html>

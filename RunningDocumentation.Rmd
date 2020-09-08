@@ -1,13 +1,13 @@
 ---
 title: "DIF Detection via Regularization"
 author: "Ruoyi Zhu"
-date: "1/6/2020"
+date: "9/9/2020"
 output:  bookdown::pdf_document2
 header-includes:
   - \usepackage[ruled,vlined,linesnumbered]{algorithm2e}
 ---
 
-# DIF Detection Methods
+# Conventional DIF Detection Methods
 
 ## Likelihood Ratio Test
 
@@ -195,7 +195,7 @@ $$P_{jyk\mid q_{g}} = P_{j,y,{k-1}\mid q_{g}}^* - P_{jyk\mid q_{g}}^*$$
 
 # Model Identifiability Constraint
 
-Yet the model is not identified. Some constraints on the item parameters are required. Here, for each dimension, we set one anchor item which we know its DIF parameters ($\Gamma$ and $\beta$) are zero for all groups.
+Some constraints on the item parameters are required for model identification. Here, for each dimension, we set one anchor item which we know its DIF parameters ($\Gamma$ and $\beta$) are zero for all groups.
 
 For instance, if we have two ability dimensions (q=2), test length $m=20$, and the each factor is loaded on 10 items, then the simple structure discrimination parameter matrix will take the form 
 
@@ -650,7 +650,15 @@ Note that $\mathrm{diag}(\hat{\boldsymbol\Sigma}_{1r})$ is the *r*th element on 
 
 $\varepsilon_1=10^{-3}$ and $\varepsilon_2=10^{-7}$.
 
+## Tuning Parameter Selectiion
+
+The Bayesian information criterion (BIC) is applied for tuning parameter selection. The BIC can be calculated by
+$$BIC_{\hat{\textbf A},\hat{\textbf D},\hat{\boldsymbol\beta}}=-2\max_{\hat{\textbf A},\hat{\textbf D},\hat{\boldsymbol\beta}}\log M+ \|\hat{\boldsymbol\beta}\|_0 \log N, \tag{11}$$
+where N is the sample size. The first term control the bias of the estimator, and the second term penalize the complexity of the model. We want to choose a tuning parameter $\eta$ which gives us the smallest BIC value.
+
 ## Simulation
+
+### Simulation 1
 
 $\emph Sample$ $\emph Size.$ The total sample size is $N=1500$, and the group sample sizes are $N_1=N_2=N_3=500$.
 
@@ -739,11 +747,13 @@ $$\boldsymbol\beta=\begin{pmatrix}
 0 & 0 \\
 \end{pmatrix},$$
 
+The first two items are used as anchor items in estimation.
+
 No impact. $\theta_i\sim N(\begin{pmatrix}0\\0\\\end{pmatrix}, \begin{pmatrix}1&0.85\\0.85&1\\\end{pmatrix})$
 
-$\emph Tuning \ parameters.$ Tuning parameters $\eta$ are chosen from a sequence starting from 21 to 51 with increment 3.
+$\emph Tuning \ parameters.$ Tuning parameters $\eta$ are chosen from a sequence starting from 21 to 51 with increment 3. The range [21,51] was chosen because in all simulation studies I’ve run so far, the true model will be selected by the tuning parameter in this range for 100%.
 
-### Results of 50 Replications (N=1500)
+Results of 50 Replications 
 
 $\emph Table \ 1. \ Type \ I \ error \ and \ Power \ of \ regularization \ method$
 
@@ -752,7 +762,7 @@ Group | Omnibus DIF| Group with DIF=0.5| Group with DIF=1|
 Power| 0.985 | 0.34 | 0.985 |
 Type I| 0.047 | 0.024 | 0.024 |
 
-Omnibus DIF is defined as if at least one focal group showd DIF on an item, then that item is flagged as DIF.
+Omnibus DIF in regularization is defined as if at least one focal group showd DIF on an item, then that item is flagged as DIF. But in mirt package, omnibus DIf is testing $H_0$: the item has no DIF v.s. $H_\alpha:$ all focal groups have DIF.
 
 $\emph Table \ 2. \ Type \ I \ error \ and \ Power \ of \ mirt \ LRT \ (0.05 \ significance \ level)$
 
@@ -816,9 +826,62 @@ for (rep in 1:50){
 ```
 The results in Table 6 are the average of estimated DIF for false positive items. LRT by mirt performs better when type I error happens. The type I error is low, so the probability to have these bias is low.
 
-### Results of 50 Replications (N=3000)
+### Simulation 2
+
+Increase DIF proportion to 60% and keep everything else the same in simulation 1.
+
+$\emph Sample$ $\emph Size.$ The total sample size is $N=1500$, and the group sample sizes are $N_1=N_2=N_3=500$.
+
+$\emph Proportion \ of \ DIF.$ 12 items with DIF. 6 DIF items per dimension.
+
+$$\boldsymbol\beta=\begin{pmatrix}
+0 & 0\\
+0 & 0 \\
+0 & 0 \\
+0.5 & 1 \\
+0.5 & 1 \\
+0.5 & 1 \\
+0.5 & 1 \\
+0.5 & 1 \\
+0.5 & 1 \\
+0 & 0 \\
+0 & 0 \\
+0.5 & 1 \\
+0.5 & 1 \\
+0.5 & 1 \\
+0.5 & 1 \\
+0.5 & 1 \\
+0.5 & 1 \\
+0 & 0 \\
+0 & 0 \\
+0 & 0 \\
+\end{pmatrix},$$
 
 $\emph Table \ 7. \ Type \ I \ error \ and \ Power \ of \ regularization \ method$
+
+Group | Omnibus DIF| Group with DIF=0.5| Group with DIF=1| 
+------|------|------|------|
+Power| 0.872 | 0.136 | 0.872 |
+Type I| 0.135 | 0.085 | 0.053 |
+
+Omnibus DIF is defined as if at least one focal group showd DIF on an item, then that item is flagged as DIF.
+
+$\emph Table \ 8. \ Type \ I \ error \ and \ Power \ of \ mirt \ LRT \ (0.05 \ significance \ level)$
+
+Group | Omnibus DIF| Group with DIF=0.5| Group with DIF=1| 
+------|------|------|------|
+Power| 0.963 | 0.395 | 0.987 |
+Type I| 0.0175 | 0.0125 | 0.0175 |
+
+### Simulation 3
+
+Increase total sample size to 3000 and keep everything else the same in simulation 1.
+
+$\emph Sample$ $\emph Size.$ The total sample size is $N=3000$, and the group sample sizes are $N_1=N_2=N_3=1000$.
+
+$\emph Proportion \ of \ DIF.$ 4 items with DIF. 2 DIF items per dimension.
+
+$\emph Table \ 9. \ Type \ I \ error \ and \ Power \ of \ regularization \ method$
 
 Group | Omnibus DIF| Group with DIF=0.5| Group with DIF=1| 
 ------|------|------|------|
@@ -827,7 +890,7 @@ Type I| 0.051 | 0.027 | 0.028 |
 
 Omnibus DIF is defined as if at least one focal group showd DIF on an item, then that item is flagged as DIF.
 
-$\emph Table \ 8. \ Type \ I \ error \ and \ Power \ of \ mirt \ LRT \ (0.05 \ significance \ level)$
+$\emph Table \ 10. \ Type \ I \ error \ and \ Power \ of \ mirt \ LRT \ (0.05 \ significance \ level)$
 
 Group | Omnibus DIF| Group with DIF=0.5| Group with DIF=1| 
 ------|------|------|------|
@@ -835,14 +898,14 @@ Power| 0.995 | 0.63 | 0.995 |
 Type I| 0.008 | 0.01 | 0.012 |
 
 
-$\emph Table \ 9. \  Item \ parameter \ estimates \ by \ regularization$
+$\emph Table \ 11. \  Item \ parameter \ estimates \ by \ regularization$
 
 Item Parameters |$\boldsymbol a_1$| $\boldsymbol a_2$| $\boldsymbol d$| 
 ------------------ | -----|------|------|------|------|------|
 Bias|-0.01364| -0.00353|-0.0316|
 RMSE|0.11486|0.11917|0.111221|
 
-$\emph Table \ 10. \ Item \ parameter \ estimates \ by \ mirt \ LRT \ (0.05 \ significance \ level)$
+$\emph Table \ 12. \ Item \ parameter \ estimates \ by \ mirt \ LRT \ (0.05 \ significance \ level)$
 
 Item Parameters |$\boldsymbol a_1$| $\boldsymbol a_2$| $\boldsymbol d$| 
 ------------------ | -----|------|------|------|------|------|
@@ -850,13 +913,58 @@ Bias|0.00612| 0.01542|0.009|
 RMSE|0.11613|0.12292|0.0953|
 
 
-$\emph Table \ 11. \ Absolute \ bias \ for \ DIF \ magnitude \ recoveries \ that \ were \ true \ DIF$
+$\emph Table \ 13. \ Absolute \ bias \ for \ DIF \ magnitude \ recoveries \ that \ were \ true \ DIF$
 
 Group | Omnibus DIF| Group with DIF=0.5| Group with DIF=1| 
 ------|------|------|------|
 Regularization (include false negative)| 0.1111 | 0.1884 | 0.1451 |
 mirt LRT (include false negative)| 0.1145 | 0.2557 | 0.1155 |
 
+### Simulation 4
+
+Increase total sample size to 3000 and keep everything else the same in simulation 2.
+
+$\emph Sample$ $\emph Size.$ The total sample size is $N=3000$, and the group sample sizes are $N_1=N_2=N_3=1000$.
+
+$\emph Proportion \ of \ DIF.$ 12 items with DIF. 6 DIF items per dimension.
+
+$\emph Table \ 14. \ Type \ I \ error \ and \ Power \ of \ regularization \ method$
+
+Group | Omnibus DIF| Group with DIF=0.5| Group with DIF=1| 
+------|------|------|------|
+Power| 0.998 | 0.58 | 0.998 |
+Type I| 0.05 | 0.04 | 0.01 |
+
+
+$\emph Table \ 15. \ Type \ I \ error \ and \ Power \ of \ mirt \ LRT \ (0.05 \ significance \ level)$
+
+Group | Omnibus DIF| Group with DIF=0.5| Group with DIF=1| 
+------|------|------|------|
+Power| 0.996 | 0.772 | 1 |
+Type I| 0.02 | 0.02 | 0.0225 |
+
+
+$\emph Table \ 16. \  Item \ parameter \ estimates \ by \ regularization$
+
+Item Parameters |$\boldsymbol a_1$| $\boldsymbol a_2$| $\boldsymbol d$| 
+------------------ | -----|------|------|------|------|------|
+Bias|-0.0316| 0.0244| 0.0192|
+RMSE|0.118|0.127|0.131|
+
+$\emph Table \ 17. \ Item \ parameter \ estimates \ by \ mirt \ LRT \ (0.05 \ significance \ level)$
+
+Item Parameters |$\boldsymbol a_1$| $\boldsymbol a_2$| $\boldsymbol d$| 
+------------------ | -----|------|------|------|------|------|
+Bias|0.0075| 0.0197 | 0.0093 |
+RMSE|0.1188|0.1269|0.1062|
+
+
+$\emph Table \ 18. \ Absolute \ bias \ for \ DIF \ magnitude \ recoveries \ that \ were \ true \ DIF$
+
+Group | Omnibus DIF| Group with DIF=0.5| Group with DIF=1| 
+------|------|------|------|
+Regularization (include false negative)| 0.216 | 0.2663 | 0.167 |
+mirt LRT (include false negative)| 0.1843 | 0.3556 | 0.1155 |
 
 
 # Non-uniform DIF Detection via LASSO 
@@ -892,7 +1000,6 @@ where $\eta$ is the lasso tuning parameter.
 \end{equation}
 
 ## M step
-
 
 Again, we assume the reference group has mean zero and variance one and only estimate its correlations. The means and all elements in the covariance matrices of two focal groups can be freely estimated.
 
@@ -1016,9 +1123,17 @@ Note that $\mathrm{diag}(\hat{\boldsymbol\Sigma}_{1r})$ is the *r*th element on 
 
 $\varepsilon_1=10^{-3}$ and $\varepsilon_2=10^{-7}$.
 
+## Tuning Parameter Selectiion
+
+The BIC can be calculated by
+$$BIC_{\hat{\textbf A},\hat{\textbf D},\hat{\boldsymbol\Gamma}}=-2\max_{\hat{\textbf A},\hat{\textbf D},\hat{\boldsymbol\Gamma}}\log M+ \|\hat{\boldsymbol\Gamma}\|_0 \log N, \tag{11}$$
+where N is the sample size. 
+
 ## Simulation
 
-$\emph Sample$ $\emph Size.$ The total sample size is $N=3000$, and the group sample sizes are $N_1=N_2=N_3=1000$.
+### Simulation 5
+
+$\emph Sample$ $\emph Size.$ The total sample size is $N=1500$, and the group sample sizes are $N_1=N_2=N_3=500$.
 
 $\emph Test$ $\emph Length.$ $m=20.$ Simple structure. 10 items per dimension.
 
@@ -1026,7 +1141,7 @@ $\emph Proportion \ of \ DIF.$ 4 items with DIF. 2 DIF items per dimension.
 
 $\emph Magnitude \ of \ DIF.$ The first focal group with smaller discrimination parameter (-0.5) on the 4 DIF items. 
 
-The second focal group with much smaller difficulty parameter (-1) on the 4 DIF items.
+The second focal group with much smaller discrimination parameter (-1) on the 4 DIF items.
 
 $\emph Generated \ parameters.$
 
@@ -1097,105 +1212,130 @@ $$\boldsymbol\Gamma_j=\begin{pmatrix}
 0 & -1 \\
 \end{pmatrix}, for \ j=12,13$$ 
 
+The first two items are used as anchor items in estimation.
+
 No impact. $\theta_i\sim N(\begin{pmatrix}0\\0\\\end{pmatrix}, \begin{pmatrix}1&0.85\\0.85&1\\\end{pmatrix})$
 
 $\emph Tuning \ parameters.$ Tuning parameters $\eta$ are chosen from a sequence starting from 21 to 51 with increment 3.
 
-### Results of 20 Replications
+Results of 50 Replications
 
-$\emph Table \ 7. \ Type \ I \ error \ and \ Power \ of \ regularization \ method$
-
-Group | Omnibus DIF| Group with DIF=0.5| Group with DIF=1| 
-------|------|------|------|
-Power| 0.9583 | 0.2916 | 0.9583 |
-Type I| 0.02778 | 0.0238 | 0.0119 |
-
-Omnibus DIF is defined as if at least one focal group showd DIF on an item, then that item is flagged as DIF.
-
-$\emph Table \ 8. \ Type \ I \ error \ and \ Power \ of \ mirt \ LRT$
+$\emph Table \ 19. \ Type \ I \ error \ and \ Power \ of \ regularization \ method$
 
 Group | Omnibus DIF| Group with DIF=0.5| Group with DIF=1| 
 ------|------|------|------|
-Power| 0.9027 | 0 | 0.9305 |
-Type I| 0.02777 | 0.00396 | 0.01587 |
+Power| 0.625 | 0.14 | 0.625 |
+Type I| 0.0314 | 0.0171 | 0.0185 |
 
-$\emph Table \ 9. \ Type \ I \ error \ and \ Power \ of \ mirt \ Wald$
 
-Group | Omnibus DIF| Group with DIF=0.5| Group with DIF=1| 
-------|------|------|------|
-Power| 0 | 0 | 0.9305 |
-Type I| 0.00396 | 0.00396 | 0.0119 |
-
-Both regularization and mirt LRT can detect DIF maginitude 1 with power 100%. Our regularization method has slightly lower Type I error.
-
-$\emph Table \ 10. \  Item \ parameter \ estimates \ by \ regularization$
-
-Item Parameters |$\boldsymbol a_1$| $\boldsymbol a_2$| $\boldsymbol d$| 
------------------- | -----|------|------|------|------|------|
-Bias|0.0042| -0.008|-0.0100|
-RMSE|0.1810|0.1554|0.1019|
-
-$\emph Table \ 11. \ Item \ parameter \ estimates \ by \ mirt \ LRT$ (three groups togrther)
-
-Item Parameters |$\boldsymbol a_1$| $\boldsymbol a_2$| $\boldsymbol d$| 
------------------- | -----|------|------|------|------|------|
-Bias|0.0241| 0.0065|-0.0056|
-RMSE|0.1627|0.1457|0.09548|
-
-            Item parameter estimates by mirt LRT (reference and focal 1)
-
-Item Parameters |$\boldsymbol a_1$| $\boldsymbol a_2$| $\boldsymbol d$| 
------------------- | -----|------|------|------|------|------|
-Bias|0.0235| 0.0136|-0.0114|
-RMSE|0.1821|0.1643|0.1157|
-
-            Item parameter estimates by mirt LRT (reference and focal 2)
-
-Item Parameters |$\boldsymbol a_1$| $\boldsymbol a_2$| $\boldsymbol d$| 
------------------- | -----|------|------|------|------|------|
-Bias|0.0239| 0.0121|-0.0098|
-RMSE|0.1817|0.1647|0.1089|
-
-$\emph Table \ 12. \ Item \ parameter \ estimates \ by \ mirt \ Wald$ (three groups togrther)
-
-Item Parameters |$\boldsymbol a_1$| $\boldsymbol a_2$| $\boldsymbol d$| 
------------------- | -----|------|------|------|------|------|
-Bias|0.0247| 0.0109|-0.0073|
-RMSE|0.1814|0.1692|0.0958|
-
-            Item parameter estimates by mirt LRT (reference and focal 1)
-
-Item Parameters |$\boldsymbol a_1$| $\boldsymbol a_2$| $\boldsymbol d$| 
------------------- | -----|------|------|------|------|------|
-Bias|0.0235| 0.0136|-0.0110|
-RMSE|0.1830|0.1651|0.1157|
-
-            Item parameter estimates by mirt LRT (reference and focal 2)
-
-Item Parameters |$\boldsymbol a_1$| $\boldsymbol a_2$| $\boldsymbol d$| 
------------------- | -----|------|------|------|------|------|
-Bias|0.0239| 0.0121|-0.0098|
-RMSE|0.1817|0.1647|0.1089|
-
-LRT method has slightly better non-DIF item parameter estimates when including three groups.
-
-$\emph Table \ 13. \ Absolute \ bias \ for \ DIF \ magnitude \ recoveries \ that \ were \ true \ DIF$
+$\emph Table \ 20. \ Type \ I \ error \ and \ Power \ of \ mirt \ LRT$
 
 Group | Omnibus DIF| Group with DIF=0.5| Group with DIF=1| 
 ------|------|------|------|
-Regularization | 0.343 | 0.396 | 0.290 |
-mirt LRT (three groups togrther)| 0.200 | 0.195 | 0.204 |
-mirt LRT (reference and focal 1)| - | 0.2818 | - |
-mirt LRT (reference and focal 2)| - | - | 0.2157 |
-mirt Wald (three groups togrther)| 0.3453 | 0.2647 | 0.4259 |
-mirt Wald (reference and focal 1)| - | 0.2617 | - |
-mirt Wald (reference and focal 2)| - | - | 0.2157 |
+Power| 0.515 | 0.375 | 0.646 |
+Type I| 0.0185 | 0.0238 | 0.0149 |
 
-Absolute bias for 4 items (4,5,12,13) with DIF (include false negative).
+### Simulation 6
 
-One advantage compared to mirt multipleGroup is that our method (re-fit part) allows some of focal groups to have DIF while others do not.
+Increase DIF proportion to 60%, and keep everything else the same as simulation 5.
 
-One drawback of our method is when estimating three groups together, low power in the first focal group would affect the parameter estimate of the second focal group.
+$\emph Sample$ $\emph Size.$ The total sample size is $N=1500$, and the group sample sizes are $N_1=N_2=N_3=500$.
+
+$\emph Proportion \ of \ DIF.$ 12 items with DIF. 6 DIF items per dimension.
+
+
+$$\boldsymbol\Gamma_j=\begin{pmatrix}
+0 & 0\\
+0 & 0 \\
+\end{pmatrix}, for \ j=1,2,3,10,11,18,19,20$$ 
+
+$$\boldsymbol\Gamma_j=\begin{pmatrix}
+-0.5 & 0\\
+-1 & 0 \\
+\end{pmatrix}, for \ j=4,5,6,7,8,9$$ 
+$$\boldsymbol\Gamma_j=\begin{pmatrix}
+0 & -0.5\\
+0 & -1 \\
+\end{pmatrix}, for \ j=12,13,14,15,16,17$$ 
+
+
+$\emph Table \ 21. \ Type \ I \ error \ and \ Power \ of \ regularization \ method$
+
+Group | Omnibus DIF| Group with DIF=0.5| Group with DIF=1| 
+------|------|------|------|
+Power| 0.45 | 0.06 | 0.443 |
+Type I| 0.0067 | 0.0033 | 0.0033 |
+
+
+$\emph Table \ 22. \ Type \ I \ error \ and \ Power \ of \ mirt \ LRT$
+
+Group | Omnibus DIF| Group with DIF=0.5| Group with DIF=1| 
+------|------|------|------|
+Power| 0.656 | 0.185 | 0.746 |
+Type I| 0.0067 | 0.01 | 0.0233 |
+
+### Simulation 7
+
+Increase total sample size to 3000, and keep everything else the same as simulation 5.
+
+$\emph Sample$ $\emph Size.$ The total sample size is $N=3000$, and the group sample sizes are $N_1=N_2=N_3=1000$.
+
+$\emph Proportion \ of \ DIF.$ 4 items with DIF. 2 DIF items per dimension.
+
+$\emph Table \ 23. \ Type \ I \ error \ and \ Power \ of \ regularization \ method$
+
+Group | Omnibus DIF| Group with DIF=0.5| Group with DIF=1| 
+------|------|------|------|
+Power| 0.96 | 0.345 | 0.96 |
+Type I| 0.0371 | 0.0271 | 0.0214 |
+
+
+$\emph Table \ 24. \ Type \ I \ error \ and \ Power \ of \ mirt \ LRT$
+
+Group | Omnibus DIF| Group with DIF=0.5| Group with DIF=1| 
+------|------|------|------|
+Power| 0.815 | 0.555 | 0.885 |
+Type I| 0.005 | 0.031 | 0.0119 |
+
+
+### Simulation 8
+
+Increase DIF proportion to 60%, and keep everything else the same as simulation 7.
+
+$\emph Sample$ $\emph Size.$ The total sample size is $N=3000$, and the group sample sizes are $N_1=N_2=N_3=1000$.
+
+$\emph Proportion \ of \ DIF.$ 12 items with DIF. 6 DIF items per dimension.
+
+
+$$\boldsymbol\Gamma_j=\begin{pmatrix}
+0 & 0\\
+0 & 0 \\
+\end{pmatrix}, for \ j=1,2,3,10,11,18,19,20$$ 
+
+$$\boldsymbol\Gamma_j=\begin{pmatrix}
+-0.5 & 0\\
+-1 & 0 \\
+\end{pmatrix}, for \ j=4,5,6,7,8,9$$ 
+$$\boldsymbol\Gamma_j=\begin{pmatrix}
+0 & -0.5\\
+0 & -1 \\
+\end{pmatrix}, for \ j=12,13,14,15,16,17$$ 
+
+$\emph Table \ 25. \ Type \ I \ error \ and \ Power \ of \ regularization \ method$
+
+Group | Omnibus DIF| Group with DIF=0.5| Group with DIF=1| 
+------|------|------|------|
+Power| 0.9933 | 0.481 | 0.9933 |
+Type I| 0.0333 | 0.02 | 0.02 |
+
+
+$\emph Table \ 26. \ Type \ I \ error \ and \ Power \ of \ mirt \ LRT$
+
+Group | Omnibus DIF| Group with DIF=0.5| Group with DIF=1| 
+------|------|------|------|
+Power| 0.9367 | 0.3 | 0.9683 |
+Type I| 0.0233 | 0.0133 | 0.0333 |
+
 
 # Non-uniform DIF Detection via Group LASSO 
 
@@ -1405,10 +1545,27 @@ Note that $\mathrm{diag}(\hat{\boldsymbol\Sigma}_{1r})$ is the *r*th element on 
 
 $\varepsilon_1=10^{-3}$ and $\varepsilon_2=10^{-7}$.
 
+## Tuning Parameter Selection
+
+The Bayesian information criterion (BIC) in Tutz et al.(2015) is applied for tuning parameter selection. The degrees of freedom of penalized parameters $\boldsymbol\tau=(\boldsymbol\Gamma, \boldsymbol\beta)^T$ are approximated by
+
+$$\tilde{df}_{\boldsymbol\tau}(\eta)=\sum_j^mI(||\boldsymbol\tau_j(\eta)||_2>0)+\sum_j^m\frac{||\boldsymbol\tau_j(\eta)||_2}{||\boldsymbol\tau_j^{ML}||_2}(m'-1)$$
+
+where $m'$ is the number of DIF parameters for each item. Here we have $m'=4$.
+
+The total degrees of freedom are
+
+$$df(\eta)=m+N+\tilde{df}_{\boldsymbol\tau}(\eta)-1.$$
+
+The BIC can be calculated by
+$$BIC(\eta)=-2\max_{\hat{\textbf A},\hat{\textbf D},\hat{\boldsymbol\tau}}\log M+ df(\eta) \log (m\cdot N).$$
+where N is the sample size. The first term control the bias of the estimator, and the second term penalize the complexity of the model. We want to choose a tuning parameter $\eta$ which gives us the smallest BIC value.
 
 ## Simulation
 
-$\emph Sample$ $\emph Size.$ The total sample size is $N=3000$, and the group sample sizes are $N_1=N_2=N_3=1000$.
+### Simulation 9
+
+$\emph Sample$ $\emph Size.$ The total sample size is $N=1500$, and the group sample sizes are $N_1=N_2=N_3=500$.
 
 $\emph Test$ $\emph Length.$ $m=20.$ Simple structure. 10 items per dimension.
 
@@ -1510,22 +1667,294 @@ $$\boldsymbol\beta=\begin{pmatrix}
 0 & 0 \\
 \end{pmatrix},$$
 
+The first two items are used as anchor items in estimation.
 
 No impact. $\theta_i\sim N(\begin{pmatrix}0\\0\\\end{pmatrix}, \begin{pmatrix}1&0.85\\0.85&1\\\end{pmatrix})$
 
 $\emph Tuning \ parameters.$ Tuning parameters $\eta$ are chosen from a sequence starting from 21 to 51 with increment 3.
 
-### Results of 20 Replications
+Results of 50 Replications
 
-$\emph Table \ 14. \ Type \ I \ error \ and \ Power \ of \ regularization \ method$
+$\emph Table \ 27. \ Type \ I \ error \ and \ Power \ of \ regularization \ method$
 
 Group | Omnibus DIF| 
 ------|------|
-Power| 0.975 | 
-Type I| 0.065 | 
+Power| 0.93 | 
+Type I| 0.0457 | 
 
-Omnibus DIF is defined as if at least one focal group showd DIF on an item, then that item is flagged as DIF.
+$\emph Table \ 28. \ Type \ I \ error \ and \ Power \ of \ mirt \ LRT$
+
+Group | Omnibus DIF| 
+------|------|
+Power| 0.925 | 
+Type I| 0.0142 | 
+
+### Simulation 10
+
+Keep everything the same as simulation 9. Increase the DIF proportion to 60%.
+$\emph Sample$ $\emph Size.$ The total sample size is $N=1500$, and the group sample sizes are $N_1=N_2=N_3=500$.
+
+$\emph Proportion \ of \ DIF.$ 12 items with DIF. 6 DIF items per dimension.
 
 
+$$\boldsymbol\Gamma_j=\begin{pmatrix}
+0 & 0\\
+0 & 0 \\
+\end{pmatrix}, for \ j=1,2,3,10,11,18,19,20$$ 
+
+$$\boldsymbol\Gamma_j=\begin{pmatrix}
+-0.3 & 0\\
+-0.6 & 0 \\
+\end{pmatrix}, for \ j=4,5,6,7,8,9$$ 
+$$\boldsymbol\Gamma_j=\begin{pmatrix}
+0 & -0.3\\
+0 & -0.6 \\
+\end{pmatrix}, for \ j=12,13,14,15,16,17$$ 
+
+$$\boldsymbol\beta=\begin{pmatrix}
+0 & 0\\
+0 & 0 \\
+0 & 0 \\
+0.5 & 1 \\
+0.5 & 1 \\
+0.5 & 1 \\
+0.5 & 1 \\
+0.5 & 1 \\
+0.5 & 1 \\
+0 & 0 \\
+0 & 0 \\
+0.5 & 1 \\
+0.5 & 1 \\
+0.5 & 1 \\
+0.5 & 1 \\
+0.5 & 1 \\
+0.5 & 1 \\
+0 & 0 \\
+0 & 0 \\
+0 & 0 \\
+\end{pmatrix},$$
+
+Results of 50 Replications
+
+$\emph Table \ 29. \ Type \ I \ error \ and \ Power \ of \ regularization \ method$
+
+Group | Omnibus DIF| 
+------|------|
+Power| 0.842 | 
+Type I| 0.0033 | 
+
+$\emph Table \ 30. \ Type \ I \ error \ and \ Power \ of \ mirt \ LRT$
+
+Group | Omnibus DIF| 
+------|------|
+Power| 0.926 | 
+Type I| 0.023 | 
+
+
+### Simulation 11
+
+Keep everything the same as simulation 9. Increase the sample size.
+$\emph Sample$ $\emph Size.$ The total sample size is $N=3000$, and the group sample sizes are $N_1=N_2=N_3=1000$.
+
+$\emph Proportion \ of \ DIF.$ 4 items with DIF. 2 DIF items per dimension.
+
+Results of 50 Replications
+
+$\emph Table \ 31. \ Type \ I \ error \ and \ Power \ of \ regularization \ method$
+
+Group | Omnibus DIF| 
+------|------|
+Power| 1 | 
+Type I| 0.0557 | 
+
+$\emph Table \ 32. \ Type \ I \ error \ and \ Power \ of \ mirt \ LRT$
+
+Group | Omnibus DIF| 
+------|------|
+Power| 0.985 | 
+Type I| 0.008 | 
+
+### Simulation 12
+
+Keep everything the same as simulation 10. Increase the sample size to 3000.
+$\emph Sample$ $\emph Size.$ The total sample size is $N=3000$, and the group sample sizes are $N_1=N_2=N_3=1000$.
+
+$\emph Proportion \ of \ DIF.$ 12 items with DIF. 6 DIF items per dimension.
+
+Results of 50 Replications
+
+$\emph Table \ 33. \ Type \ I \ error \ and \ Power \ of \ regularization \ method$
+
+Group | Omnibus DIF| 
+------|------|
+Power| 0.941 | 
+Type I| 0.0459 | 
+
+$\emph Table \ 34. \ Type \ I \ error \ and \ Power \ of \ mirt \ LRT$
+
+Group | Omnibus DIF| 
+------|------|
+Power| 0.985 | 
+Type I| 0.023 | 
+
+# Plots of Results
+
+## DIF only on intercept
+
+```{r echo=FALSE}
+N.list=c(1500,3000)
+power.list=c(0.985,1)
+plot(N.list, power.list,type='l',xlab='N',ylab='Power',ylim= c(0.85,1),col="salmon",xaxt = 'n')
+axis(1, at = N.list, labels = N.list)
+text(N.list, power.list, power.list, cex=0.8,col="salmon")
+lines(N.list,c(0.963,0.996),col="plum")
+text(N.list, c(0.963,0.996), c(0.963,0.996), cex=0.8,col="plum",pch=19)
+lines(N.list,c(0.872,0.998),col="skyblue")
+text(N.list, c(0.872,0.998), c(0.872,0.998), cex=0.8,col="skyblue",pch=19)
+lines(N.list,c(0.86,0.995),col="blue")
+text(N.list, c(0.86,0.995), c(0.86,0.995), cex=0.8,col="blue",pch=19)
+legend(2700, 0.9, legend=c("Reg 20%", "Reg 60%", "LRT 20%","LRT 60%"),col=c("salmon", "skyblue","blue","plum"), lty=1, cex=0.8)
+```
+
+```{r echo=FALSE}
+N.list=c(1500,3000)
+tpI.list=c(0.047,0.051)
+plot(N.list, tpI.list,type='l',xlab='N',ylab='Type I',ylim= c(0,0.14),col="salmon",xaxt = 'n')
+axis(1, at = N.list, labels = N.list)
+text(N.list, tpI.list, tpI.list, cex=0.8,col="salmon")
+lines(N.list,c(0.135,0.05),col="skyblue")
+text(N.list, c(0.135,0.05), c(0.135,0.05), cex=0.8,col="skyblue",pch=19)
+lines(N.list,c(0.007,0.008),col="blue")
+text(N.list, c(0.007,0.008), c(0.007,0.008), cex=0.8,col="blue",pch=19)
+lines(N.list,c(0.0175,0.02),col="plum")
+text(N.list, c(0.0175,0.02), c(0.0175,0.02), cex=0.8,col="plum",pch=19)
+legend(2700, 0.12, legend=c("Reg 20%", "Reg 60%", "LRT 20%","LRT 60%"),col=c("salmon", "skyblue","blue","plum"), lty=1, cex=0.8)
+
+```
+
+## DIF only on slope
+
+```{r echo=FALSE}
+N.list=c(1500,3000)
+power.list=c(0.625,0.96)
+plot(N.list, power.list,type='l',xlab='N',ylab='Power',ylim= c(0.44,1),col="salmon",xaxt = 'n')
+axis(1, at = N.list, labels = N.list)
+text(N.list, power.list, power.list, cex=0.8,col="salmon")
+lines(N.list,c(0.45,0.993),col="skyblue")
+text(N.list, c(0.45,0.993), c(0.45,0.993), cex=0.8,col="skyblue",pch=19)
+lines(N.list,c(0.515,0.815),col="blue")
+text(N.list, c(0.515,0.815), c(0.515,0.815), cex=0.8,col="blue",pch=19)
+lines(N.list,c(0.656,0.9367),col="plum")
+text(N.list, c(0.656,0.9367), c(0.656,0.9367), cex=0.8,col="plum",pch=19)
+legend(2700, 0.6, legend=c("Reg 20%", "Reg 60%", "LRT 20%","LRT 60%"),col=c("salmon", "skyblue","blue","plum"), lty=1, cex=0.8)
+```
+
+```{r echo=FALSE}
+N.list=c(1500,3000)
+tpI.list=c(0.03,0.03)
+plot(N.list, tpI.list,type='l',xlab='N',ylab='Type I',ylim= c(0,0.05),col="salmon",xaxt = 'n')
+axis(1, at = N.list, labels = N.list)
+text(N.list, tpI.list, tpI.list, cex=0.8,col="salmon")
+lines(N.list,c(0.0067,0.0033),col="skyblue")
+text(N.list, c(0.0067,0.0033), c(0.0067,0.0033), cex=0.8,col="skyblue",pch=19)
+lines(N.list,c(0.0185,0.005),col="blue")
+text(N.list, c(0.0185,0.005), c(0.0185,0.005), cex=0.8,col="blue",pch=19)
+lines(N.list,c(0.0067,0.02),col="plum")
+text(N.list, c(0.0067,0.02), c(0.0067,0.02), cex=0.8,col="plum",pch=19)
+legend(2700, 0.048, legend=c("Reg 20%", "Reg 60%", "LRT 20%","LRT 60%"),col=c("salmon", "skyblue","blue","plum"), lty=1, cex=0.8)
+```
+
+## DIF on slope and intercept
+
+```{r echo=FALSE}
+N.list=c(1500,3000)
+power.list=c(0.93,1)
+plot(N.list, power.list,type='l',xlab='N',ylab='Power',ylim= c(0.82,1),col="salmon",xaxt = 'n')
+axis(1, at = N.list, labels = N.list)
+text(N.list, power.list, power.list, cex=0.8,col="salmon")
+lines(N.list,c(0.842,0.941),col="skyblue")
+text(N.list, c(0.842,0.941), c(0.842,0.941), cex=0.8,col="skyblue",pch=19)
+lines(N.list,c(0.925,0.985),col="blue")
+text(N.list, c(0.925,0.985), c(0.925,0.985), cex=0.8,col="blue",pch=19)
+lines(N.list,c(0.926,0.986),col="plum")
+text(N.list, c(0.926,0.986), c(0.926,0.986), cex=0.8,col="plum",pch=19)
+legend(2700, 0.9, legend=c("Reg 20%", "Reg 60%", "LRT 20%","LRT 60%"),col=c("salmon", "skyblue","blue","plum"), lty=1, cex=0.8)
+```
+
+```{r echo=FALSE}
+N.list=c(1500,3000)
+tpI.list=c(0.045,0.0557)
+plot(N.list, tpI.list,type='l',xlab='N',ylab='Type I',ylim= c(0,0.06),col="salmon",xaxt = 'n')
+axis(1, at = N.list, labels = N.list)
+text(N.list, tpI.list, tpI.list, cex=0.8,col="salmon")
+lines(N.list,c(0.0033,0.04),col="skyblue")
+text(N.list, c(0.0033,0.04), c(0.0033,0.04), cex=0.8,col="skyblue",pch=19)
+lines(N.list,c(0.0142,0.008),col="blue")
+text(N.list, c(0.0142,0.008), c(0.0142,0.008), cex=0.8,col="blue",pch=19)
+lines(N.list,c(0.023,0.023),col="plum")
+text(N.list, c(0.023,0.023), c(0.023,0.023), cex=0.8,col="plum",pch=19)
+legend(2200, 0.046, legend=c("Reg 20%", "Reg 60%", "LRT 20%","LRT 60%"),col=c("salmon", "skyblue","blue","plum"), lty=1, cex=0.8)
+```
+
+# High DIF Proportion Issue
+
+When DIF proportion is higher than 50%, we found either our original LASSO or group LASSO algorithm work. Both of two methods would give us "reverse" type solutions-- the true DIF parameters would be estimated as zero and non-DIF parameters would be non-zero. Below is a plot of the solution path of LASSO algorithm in 60% DIF on intercept condition. At the selected tuning parameter ($\eta=36$), most DIF items (black lines) are shrunk to zero and non-DIF items (colored lines) are non-zero. 
+
+```{r echo=FALSE}
+eta.list=seq(from=0, to=48,by=3)
+para.list=c(0.910,0.835,0.500,0.360,0,0,0,0,0,0,0,0,0,0,0,0,0)
+plot(eta.list,para.list,type='l',xlab='eta',ylab='DIF Parameters',ylim = c(-1,1))
+lines(eta.list,c(0.623,0.551,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0))
+lines(eta.list,c(1.031,0.958,0.513,0.515,0.373,0,0,0,0,0,0,0,0,0,0,0,0))
+lines(eta.list,c(1.048,0.998,0.774,0.752,0.657,0.628,0.628,0.628,0.583,0.645,0.4405993,0.4413321,0.4412420,0.4412020,0.4412116,0.4415708,0.5395321))
+lines(eta.list,c(1.086,1.034,0.802,0.779,0.680,0.648,0.648,0.648,0.603,0.665,0.4491815,0.4497850,0.4496789,0.4496385,0.4496482,0.4500801,0.5496246))
+lines(eta.list,c(0.845,0.790,0.545,0.525,0.334,0.301,0.300,0.300,0,0,0,0,0,0,0,0,0))
+lines(eta.list,c(1.039,0.965,0.907,0.904,0.557,0.304,0,0,0,0,0,0,0,0,0,0,0))
+lines(eta.list,c(0.870,0.816,0.733,0.731,0.479,0.299,0.238,0.249,0.243,0.241,0.2418083,0.2692266,0,0,0,0,0))
+lines(eta.list,c(0.897,0.784,0.768,0.766,0.434,0,0,0,0,0,0,0,0,0,0,0,0))
+lines(eta.list,c(0.741,0.667,0.653,0.651,0,0,0,0,0,0,0,0,0,0,0,0,0))
+lines(eta.list,c(0.931,0.866,0.816,0.813,0.508,0.287,0,0,0,0,0,0,0,0,0,0,0))
+lines(eta.list,c(1.138,1.066,0.939,0.936,0.595,0,0,0,0,0,0,0,0,0,0,0,0))
+lines(eta.list,c(-0.149,-0.206,-0.461,-0.484,-0.596,-0.623,-0.623,-0.623,-0.677,-0.601,-0.646,-0.431,-0.431,-0.431,-0.431,-0.431,0),col=3)
+lines(eta.list,c(0.059,0.006,-0.231,-0.250,-0.351,-0.288,-0.288,-0.288,-0.345,0,0,0,0,0,0,0,0),col=10)
+lines(eta.list,c(-0.185,-0.242,-0.501,-0.523,-0.634,-0.656,-0.657,-0.657,-0.716,-0.494,-0.492,-0.492,-0.492,-0.492,-0.492,-0.492,0),col=11)
+lines(eta.list,c(-0.364,-0.429,-0.478,-0.481,-0.772,-0.977,-1.068,-1.068,-0.868,-0.872,-0.872,-0.841,-0.878,-0.878,-0.878,-0.796,-0.796),col=18)
+lines(eta.list,c(-0.357,-0.426,-0.473,-0.476,-0.774,-0.978,-1.065,-1.065,-1.011,-0.802,-0.802,-0.773,-0.815,-0.815,-0.815,-0.708,-0.708),col=19)
+lines(eta.list,c(-0.062,-0.133,-0.184,-0.187,-0.506,-0.727,-0.823,-0.822,-0.602,-0.606,-0.607,-0.574,-0.616,-0.616,-0.616,0,0),col=20)
+abline(v=36)
+```
+
+To solve this issue, we consider following methods:
+
+1. "EMM" algorithm 
+
+From the above solution path plot, we can see when the tuning parameter is zero, the parameter estimations are good (DIF parameters are large and non-DIF parameters are close to zero). But the bias of LASSO estimates increases as tuning parameter increasing. So we considered adding a re-estimation step, that is, perform another M-step without penalty term after each EM cycle. The results of simulation 2, 4, 6, 8, 10 and 12 in this document are estimated by EMM algorithm and they look acceptable. 
+
+2. Using a different constraint
+
+In section 4, we mentioned using anchor items for model identification. Those anchor items have no DIF on all focal groups. Here we can use a different constraint by setting "group-specific" anchors. Suppose we have two focal groups. Two anchor items can be used and each of them has DIF on one focal group but has no DIF on the other focal group. 
+
+To be more specific, recall
+$$\boldsymbol \beta_j =(\boldsymbol \beta_{j1\cdot},\boldsymbol \beta_{j2\cdot})^T
+=\begin{pmatrix}
+\beta_{j11} & \beta_{j12} & ...&\beta_{j1k} & ... & \beta_{j1,p-1}\\
+\beta_{j21} & \beta_{j22} & ...&\beta_{j2k} & ... & \beta_{j2,p-1}\\
+\end{pmatrix}(k=1,...,p-1),$$
+
+where *p* is the number of categories in GRM, and each row of $\boldsymbol \beta_{j}$ is (uniform) DIF parameter for a focal group, i.e. $\boldsymbol \beta_{j1\cdot}$ is (uniform) DIF parameter for the first focal group, and $\boldsymbol \beta_{j2\cdot}$ is (uniform) DIF parameter for the second focal group.
+
+If the first two items are anchors, we want to set $\beta_{j11}=0$ and $\beta_{j22}=0$, and $\beta_{j21}$ and $\beta_{j12}$ be non-zero and their magnitudes can be freely estimated. This constraint strongly relies on a priori knowledge of the items and the entire study but it works well when the DIF proportion is high.
+
+3. Adaptive LASSO 
+
+Pick a $\lambda >0$, and define the weight vector $$\hat w =1/{|\boldsymbol{\hat{\beta}|}^\lambda}$$ ($\boldsymbol{\hat{\beta}}$ can be the MLE).
+
+\begin{equation}
+\begin{aligned}
+(\hat{\boldsymbol A},\hat{\boldsymbol D},\hat{\boldsymbol \beta})=\mathrm{arg} \mathrm{min} \lbrace -\log M +  \eta_n \sum_j^m \hat w_j || \boldsymbol \beta_j ||_1  \rbrace
+\end{aligned}
+\end{equation}
+
+4. SCAD penalty (Fan & Li, 2001)
 
 

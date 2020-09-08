@@ -9,7 +9,7 @@ library(RcppParallel)
 sourceCpp("/Users/zhux0445/Documents/GitHub/RegDIF/matrix.cpp")
 setwd('/Users/zhux0445/Documents/GitHub/RegDIF_SimData')
 params=read.csv("Para4.csv",row.names = 1)
-responses=read.csv("RESP8.csv",row.names = 1)
+responses=read.csv("RESP6.csv",row.names = 1)
 
 soft=function(s, tau) {
   val=sign(s)*max(c(abs(s) - tau,0))
@@ -17,7 +17,7 @@ soft=function(s, tau) {
 # Dataset #4 (2 Non-uniform DIF items per scale)
 J=20
 
-N1=N2=N3=1000 
+N1=N2=N3=500 
 Group=c(rep('G1', N1), rep('G2', N2), rep('G3', N3))
 N=N1+N2+N3
 

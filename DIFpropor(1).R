@@ -32,6 +32,110 @@ Dmat1=matrix(params[,7],J,(m-1))
 Dmat2=matrix(params[,8],J,(m-1))
 Dmat3=matrix(params[,9],J,(m-1))
 
+##############################################
+s <- 'F1 = 1,3-11
+          F2 = 2,12-20
+          COV = F1*F2'
+Group=c(rep('G1', N1), rep('G2', N2), rep('G3', N3))
+md00 <- multipleGroup(resp, s, group = Group,SE=TRUE,invariance=c('free_means', 'free_var',colnames(resp)[1:r]))
+gra000=coef(md00,simplify=T)$G1$items[,c("a1","a2")]
+grd000=matrix(coef(md00,simplify=T)$G1$items[,c("d")],20,1)
+grgamma000=array(0,dim=c(r,r,J))
+grgamma000[1,1,3:11]=(coef(md00,simplify=T)$G2$items[,c("a1","a2")]-coef(md00,simplify=T)$G1$items[,c("a1","a2")])[3:11,1]
+grgamma000[2,1,3:11]=(coef(md00,simplify=T)$G3$items[,c("a1","a2")]-coef(md00,simplify=T)$G1$items[,c("a1","a2")])[3:11,1]
+grgamma000[1,2,12:20]=(coef(md00,simplify=T)$G2$items[,c("a1","a2")]-coef(md00,simplify=T)$G1$items[,c("a1","a2")])[12:20,2]
+grgamma000[2,2,12:20]=(coef(md00,simplify=T)$G3$items[,c("a1","a2")]-coef(md00,simplify=T)$G1$items[,c("a1","a2")])[12:20,2]
+grbeta000=matrix(0,J,2)
+grbeta000[,1]=matrix(coef(md00,simplify=T)$G2$items[,c("d")],20,1)-matrix(coef(md00,simplify=T)$G1$items[,c("d")],20,1)
+grbeta000[,2]=matrix(coef(md00,simplify=T)$G3$items[,c("d")],20,1)-matrix(coef(md00,simplify=T)$G1$items[,c("d")],20,1)
+Sig100=coef(md00,simplify=T)$G1$cov
+Sig200=coef(md00,simplify=T)$G2$cov
+Sig300=coef(md00,simplify=T)$G3$cov
+Mu100=coef(md00,simplify=T)$G1$means
+Mu200=coef(md00,simplify=T)$G2$means
+Mu300=coef(md00,simplify=T)$G3$means
+theta.mirt=fscores(md00, method='MAP')
+head(theta.mirt)
+
+grbeta=grbeta000
+gra=as.matrix(gra000)
+rownames(gra) <- c()
+grd=grd000
+
+theta.ng=theta.mirt
+theta.ng[which(theta.mirt[,1]<X1[1]),1]=-3
+theta.ng[which(theta.mirt[,2]<X1[1]),2]=-3
+for (gg in 1:(length(X1)-1)){
+  theta.ng[which(theta.mirt[,1]>X1[gg]&theta.mirt[,1]<X1[gg+1]),1]=X1[gg]
+  theta.ng[which(theta.mirt[,2]>X1[gg]&theta.mirt[,2]<X1[gg+1]),2]=X1[gg]
+}
+theta.ng[which(theta.mirt[,1]>X1[31]),1]=3
+theta.ng[which(theta.mirt[,2]>X1[31]),2]=3
+for (g in 1:G){
+  ng[g]=sum(theta.ng[which(theta.ng[,1]==X[g,1]),2]==X[g,2])
+}
+
+theta.ng1=theta.mirt[1:500,]
+theta.ng1[which(theta.mirt[1:500,1]<X1[1]),1]=-3
+theta.ng1[which(theta.mirt[1:500,2]<X1[1]),2]=-3
+for (gg in 1:(length(X1)-1)){
+  theta.ng1[which(theta.mirt[1:500,1]>X1[gg]&theta.mirt[1:500,1]<X1[gg+1]),1]=X1[gg]
+  theta.ng1[which(theta.mirt[1:500,2]>X1[gg]&theta.mirt[1:500,2]<X1[gg+1]),2]=X1[gg]
+}
+theta.ng1[which(theta.mirt[1:500,1]>X1[31]),1]=3
+theta.ng1[which(theta.mirt[1:500,2]>X1[31]),2]=3
+for (g in 1:G){
+  ng1[g]=sum(theta.ng1[which(theta.ng1[,1]==X[g,1]),2]==X[g,2])
+}
+
+theta.ng2=theta.mirt[501:1000,]
+theta.ng2[which(theta.mirt[501:1000,1]<X1[1]),1]=-3
+theta.ng2[which(theta.mirt[501:1000,2]<X1[1]),2]=-3
+for (gg in 1:(length(X1)-1)){
+  theta.ng2[which(theta.mirt[501:1000,1]>X1[gg]&theta.mirt[501:1000,1]<X1[gg+1]),1]=X1[gg]
+  theta.ng2[which(theta.mirt[501:1000,2]>X1[gg]&theta.mirt[501:1000,2]<X1[gg+1]),2]=X1[gg]
+}
+theta.ng2[which(theta.mirt[501:1000,1]>X1[31]),1]=3
+theta.ng2[which(theta.mirt[501:1000,2]>X1[31]),2]=3
+for (g in 1:G){
+  ng2[g]=sum(theta.ng2[which(theta.ng2[,1]==X[g,1]),2]==X[g,2])
+}
+
+theta.ng3=theta.mirt[1001:1500,]
+theta.ng3[which(theta.mirt[1001:1500,1]<X1[1]),1]=-3
+theta.ng3[which(theta.mirt[1001:1500,2]<X1[1]),2]=-3
+for (gg in 1:(length(X1)-1)){
+  theta.ng3[which(theta.mirt[1001:1500,1]>X1[gg]&theta.mirt[1001:1500,1]<X1[gg+1]),1]=X1[gg]
+  theta.ng3[which(theta.mirt[1001:1500,2]>X1[gg]&theta.mirt[1001:1500,2]<X1[gg+1]),2]=X1[gg]
+}
+theta.ng3[which(theta.mirt[1001:1500,1]>X1[31]),1]=3
+theta.ng3[which(theta.mirt[1001:1500,2]>X1[31]),2]=3
+for (g in 1:G){
+  ng3[g]=sum(theta.ng3[which(theta.ng3[,1]==X[g,1]),2]==X[g,2])
+}
+
+for (g in 1:G){
+  rgk[g,1]=sum(((resp[which(theta.ng[,1]==X[g,1]),j])[which(theta.ng[which(theta.ng[,1]==X[g,1]),2]==X[g,2])])==1)
+  rgk[g,2]=sum(((resp[which(theta.ng[,1]==X[g,1]),j])[which(theta.ng[which(theta.ng[,1]==X[g,1]),2]==X[g,2])])==2)
+}
+resp1=resp[1:500,]
+resp2=resp[501:1000,]
+resp3=resp[1001:1500,]
+for (g in 1:G){
+  rgk1[g,1]=sum(((resp1[which(theta.ng1[,1]==X[g,1]),j])[which(theta.ng1[which(theta.ng1[,1]==X[g,1]),2]==X[g,2])])==1)
+  rgk1[g,2]=sum(((resp1[which(theta.ng1[,1]==X[g,1]),j])[which(theta.ng1[which(theta.ng1[,1]==X[g,1]),2]==X[g,2])])==2)
+}
+for (g in 1:G){
+  rgk2[g,1]=sum(((resp2[which(theta.ng2[,1]==X[g,1]),j])[which(theta.ng2[which(theta.ng2[,1]==X[g,1]),2]==X[g,2])])==1)
+  rgk2[g,2]=sum(((resp2[which(theta.ng2[,1]==X[g,1]),j])[which(theta.ng2[which(theta.ng2[,1]==X[g,1]),2]==X[g,2])])==2)
+}
+for (g in 1:G){
+  rgk3[g,1]=sum(((resp3[which(theta.ng3[,1]==X[g,1]),j])[which(theta.ng3[which(theta.ng3[,1]==X[g,1]),2]==X[g,2])])==1)
+  rgk3[g,2]=sum(((resp3[which(theta.ng3[,1]==X[g,1]),j])[which(theta.ng3[which(theta.ng3[,1]==X[g,1]),2]==X[g,2])])==2)
+}
+
+######################################################################3
+
 
 StartVals=read.csv("StartingValues2.csv",row.names = 1)
 grbeta00=as.matrix(StartVals[,4:5])
@@ -68,6 +172,9 @@ max.tol=1e-7
     }
   }
   grbeta=grbeta00
+  grbeta=matrix(0,J,2)
+  grbeta[3:20,1]=0.7
+  grbeta[3:20,2]=1.4
  #####################
   gra=as.matrix(Amat1)
   rownames(gra) <- c()
