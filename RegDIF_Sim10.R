@@ -10,7 +10,7 @@ library(RcppParallel)
 sourceCpp("/Users/zhux0445/Documents/GitHub/RegDIF/matrix.cpp")
 setwd('/Users/zhux0445/Documents/GitHub/RegDIF_SimData')
 params=read.csv("Para8.csv",row.names = 1)
-responses=read.csv("RESP10.csv",row.names = 1)
+responses=read.csv("RESP12.csv",row.names = 1)
 #gamm1=read.csv("/Users/ruoyizhu/Documents/GitHub/RegDIF_SimData/Gamma9_ 1")
 soft=function(s, tau) {
   val=sign(s)*max(c(abs(s) - tau,0))
@@ -18,7 +18,7 @@ soft=function(s, tau) {
 # Dataset #4 (2 Non-uniform DIF items per scale)
 J=20
 
-N1=N2=N3=500 
+N1=N2=N3=1000 
 Group=c(rep('G1', N1), rep('G2', N2), rep('G3', N3))
 N=N1+N2+N3
 
@@ -1588,7 +1588,7 @@ Sig100=matrix(c(1,0.846,0.846,1),2,2)
 Sig200=matrix(c(1.364,1.0909,1.0909,1.442),2,2)
 Sig300=matrix(c(0.809,0.8159,0.8159,1.100),2,2)
 
-for (rep in 1:50){
+for (rep in 1:25){
   resp=responses[((rep-1)*N+1):((rep-1)*N+N1+N2+N3),] 
   r=2
   m=2
@@ -1637,10 +1637,10 @@ for (rep in 1:50){
   print(eta.vec[kk])
   print(Betas[,,kk])
   
-  write.csv(eta.vec[kk],file = paste("eta10_",rep))
-  write.csv(ADmat[,,kk],file = paste("ADmat10_",rep))
-  write.csv(Gammas[,,,kk],file = paste("Gamma10_",rep))
-  write.csv(Betas[,,kk],file = paste("Beta10_",rep))
+  write.csv(eta.vec[kk],file = paste("eta12_",rep))
+  write.csv(ADmat[,,kk],file = paste("ADmat12_",rep))
+  write.csv(Gammas[,,,kk],file = paste("Gamma12_",rep))
+  write.csv(Betas[,,kk],file = paste("Beta12_",rep))
 }
 
 write.csv(mirt.p.mat,file = "Sim9_LRTpvs.csv")
