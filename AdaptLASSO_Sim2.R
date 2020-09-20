@@ -9,14 +9,14 @@ library(graphics)
 library(dmutate)
 setwd('/Users/zhux0445/Documents/GitHub/RegDIF_SimData')
 params=read.csv("Para2.csv",row.names = 1)
-responses=read.csv("RESP2.csv",row.names = 1)
+responses=read.csv("RESP4.csv",row.names = 1)
 soft=function(s, tau) {
   val=sign(s)*max(c(abs(s) - tau,0))
   return(val) }
 # Dataset #4 (2 Non-uniform DIF items per scale)
 J=20
 
-N1=N2=N3=500 
+N1=N2=N3=1000 
 Group=c(rep('G1', N1), rep('G2', N2), rep('G3', N3))
 Group01=c(rep('G1', N1), rep('G2', N2))
 Group02=c(rep('G1', N1), rep('G3', N3))
@@ -1507,15 +1507,21 @@ ipest1 <- function(resp,m,r,eta,lam,eps =1e-3,max.tol=1e-7,NonUniform=F,gra00=gr
 }
 #end of function
 
-
+reps=50
+eta.1=numeric(reps)
+#Gammas.1=array(double(2*J*m*50),dim = c(2,2,J,50))
+Betas.1=array(double(J*2*reps),dim = c(J,2,reps))
+ADmat.1=array(double(J*3*reps),dim = c(J,3,reps)) #a has 2 columns, d has 1 column
+biass.1=matrix(0,reps,3)
+RMSEs.1=matrix(0,reps,3)
 for (rep in 1:reps){
   resp=responses[((rep-1)*N+1):((rep-1)*N+N1+N2+N3),]
   r=2
   m=2
   lam=1
-  lam.vec=c(0.5,1,2)
-  eta.vec=seq(18,45,3)
-  eta.vec=seq(10,22,2)
+  #lam.vec=c(0.5,1,2)
+  #eta.vec=seq(18,45,3)
+  eta.vec=seq(6,20,2)
   bics=rep(0,length(eta.vec))
   ADmat=array(double(J*3*length(eta.vec)),dim = c(J,3,length(eta.vec)))
   #Gammas=array(double(2*J*m*length(eta.vec)),dim = c(2,2,J,length(eta.vec)))
@@ -1549,7 +1555,7 @@ for (rep in 1:reps){
   print(Betas.1[,,rep])
   print(biass.1[rep,])
   print(RMSEs.1[rep,])
-  write.csv(eta.1[rep],file = paste("eta1_",rep))
-  write.csv(ADmat.1[,,rep],file = paste("ADmat1_",rep))
-  write.csv(Betas.1[,,rep],file = paste("Beta1_",rep))
+  write.csv(eta.1[rep],file = paste("eta4adapt_",rep))
+  write.csv(ADmat.1[,,rep],file = paste("ADmat4adapt_",rep))
+  write.csv(Betas.1[,,rep],file = paste("Beta4adapt_",rep))
 }
