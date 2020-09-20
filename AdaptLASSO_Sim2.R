@@ -621,6 +621,21 @@ ipest1 <- function(resp,m,r,eta,lam,eps =1e-3,max.tol=1e-7,NonUniform=F,gra00=gr
       sparsity[j,rr]=ifelse(grbeta[j,rr]==0,0,1)
     }
   }
+  # failed to use mirt for re-estimate
+  #anchor1=which(sparsity[,1]==0)
+  #anchor2=which(sparsity[,2]==0)
+  #model3 <- '
+  #  F1 = 1,3-11
+  #  F2 = 2,12-20
+  #  COV = F1*F2'
+  #Group1=c(rep('G1', N1), rep('G2', N2))
+  #Group2=c(rep('G1', N1), rep('G3', N3))
+  #refitmodel1 <- multipleGroup(resp[1:(N1+N2),], model3, group = Group1, SE=TRUE,invariance=c('free_means', 'free_var','slopes', colnames(resp[1:(N1+N2),])[anchor1]))
+  #refitmodel2 <- multipleGroup(resp[c(1:N1,(N1+N2+1):(N1+N2+N3)),], model3, group = Group2, SE=TRUE,invariance=c('free_means', 'free_var','slopes', colnames(resp[c(1:N1,(N1+N2+1):(N1+N2+N3)),])[anchor2]))
+  #coef(refitmodel1,simplify=T)$G1$items[,3]-coef(refitmodel1,simplify=T)$G2$items[,3]
+  #coef(refitmodel2,simplify=T)$G1$items[,3]-coef(refitmodel2,simplify=T)$G3$items[,3]
+  
+  
   Pstar <- Qstar <-Pstar1 <- Qstar1 <-Pstar2 <- Qstar2 <-Pstar3 <- Qstar3 <- matrix(double(G*(m-1)),G,m-1)
   P<-P1<-P2<-P3<- matrix(double(G*m),G,m)
   df.a <- df.d  <- df.gamma <- df.beta <- df.Sig <- 1
