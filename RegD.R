@@ -115,7 +115,7 @@ Dmat1=cbind(D11)
 Dmat2=cbind(D12)
 
 
-N1=N2=N3=500
+N1=N2=N3=2000
 N=N1+N2+N3
 Group=c(rep('G1', N1), rep('G2', N2),rep('G3', N3))
 Group01=c(rep('G1', N1), rep('G2', N2))

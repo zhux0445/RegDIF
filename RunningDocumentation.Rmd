@@ -1955,6 +1955,8 @@ Pick a $\lambda >0$, and define the weight vector $$\hat w =1/{|\boldsymbol{\hat
 \end{aligned}
 \end{equation}
 
+Works. 
+
 4. SCAD penalty (Fan & Li, 2001)
 
 
