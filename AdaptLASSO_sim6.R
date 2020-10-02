@@ -1191,7 +1191,7 @@ ipest1 <- function(resp,m,r,eta,lam,eps =1e-3,max.tol=1e-7,NonUniform=T,gra00=gr
     }
   }
   aN=log(log(N))*log(N)
-  BIC=-2*sum(lh)+(l0norm+J+(m-1)*J+r*2+r*2+3*choose(r,2))*aN
+  BIC=-2*sum(lh)+l0norm*aN
   
   Bias=c(colSums(gra-Amat1)/10,colMeans(grd-Dmat1))
   RMSE=c(sqrt(colSums((gra-Amat1)^2)/10),sqrt(colMeans((grd-Dmat1)^2)))
