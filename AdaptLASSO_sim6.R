@@ -1191,7 +1191,7 @@ ipest1 <- function(resp,m,r,eta,lam,eps =1e-3,max.tol=1e-7,NonUniform=T,gra00=gr
       }
     }
   }
-  aN=log(log(N))*log(J)
+  aN=log(log(N))*log(2*J)
   BIC=-2*sum(lh)+l0norm*aN
   
   Bias=c(colSums(gra-Amat1)/10,colMeans(grd-Dmat1))
