@@ -1192,13 +1192,14 @@ ipest1 <- function(resp,m,r,eta,lam,eps =1e-3,max.tol=1e-7,NonUniform=T,gra00=gr
     }
   }
   aN=log(log(N))*log(2*J)
-  BIC=-2*sum(lh)+l0norm*aN
+  BIC=-2*sum(lh)+l0norm*log(N)
+  GIC=-2*sum(lh)+l0norm*aN
   
   Bias=c(colSums(gra-Amat1)/10,colMeans(grd-Dmat1))
   RMSE=c(sqrt(colSums((gra-Amat1)^2)/10),sqrt(colMeans((grd-Dmat1)^2)))
   
   #output esimates and number of iterations
-  return(list(est=cbind(gra,grd),Gamma=grgamma,mean1=Mu.gp1,mean2=Mu.gp2,mean3=Mu.gp3,Corr1=Sig.gp1,Corr2=Sig.gp2,Corr3=Sig.gp3,iter=iter,bic=BIC,bias=Bias,RMSE=RMSE))
+  return(list(est=cbind(gra,grd),Gamma=grgamma,mean1=Mu.gp1,mean2=Mu.gp2,mean3=Mu.gp3,Corr1=Sig.gp1,Corr2=Sig.gp2,Corr3=Sig.gp3,iter=iter,bic=BIC,gic=GIC,bias=Bias,RMSE=RMSE))
 }
 #end of function
 
@@ -1216,6 +1217,11 @@ Gammas.5=array(double(2*J*m*50),dim = c(2,2,J,50))
 ADmat.5=array(double(J*3*reps),dim = c(J,3,reps)) #a has 2 columns, d has 1 column
 biass.5=matrix(0,reps,3)
 RMSEs.5=matrix(0,reps,3)
+eta.52=numeric(reps)
+Gammas.52=array(double(2*J*m*50),dim = c(2,2,J,50))
+ADmat.52=array(double(J*3*reps),dim = c(J,3,reps)) #a has 2 columns, d has 1 column
+biass.52=matrix(0,reps,3)
+RMSEs.52=matrix(0,reps,3)
 
 StartVals=read.csv("StartingValues6.csv",row.names = 1)
 gra00=as.matrix(StartVals[,1:2])
@@ -1238,12 +1244,15 @@ for (rep in 1:reps){
   r=2
   m=2
   lam=1
-  eta.vec=seq(5,19,2)
+  eta.vec=seq(5,19,2) #N=1500
+  eta.vec=seq(5,26,3) #N=3000
   bics=rep(0,length(eta.vec))
+  gics=rep(0,length(eta.vec))
   ADmat=array(double(J*3*length(eta.vec)),dim = c(J,3,length(eta.vec)))
   Gammas=array(double(2*J*m*length(eta.vec)),dim = c(2,2,J,length(eta.vec)))
   biass=matrix(0,length(eta.vec),3)
   RMSEs=matrix(0,length(eta.vec),3)
+  
   
   for (k in 1:length(eta.vec))
   {
@@ -1252,14 +1261,17 @@ for (rep in 1:reps){
     sim=ipest1(resp,m,r,eta,lam,eps =1e-3,max.tol=1e-7,NonUniform=T,gra00=gra00,grd00=grd00,grgamma00=grgamma00,mu100=mu100,mu200=mu200,mu300=mu300,Sig100=Sig100,Sig200=Sig200,Sig300=Sig300)
     print(proc.time() - ptm)
     bics[k]=sim$bic
+    #gics[k]=sim$gic
     #Gammas[,,,k]=sim$Gamma
     ADmat[,,k]=sim$est
     Gammas[,,,k]=sim$Gamma
     biass[k,]=sim$bias
     RMSEs[k,]=sim$RMSE
+    #Gammas[,,,k]=sim$Gamma
   }
   
   kk=which.min(bics)
+  #kk2=which.min(gics)
   eta.5[rep]=eta.vec[kk]
   Gammas.5[,,,rep]=Gammas[,,,kk]
   ADmat.5[,,rep]=ADmat[,,kk]
@@ -1270,10 +1282,26 @@ for (rep in 1:reps){
   print(Gammas.5[,,,rep])
   print(biass.5[rep,])
   print(RMSEs.5[rep,])
+  #eta.52[rep]=eta.vec[kk2]
+  #Gammas.52[,,,rep]=Gammas[,,,kk2]
+  #ADmat.52[,,rep]=ADmat[,,kk2]
+  #biass.52[rep,]=biass[kk2,]
+  #RMSEs.52[rep,]=RMSEs[kk2,]
+  print(ADmat.5[,,rep])
+  print(eta.5[rep])
+  print(Gammas.5[,,,rep])
+  #print(eta.52[rep])
+  #print(Gammas.52[,,,rep])
+  print(biass.5[rep,])
+  print(RMSEs.5[rep,])
   write.csv(eta.5[rep],file = paste("eta6adapt_",rep))
   write.csv(ADmat.5[,,rep],file = paste("ADmat6adapt_",rep))
   write.csv(rbind(t(rbind(Gammas.5[c(1,2),1,3:11,rep])),t(rbind(Gammas.5[c(1,2),2,12:20,rep]))),file = paste("Gamma6adapt_",rep))
-}
+  #write.csv(eta.52[rep],file = paste("eta62adapt_",rep))
+  #write.csv(ADmat.52[,,rep],file = paste("ADmat62adapt_",rep))
+  #write.csv(rbind(t(rbind(Gammas.52[c(1,2),1,3:11,rep])),t(rbind(Gammas.52[c(1,2),2,12:20,rep]))),file = paste("Gamma62adapt_",rep))
+  
+  }
 
 
 #########################################
