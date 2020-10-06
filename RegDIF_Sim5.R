@@ -1353,7 +1353,7 @@ for (rep in 1:reps){
 #####  Comparing with mirt LRT add  #####
 #####                               #####
 #########################################
-N1=N2=N3=500 
+N1=N2=N3=1000 
 Group=c(rep('G1', N1), rep('G2', N2), rep('G3', N3))
 Group01=c(rep('G1', N1), rep('G2', N2))
 Group02=c(rep('G1', N1), rep('G3', N3))
@@ -1385,8 +1385,8 @@ for (rep in 1:50){
   # From Phil, when you test DIF on slope you should also test the intercept at the same time
   md.noncons0 <- multipleGroup(resp, s, group = Group,SE=TRUE,invariance=c('free_means', 'free_var','intercepts',colnames(resp)[1:r]))
   #md.noncons0 <- multipleGroup(resp, s, group = Group,SE=TRUE,invariance=c('free_means', 'free_var',colnames(resp)[1:r]))
-  mirt.p.mat1[(rep),1:9]=DIF(md.noncons0, which.par = c('a1'), p.adjust = 'fdr',scheme = 'add',items2test=c(3:11))[,"adj_pvals"]
-  mirt.p.mat1[(rep),10:18]=DIF(md.noncons0, which.par = c('a2'), p.adjust = 'fdr',scheme = 'add',items2test=c(12:20))[,"adj_pvals"]
+  mirt.p.mat1[(rep),1:9]=DIF(md.noncons0, which.par = c('a1'), p.adjust = 'none',scheme = 'add',items2test=c(3:11))[,"adj_pvals"]
+  mirt.p.mat1[(rep),10:18]=DIF(md.noncons0, which.par = c('a2'), p.adjust = 'none',scheme = 'add',items2test=c(12:20))[,"adj_pvals"]
   md.refit0 <- multipleGroup(resp, s, group = Group,SE=TRUE,invariance=c('free_means', 'free_var','intercepts',colnames(resp)[-(which(mirt.p.mat1[rep,]<0.05)+2)]))
   #md.refit.r <- multipleGroup(resp, s, group = Group,SE=TRUE,invariance=c('free_means', 'free_var','intercepts',colnames(resp)[-c()]))
   bias.mirt1[rep,1:2]=colSums(coef(md.refit0,simplify=T)$G1$items[,1:r]-Amat1)/10
@@ -1400,8 +1400,8 @@ for (rep in 1:50){
   difrec.mirt.fn1[rep,1]=mean(c(difrec.mirt.fn1[rep,2],difrec.mirt.fn1[rep,3]))
   #ref vs focal1
   md.noncons01 <- multipleGroup(resp01, s, group = Group01,SE=TRUE,invariance=c('free_means', 'free_var','intercepts',colnames(resp01)[1:r]))
-  mirt.p.mat2[(rep),1:9]=DIF(md.noncons01, which.par = c('a1'), p.adjust = 'fdr',scheme = 'add',items2test=c(3:11))[,"adj_pvals"]
-  mirt.p.mat2[(rep),10:18]=DIF(md.noncons01, which.par = c('a2'), p.adjust = 'fdr',scheme = 'add',items2test=c(12:20))[,"adj_pvals"]
+  mirt.p.mat2[(rep),1:9]=DIF(md.noncons01, which.par = c('a1'), p.adjust = 'none',scheme = 'add',items2test=c(3:11))[,"adj_pvals"]
+  mirt.p.mat2[(rep),10:18]=DIF(md.noncons01, which.par = c('a2'), p.adjust = 'none',scheme = 'add',items2test=c(12:20))[,"adj_pvals"]
   #md.refit01 <- multipleGroup(resp01, s, group = Group01,SE=TRUE,invariance=c('free_means', 'free_var','intercepts',colnames(resp)[-(which(mirt.p.mat2[rep,]<0.05)+2)]))
   if ((sum(mirt.p.mat2[rep,]<0.05))==0){
     md.refit01 <-multipleGroup(resp01, s, group = Group01,SE=TRUE,invariance=c('free_means', 'free_var','intercepts',colnames(resp01)[1:J]))
@@ -1416,8 +1416,8 @@ for (rep in 1:50){
   #difrec.mirt.fn2[rep,2]= mean(c(abs((coef(md.refit01,simplify=T)$G1$items[,1]-coef(md.refit01,simplify=T)$G2$items[,1])[c(4,5,6,7,8,9)]-0.5),abs((coef(md.refit01,simplify=T)$G1$items[,2]-coef(md.refit01,simplify=T)$G2$items[,2])[c(12,13,14,15,16,17)]-0.5)))
   #ref vs focal2
   md.noncons02 <- multipleGroup(resp02, s, group = Group02,SE=TRUE,invariance=c('free_means', 'free_var','intercepts',colnames(resp02)[1:r]))
-  mirt.p.mat3[(rep),1:9]=DIF(md.noncons02, which.par = c('a1'), p.adjust = 'fdr',scheme = 'add',items2test=c(3:11))[,"adj_pvals"]
-  mirt.p.mat3[(rep),10:18]=DIF(md.noncons02, which.par = c('a2'), p.adjust = 'fdr',scheme = 'add',items2test=c(12:20))[,"adj_pvals"]
+  mirt.p.mat3[(rep),1:9]=DIF(md.noncons02, which.par = c('a1'), p.adjust = 'none',scheme = 'add',items2test=c(3:11))[,"adj_pvals"]
+  mirt.p.mat3[(rep),10:18]=DIF(md.noncons02, which.par = c('a2'), p.adjust = 'none',scheme = 'add',items2test=c(12:20))[,"adj_pvals"]
   md.refit02 <- multipleGroup(resp02, s, group = Group02,SE=TRUE,invariance=c('free_means', 'free_var','intercepts',colnames(resp02)[-(which(mirt.p.mat3[rep,]<0.05)+2)]))
   bias.mirt3[rep,1:2]=colSums(coef(md.refit02,simplify=T)$G1$items[,1:r]-Amat1)/10
   rmse.mirt3[rep,1:2]=sqrt(colSums((coef(md.refit02,simplify=T)$G1$items[,1:r]-Amat1)^2)/10)
