@@ -1287,13 +1287,6 @@ for (rep in 1:reps){
   #ADmat.52[,,rep]=ADmat[,,kk2]
   #biass.52[rep,]=biass[kk2,]
   #RMSEs.52[rep,]=RMSEs[kk2,]
-  print(ADmat.5[,,rep])
-  print(eta.5[rep])
-  print(Gammas.5[,,,rep])
-  #print(eta.52[rep])
-  #print(Gammas.52[,,,rep])
-  print(biass.5[rep,])
-  print(RMSEs.5[rep,])
   write.csv(eta.5[rep],file = paste("eta6adaptBIC_",rep))
   write.csv(ADmat.5[,,rep],file = paste("ADmat6adaptBIC_",rep))
   write.csv(rbind(t(rbind(Gammas.5[c(1,2),1,3:11,rep])),t(rbind(Gammas.5[c(1,2),2,12:20,rep]))),file = paste("Gamma6adaptBIC_",rep))
