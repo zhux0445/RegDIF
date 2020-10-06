@@ -97,19 +97,19 @@ absbias2/200
 
 # 60% sim2
 
-reps=50
+reps=20
 Betas.3=array(double(20*2*reps),dim = c(20,2,reps))
 power=matrix(0,reps,3)
 tpI=matrix(0,reps,3)
-for (rep in c(1:20,22:29,31:35,37:50)){
+for (rep in c(1:20)){
   power[rep,c(2,3)]=c(sum((read.csv(paste("/Users/ruoyizhu/Desktop/new DIF results/Beta2_",rep),row.names = 1)[c(4,5,6,7,8,9,12,13,14,15,16,17),1])!=0),sum((read.csv(paste("/Users/ruoyizhu/Desktop/new DIF results/Beta2_",rep),row.names = 1)[c(4,5,6,7,8,9,12,13,14,15,16,17),2])!=0))
   power[rep,1]=sum(((read.csv(paste("/Users/ruoyizhu/Desktop/new DIF results/Beta2_",rep),row.names = 1)[c(4,5,6,7,8,9,12,13,14,15,16,17),1])!=0)|((read.csv(paste("/Users/ruoyizhu/Desktop/new DIF results/Beta2_",rep),row.names = 1)[c(4,5,6,7,8,9,12,13,14,15,16,17),2])!=0))
   tpI[rep,c(2,3)]=c(sum((read.csv(paste("/Users/ruoyizhu/Desktop/new DIF results/Beta2_",rep),row.names = 1)[-c(4,5,6,7,8,9,12,13,14,15,16,17),1])!=0),sum((read.csv(paste("/Users/ruoyizhu/Desktop/new DIF results/Beta2_",rep),row.names = 1)[-c(4,5,6,7,8,9,12,13,14,15,16,17),2])!=0))
   tpI[rep,1]=sum(((read.csv(paste("/Users/ruoyizhu/Desktop/new DIF results/Beta2_",rep),row.names = 1)[-c(4,5,6,7,8,9,12,13,14,15,16,17),1])!=0)|((read.csv(paste("/Users/ruoyizhu/Desktop/new DIF results/Beta2_",rep),row.names = 1)[-c(4,5,6,7,8,9,12,13,14,15,16,17),2])!=0)) 
 }
 
-colSums(power)/(12*47)
-colSums(tpI)/(6*47)
+colSums(power)/(12*20)
+colSums(tpI)/(6*20)
 
 
 biassum=c(0,0,0)
@@ -355,13 +355,13 @@ reps=50
 Betas.9=array(double(20*2*reps),dim = c(20,2,reps))
 power=matrix(0,reps,3)
 tpI=matrix(0,reps,3)
-for (rep in 1:50){
-  power[rep,1]=sum(((read.csv(paste("/Users/ruoyizhu/Documents/GitHub/RegDIF_SimData/Beta9_",rep),row.names = 1)[c(4,5,12,13),1])!=0)|((read.csv(paste("/Users/ruoyizhu/Documents/GitHub/RegDIF_SimData/Beta9_",rep),row.names = 1)[c(4,5,12,13),2])!=0))
-  tpI[rep,1]=sum(((read.csv(paste("/Users/ruoyizhu/Documents/GitHub/RegDIF_SimData/Beta9_",rep),row.names = 1)[-c(4,5,12,13),1])!=0)|((read.csv(paste("/Users/ruoyizhu/Documents/GitHub/RegDIF_SimData/Beta9_",rep),row.names = 1)[-c(4,5,12,13),2])!=0)) 
+for (rep in 1:43){
+  power[rep,1]=sum(((read.csv(paste("/Users/ruoyizhu/Documents/GitHub/RegDIF_SimData/Beta9mm_",rep),row.names = 1)[c(4,5,12,13),1])!=0)|((read.csv(paste("/Users/ruoyizhu/Documents/GitHub/RegDIF_SimData/Beta9_",rep),row.names = 1)[c(4,5,12,13),2])!=0))
+  tpI[rep,1]=sum(((read.csv(paste("/Users/ruoyizhu/Documents/GitHub/RegDIF_SimData/Beta9mm_",rep),row.names = 1)[-c(4,5,12,13),1])!=0)|((read.csv(paste("/Users/ruoyizhu/Documents/GitHub/RegDIF_SimData/Beta9_",rep),row.names = 1)[-c(4,5,12,13),2])!=0)) 
 }
 
-colSums(power)/(4*50)
-colSums(tpI)/(14*50)
+colSums(power)/(4*43)
+colSums(tpI)/(14*43)
 
 # group-lasso sim11
 
@@ -381,30 +381,30 @@ colSums(tpI)/(14*50)
 # group-lasso sim10
 
 reps=50
-Betas.9=array(double(20*2*reps),dim = c(20,2,reps))
+Betas.10=array(double(20*2*reps),dim = c(20,2,reps))
 power=matrix(0,reps,3)
 tpI=matrix(0,reps,3)
 for (rep in 1:50){
-  power[rep,1]=sum(((read.csv(paste("/Users/ruoyizhu/Documents/GitHub/RegDIF_SimData/Beta9_",rep),row.names = 1)[c(4,5,12,13),1])!=0)|((read.csv(paste("/Users/ruoyizhu/Documents/GitHub/RegDIF_SimData/Beta9_",rep),row.names = 1)[c(4,5,12,13),2])!=0))
-  tpI[rep,1]=sum(((read.csv(paste("/Users/ruoyizhu/Documents/GitHub/RegDIF_SimData/Beta9_",rep),row.names = 1)[-c(4,5,12,13),1])!=0)|((read.csv(paste("/Users/ruoyizhu/Documents/GitHub/RegDIF_SimData/Beta9_",rep),row.names = 1)[-c(4,5,12,13),2])!=0)) 
+  power[rep,1]=sum(((read.csv(paste("/Users/ruoyizhu/Documents/GitHub/RegDIF_SimData/Beta10_",rep),row.names = 1)[c(4,5,6,7,8,9,12,13,14,15,16,17),1])!=0)|((read.csv(paste("/Users/ruoyizhu/Documents/GitHub/RegDIF_SimData/Beta10_",rep),row.names = 1)[c(4,5,6,7,8,9,12,13,14,15,16,17),2])!=0))
+  tpI[rep,1]=sum(((read.csv(paste("/Users/ruoyizhu/Documents/GitHub/RegDIF_SimData/Beta10_",rep),row.names = 1)[-c(4,5,6,7,8,9,12,13,14,15,16,17),1])!=0)|((read.csv(paste("/Users/ruoyizhu/Documents/GitHub/RegDIF_SimData/Beta10_",rep),row.names = 1)[-c(4,5,6,7,8,9,12,13,14,15,16,17),2])!=0)) 
 }
 
-colSums(power)/(4*50)
-colSums(tpI)/(14*50)
+colSums(power)/(12*50)
+colSums(tpI)/(6*50)
 
 # group-lasso sim12
 
 reps=50
-Betas.11=array(double(20*2*reps),dim = c(20,2,reps))
+Betas.12=array(double(20*2*reps),dim = c(20,2,reps))
 power=matrix(0,reps,3)
 tpI=matrix(0,reps,3)
-for (rep in 1:50){
-  power[rep,1]=sum(((read.csv(paste("/Users/ruoyizhu/Documents/GitHub/RegDIF_SimData/Beta11_",rep),row.names = 1)[c(4,5,12,13),1])!=0)|((read.csv(paste("/Users/ruoyizhu/Documents/GitHub/RegDIF_SimData/Beta11_",rep),row.names = 1)[c(4,5,12,13),2])!=0))
-  tpI[rep,1]=sum(((read.csv(paste("/Users/ruoyizhu/Documents/GitHub/RegDIF_SimData/Beta11_",rep),row.names = 1)[-c(4,5,12,13),1])!=0)|((read.csv(paste("/Users/ruoyizhu/Documents/GitHub/RegDIF_SimData/Beta11_",rep),row.names = 1)[-c(4,5,12,13),2])!=0)) 
+for (rep in c(1:21,26:50)){
+  power[rep,1]=sum(((read.csv(paste("/Users/ruoyizhu/Documents/GitHub/RegDIF_SimData/Beta12_",rep),row.names = 1)[c(4,5,6,7,8,9,12,13,14,15,16,17),1])!=0)|((read.csv(paste("/Users/ruoyizhu/Documents/GitHub/RegDIF_SimData/Beta12_",rep),row.names = 1)[c(4,5,6,7,8,9,12,13,14,15,16,17),2])!=0))
+  tpI[rep,1]=sum(((read.csv(paste("/Users/ruoyizhu/Documents/GitHub/RegDIF_SimData/Beta12_",rep),row.names = 1)[-c(4,5,6,7,8,9,12,13,14,15,16,17),1])!=0)|((read.csv(paste("/Users/ruoyizhu/Documents/GitHub/RegDIF_SimData/Beta12_",rep),row.names = 1)[-c(4,5,6,7,8,9,12,13,14,15,16,17),2])!=0)) 
 }
 
-colSums(power)/(4*50)
-colSums(tpI)/(14*50)
+colSums(power)/(12*46)
+colSums(tpI)/(6*46)
 
 
 
