@@ -8,17 +8,20 @@ library(dmutate)
 library(Rcpp)
 library(RcppParallel)
 sourceCpp("/Users/ruoyizhu/Documents/GitHub/mirt/matrix.cpp")
+sourceCpp("/Users/zhux0445/Documents/GitHub/RegDIF/matrix.cpp")
+setwd('/Users/zhux0445/Documents/GitHub/RegDIF_SimData')
 setwd('/Users/ruoyizhu/Documents/GitHub/RegDIF_SimData')
-params=read.csv("Para3.csv",row.names = 1)
-responses=read.csv("RESP5.csv",row.names = 1)
+params=read.csv("Para4.csv",row.names = 1)
+responses=read.csv("RESP8.csv",row.names = 1)
 
 soft=function(s, tau) {
   val=sign(s)*max(c(abs(s) - tau,0))
   return(val) }
-# Dataset #4 (2 Non-uniform DIF items per scale)
-J=20 
 
-N1=N2=N3=500 
+# Dataset #4 (2 Non-uniform DIF items per scale)
+J=20
+
+N1=N2=N3=1000 
 Group=c(rep('G1', N1), rep('G2', N2), rep('G3', N3))
 Group01=c(rep('G1', N1), rep('G2', N2))
 Group02=c(rep('G1', N1), rep('G3', N3))
@@ -37,7 +40,7 @@ Dmat1=matrix(params[,7],J,(m-1))
 Dmat2=matrix(params[,8],J,(m-1))
 Dmat3=matrix(params[,9],J,(m-1))
 
-ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=T,gra00=gra00,grd00=grd00,grgamma00=grgamma00,mu100=mu100,mu200=mu200,mu300=mu300,Sig100=Sig100,Sig200=Sig200,Sig300=Sig300)
+ipest1 <- function(resp,m,r,eta,lam,eps =1e-3,max.tol=1e-7,NonUniform=T,gra00=gra00,grd00=grd00,grgamma00=grgamma00,mu100=mu100,mu200=mu200,mu300=mu300,Sig100=Sig100,Sig200=Sig200,Sig300=Sig300)
 {
   #make sure the responses are coded from 1 instead of 0
   if(min(resp)==0)
@@ -91,23 +94,16 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=T,gra00=gra00,
     A3=dmvnorm(X,Mu.gp3,Sig.gp3)
     
     #calculation of n_g 
-    axmat=gra%*%t(X) #a%*%X
-    ygam1=ygam2=ygam3=matrix(0,20,2)
-    for (j in 1:20){
-      ygam1[j,]=y1%*%grgamma[,,j]
-    }
-    for (j in 1:20){
-      ygam2[j,]=y2%*%grgamma[,,j]
-    }
-    for (j in 1:20){
-      ygam3[j,]=y3%*%grgamma[,,j]
-    }
-    ygamat1=ygam1%*%t(X)
-    ygamat2=ygam2%*%t(X)
-    ygamat3=ygam3%*%t(X)
-    grbeta1=t(y1%*%t(grbeta))
-    grbeta2=t(y2%*%t(grbeta))
-    grbeta3=t(y3%*%t(grbeta))
+    axmat=eigenMapMatMult(gra,t(X)) #a%*%X
+    ygam1=ygam2=ygam3=matrix(0,J,r)
+    ygam2=t(grgamma[1,,])
+    ygam3=t(grgamma[2,,])
+    ygamat1=eigenMapMatMult(ygam1,t(X))
+    ygamat2=eigenMapMatMult(ygam2,t(X))
+    ygamat3=eigenMapMatMult(ygam3,t(X))
+    grbeta1=matrix(0,J,m-1)
+    grbeta2=matrix(0,J,m-1)
+    grbeta3=matrix(0,J,m-1)
     pstar1=pstar2=pstar3=array(double(J*(m-1)*G),dim = c(J,(m-1),G))
     p1=p2=p3=array(double(J*m*G),dim = c(J,m,G))
     for (g in 1:G)
@@ -162,29 +158,13 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=T,gra00=gra00,
     ng3=apply(LiA[(N1+N2+1):(N1+N2+N3),]/Pi[(N1+N2+1):(N1+N2+N3)],2,sum)
     
     #update mu hat and Sigma hat
-    Mu01=Mu02=Mu03=numeric(r)
-    for (g in 1:G){
-      Mu02=Mu02+X[g,]*ng2[g]
-    }
-    for (g in 1:G){
-      Mu03=Mu03+X[g,]*ng3[g]
-    }
-    Mu.gp1=Mu01/N1; Mu.gp2=Mu02/N2; Mu.gp3=Mu03/N3
+    Mu.gp2=colSums(X*ng2)/N2
+    Mu.gp3=colSums(X*ng3)/N3
     
     #update Sigma hat
-    Sigg1=Sigg2=Sigg3=matrix(0,r,r)
-    for (g in 1:G){
-      Sigg1=Sigg1+(X[g,]-Mu.gp1)%*%t(X[g,]-Mu.gp1)*ng1[g]
-    }
-    for (g in 1:G){
-      Sigg2=Sigg2+(X[g,]-Mu.gp2)%*%t(X[g,]-Mu.gp2)*ng2[g]
-    }
-    for (g in 1:G){
-      Sigg3=Sigg3+(X[g,]-Mu.gp3)%*%t(X[g,]-Mu.gp3)*ng3[g]
-    }
-    Sig.hat1=Sigg1/N1
-    Sig.hat2=Sigg2/N2
-    Sig.hat3=Sigg3/N3
+    Sig.hat1=eigenMapMatMult(t(X),(X*ng1))/N1
+    Sig.hat2=eigenMapMatMult(t(X-rep(Mu.gp2)),((X-rep(Mu.gp2))*ng2))/N2
+    Sig.hat3=eigenMapMatMult(t(X-rep(Mu.gp3)),((X-rep(Mu.gp3))*ng3))/N3
     
     #scale 
     #mu.hat.mat=matrix(rep(mu.hat,G),G,r,byrow = T)
@@ -194,19 +174,10 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=T,gra00=gra00,
     #X=(X-mu.hat.mat)/Tau.mat
     Xstar=X/Tau.mat
     
-    Sigg1star=Sigg2star=Sigg3star=matrix(0,r,r)
-    for (g in 1:G){
-      Sigg1star=Sigg1star+(Xstar[g,]-Mu.gp1)%*%t(Xstar[g,]-Mu.gp1)*ng1[g]
-    }
-    for (g in 1:G){
-      Sigg2star=Sigg2star+(Xstar[g,]-Mu.gp2)%*%t(Xstar[g,]-Mu.gp2)*ng2[g]
-    }
-    for (g in 1:G){
-      Sigg3star=Sigg3star+(Xstar[g,]-Mu.gp3)%*%t(Xstar[g,]-Mu.gp3)*ng3[g]
-    }
-    Sig.gp1=Sigg1star/N1
-    Sig.gp2=Sigg2star/N2
-    Sig.gp3=Sigg3star/N3
+    Sig.gp1=eigenMapMatMult(t(Xstar),(Xstar*ng1))/N1
+    Sig.gp2=eigenMapMatMult(t(Xstar-rep(Mu.gp2)),((Xstar-rep(Mu.gp2))*ng2))/N2
+    Sig.gp3=eigenMapMatMult(t(Xstar-rep(Mu.gp3)),((Xstar-rep(Mu.gp3))*ng3))/N3
+    
     
     ##Constraint part
     #calculation of r_jgk
@@ -287,6 +258,7 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=T,gra00=gra00,
       d <- grd[j,] 
       a <- gra[j,1]
       gam=grgamma[,,j]
+      gammle=grgamma00[,,j]
       bet=grbeta[j,]
       rLiA <- array(double(N*G*m),dim = c(N,G,m))
       for(k in 1:m){
@@ -407,10 +379,10 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=T,gra00=gra00,
         a=a+add[m]
         gam0=gam[,1]+add[(m+r-1):(m+r)]
         for (mm in (m+r-1):(m+r)){
-          add[mm]=soft(gam0[mm-m],-eta/FI[mm,mm])-gam[mm-m,1]
+          add[mm]=soft(gam0[mm-m],-(eta/(abs(gammle[mm-m,1])^(lam)))/FI[mm,mm])-gam[mm-m,1]
         }
         for (mm in (m+r-1):(m+r)){
-          gam[mm-m,1]=soft(gam0[mm-m],-eta/FI[mm,mm])
+          gam[mm-m,1]=soft(gam0[mm-m],-(eta/(abs(gammle[mm-m,1])^(lam)))/FI[mm,mm])
         }
       }
       #end of M step loop
@@ -430,6 +402,7 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=T,gra00=gra00,
       d <- grd[j,] 
       a <- gra[j,2]
       gam=grgamma[,,j]
+      gammle=grgamma00[,,j]
       bet=grbeta[j,]
       rLiA <- array(double(N*G*m),dim = c(N,G,m))
       for(k in 1:m){
@@ -544,17 +517,15 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=T,gra00=gra00,
           }
           FI[m,m] <- -sum(ng1*X[,2]*X[,2]*apply(PQdif1^2/P1,1,sum)+ng2*X[,2]*X[,2]*apply(PQdif2^2/P2,1,sum)+ng3*X[,2]*X[,2]*apply(PQdif3^2/P3,1,sum))
         }
-        
-        
         add <- qr.solve(FI,minusgrad)
         d=d+add[1:(m-1)]
         a=a+add[m]
         gam0=gam[,2]+add[(m+r-1):(m+r)]
         for (mm in (m+r-1):(m+r)){
-          add[mm]=soft(gam0[mm-m],-eta/FI[mm,mm])-gam[mm-m,2]
+          add[mm]=soft(gam0[mm-m],-(eta/(abs(gammle[mm-m,2])^(lam)))/FI[mm,mm])-gam[mm-m,2]
         }
         for (mm in (m+r-1):(m+r)){
-          gam[mm-m,2]=soft(gam0[mm-m],-eta/FI[mm,mm])
+          gam[mm-m,2]=soft(gam0[mm-m],-(eta/(abs(gammle[mm-m,2])^(lam)))/FI[mm,mm])
         }
       }
       #end of M step loop
@@ -605,23 +576,16 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=T,gra00=gra00,
     A3=dmvnorm(X,Mu.gp3,Sig.gp3)
     
     #calculation of n_g 
-    axmat=gra%*%t(X) #a%*%X
-    ygam1=ygam2=ygam3=matrix(0,20,2)
-    for (j in 1:20){
-      ygam1[j,]=y1%*%grgamma[,,j]
-    }
-    for (j in 1:20){
-      ygam2[j,]=y2%*%grgamma[,,j]
-    }
-    for (j in 1:20){
-      ygam3[j,]=y3%*%grgamma[,,j]
-    }
-    ygamat1=ygam1%*%t(X)
-    ygamat2=ygam2%*%t(X)
-    ygamat3=ygam3%*%t(X)
-    grbeta1=t(y1%*%t(grbeta))
-    grbeta2=t(y2%*%t(grbeta))
-    grbeta3=t(y3%*%t(grbeta))
+    axmat=eigenMapMatMult(gra,t(X)) #a%*%X
+    ygam1=ygam2=ygam3=matrix(0,J,r)
+    ygam2=t(grgamma[1,,])
+    ygam3=t(grgamma[2,,])
+    ygamat1=eigenMapMatMult(ygam1,t(X))
+    ygamat2=eigenMapMatMult(ygam2,t(X))
+    ygamat3=eigenMapMatMult(ygam3,t(X))
+    grbeta1=matrix(0,J,m-1)
+    grbeta2=matrix(0,J,m-1)
+    grbeta3=matrix(0,J,m-1)
     pstar1=pstar2=pstar3=array(double(J*(m-1)*G),dim = c(J,(m-1),G))
     p1=p2=p3=array(double(J*m*G),dim = c(J,m,G))
     for (g in 1:G)
@@ -676,31 +640,13 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=T,gra00=gra00,
     ng3=apply(LiA[(N1+N2+1):(N1+N2+N3),]/Pi[(N1+N2+1):(N1+N2+N3)],2,sum)
     
     #update mu hat and Sigma hat
-    Mu01=Mu02=Mu03=numeric(r)
-    for (g in 1:G){
-      Mu02=Mu02+X[g,]*ng2[g]
-    }
-    for (g in 1:G){
-      Mu03=Mu03+X[g,]*ng3[g]
-    }
-    Mu.gp1=Mu01/N1
-    Mu.gp2=Mu02/N2
-    Mu.gp3=Mu03/N3
+    Mu.gp2=colSums(X*ng2)/N2
+    Mu.gp3=colSums(X*ng3)/N3
     
-    #update mu hat and Sigma hat
-    Sigg1=Sigg2=Sigg3=matrix(0,r,r)
-    for (g in 1:G){
-      Sigg1=Sigg1+(X[g,]-Mu.gp1)%*%t(X[g,]-Mu.gp1)*ng1[g]
-    }
-    for (g in 1:G){
-      Sigg2=Sigg2+(X[g,]-Mu.gp2)%*%t(X[g,]-Mu.gp2)*ng2[g]
-    }
-    for (g in 1:G){
-      Sigg3=Sigg3+(X[g,]-Mu.gp3)%*%t(X[g,]-Mu.gp3)*ng3[g]
-    }
-    Sig.hat1=Sigg1/N1
-    Sig.hat2=Sigg2/N2
-    Sig.hat3=Sigg3/N3
+    #update Sigma hat
+    Sig.hat1=eigenMapMatMult(t(X),(X*ng1))/N1
+    Sig.hat2=eigenMapMatMult(t(X-rep(Mu.gp2)),((X-rep(Mu.gp2))*ng2))/N2
+    Sig.hat3=eigenMapMatMult(t(X-rep(Mu.gp3)),((X-rep(Mu.gp3))*ng3))/N3
     
     #scale 
     #mu.hat.mat=matrix(rep(mu.hat,G),G,r,byrow = T)
@@ -710,19 +656,9 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=T,gra00=gra00,
     #X=(X-mu.hat.mat)/Tau.mat
     Xstar=X/Tau.mat
     
-    Sigg1star=Sigg2star=Sigg3star=matrix(0,r,r)
-    for (g in 1:G){
-      Sigg1star=Sigg1star+(Xstar[g,]-Mu.gp1)%*%t(Xstar[g,]-Mu.gp1)*ng1[g]
-    }
-    for (g in 1:G){
-      Sigg2star=Sigg2star+(Xstar[g,]-Mu.gp2)%*%t(Xstar[g,]-Mu.gp2)*ng2[g]
-    }
-    for (g in 1:G){
-      Sigg3star=Sigg3star+(Xstar[g,]-Mu.gp3)%*%t(Xstar[g,]-Mu.gp3)*ng3[g]
-    }
-    Sig.gp1=Sigg1star/N1
-    Sig.gp2=Sigg2star/N2
-    Sig.gp3=Sigg3star/N3
+    Sig.gp1=eigenMapMatMult(t(Xstar),(Xstar*ng1))/N1
+    Sig.gp2=eigenMapMatMult(t(Xstar-rep(Mu.gp2)),((Xstar-rep(Mu.gp2))*ng2))/N2
+    Sig.gp3=eigenMapMatMult(t(Xstar-rep(Mu.gp3)),((Xstar-rep(Mu.gp3))*ng3))/N3
     
     ##Constraint part
     #calculation of r_jgk
@@ -1124,7 +1060,7 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=T,gra00=gra00,
   }
   
   ######################
-  ###       BIC      ###
+  ###       GIC      ###
   ######################
   est.d=grd
   est.a=gra
@@ -1147,20 +1083,13 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=T,gra00=gra00,
   ##compute ng
   ng <-  numeric(G)
   #calculation of n_g 
-  axmat=est.a%*%t(X) #a%*%X
-  ygam1=ygam2=ygam3=matrix(0,20,2)
-  for (j in 1:20){
-    ygam1[j,]=y1%*%est.gamma[,,j]
-  }
-  for (j in 1:20){
-    ygam2[j,]=y2%*%est.gamma[,,j]
-  }
-  for (j in 1:20){
-    ygam3[j,]=y3%*%est.gamma[,,j]
-  }
-  ygamat1=ygam1%*%t(X)
-  ygamat2=ygam2%*%t(X)
-  ygamat3=ygam3%*%t(X)
+  axmat=eigenMapMatMult(gra,t(X)) #a%*%X
+  ygam1=ygam2=ygam3=matrix(0,J,r)
+  ygam2=t(grgamma[1,,])
+  ygam3=t(grgamma[2,,])
+  ygamat1=eigenMapMatMult(ygam1,t(X))
+  ygamat2=eigenMapMatMult(ygam2,t(X))
+  ygamat3=eigenMapMatMult(ygam3,t(X))
   grbeta1=t(y1%*%t(est.beta))
   grbeta2=t(y2%*%t(est.beta))
   grbeta3=t(y3%*%t(est.beta))
@@ -1262,8 +1191,8 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=T,gra00=gra00,
       }
     }
   }
-  
-  BIC=-2*sum(lh)+l0norm*log(N)
+  aN=log(log(N))*log(2*J)
+  BIC=-2*sum(lh)+l0norm*aN
   
   Bias=c(colSums(gra-Amat1)/10,colMeans(grd-Dmat1))
   RMSE=c(sqrt(colSums((gra-Amat1)^2)/10),sqrt(colMeans((grd-Dmat1)^2)))
@@ -1288,15 +1217,13 @@ ADmat.5=array(double(J*3*reps),dim = c(J,3,reps)) #a has 2 columns, d has 1 colu
 biass.5=matrix(0,reps,3)
 RMSEs.5=matrix(0,reps,3)
 
-StartVals=read.csv("StartingValues5.csv",row.names = 1)
+StartVals=read.csv("StartingValues6.csv",row.names = 1)
 gra00=as.matrix(StartVals[,1:2])
 rownames(gra00) <- c()
 grd00=matrix(StartVals[,3],20,1)
 grgamma00=array(0,dim=c(r,r,J))
 grgamma00[c(1,2),1,3:11]=t(as.matrix(StartVals[3:11,4:5]))
 grgamma00[c(1,2),2,12:20]=t(as.matrix(StartVals[12:20,4:5]))
-rownames(grbeta00) <- c()
-colnames(grbeta00) <- c()
 
 # 2 dif per dim
 mu100=c(0,0)
@@ -1306,11 +1233,12 @@ Sig100=matrix(c(1,0.8512375,0.8512375,1),2,2)
 Sig200=matrix(c(1.19,1.05,1.05,1.3),2,2)
 Sig300=matrix(c(0.91,0.87,0.87,1.15),2,2)
 
-for (rep in 1:reps){
+for (rep in 1:25){
   resp=responses[((rep-1)*N+1):((rep-1)*N+N1+N2+N3),]
   r=2
   m=2
-  eta.vec=seq(15,20,1)
+  lam=1
+  eta.vec=seq(5,26,3)
   bics=rep(0,length(eta.vec))
   ADmat=array(double(J*3*length(eta.vec)),dim = c(J,3,length(eta.vec)))
   Gammas=array(double(2*J*m*length(eta.vec)),dim = c(2,2,J,length(eta.vec)))
@@ -1321,7 +1249,7 @@ for (rep in 1:reps){
   {
     eta=eta.vec[k]
     ptm <- proc.time()
-    sim=ipest1(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=T,gra00=gra00,grd00=grd00,grgamma00=grgamma00,mu100=mu100,mu200=mu200,mu300=mu300,Sig100=Sig100,Sig200=Sig200,Sig300=Sig300)
+    sim=ipest1(resp,m,r,eta,lam,eps =1e-3,max.tol=1e-7,NonUniform=T,gra00=gra00,grd00=grd00,grgamma00=grgamma00,mu100=mu100,mu200=mu200,mu300=mu300,Sig100=Sig100,Sig200=Sig200,Sig300=Sig300)
     print(proc.time() - ptm)
     bics[k]=sim$bic
     #Gammas[,,,k]=sim$Gamma
@@ -1342,9 +1270,9 @@ for (rep in 1:reps){
   print(Gammas.5[,,,rep])
   print(biass.5[rep,])
   print(RMSEs.5[rep,])
-  write.csv(eta.5[rep],file = paste("eta5_",rep))
-  write.csv(ADmat.5[,,rep],file = paste("ADmat5_",rep))
-  write.csv(rbind(t(rbind(Gammas.5[c(1,2),1,3:11,rep])),t(rbind(Gammas.5[c(1,2),2,12:20,rep]))),file = paste("Gamma5_",rep))
+  write.csv(eta.5[rep],file = paste("eta8adapt_",rep))
+  write.csv(ADmat.5[,,rep],file = paste("ADmat8adapt_",rep))
+  write.csv(rbind(t(rbind(Gammas.5[c(1,2),1,3:11,rep])),t(rbind(Gammas.5[c(1,2),2,12:20,rep]))),file = paste("Gamma8adapt_",rep))
 }
 
 
@@ -1353,7 +1281,7 @@ for (rep in 1:reps){
 #####  Comparing with mirt LRT add  #####
 #####                               #####
 #########################################
-N1=N2=N3=1000 
+N1=N2=N3=500 
 Group=c(rep('G1', N1), rep('G2', N2), rep('G3', N3))
 Group01=c(rep('G1', N1), rep('G2', N2))
 Group02=c(rep('G1', N1), rep('G3', N3))
@@ -1385,8 +1313,8 @@ for (rep in 1:50){
   # From Phil, when you test DIF on slope you should also test the intercept at the same time
   md.noncons0 <- multipleGroup(resp, s, group = Group,SE=TRUE,invariance=c('free_means', 'free_var','intercepts',colnames(resp)[1:r]))
   #md.noncons0 <- multipleGroup(resp, s, group = Group,SE=TRUE,invariance=c('free_means', 'free_var',colnames(resp)[1:r]))
-  mirt.p.mat1[(rep),1:9]=DIF(md.noncons0, which.par = c('a1'), p.adjust = 'none',scheme = 'add',items2test=c(3:11))[,"adj_pvals"]
-  mirt.p.mat1[(rep),10:18]=DIF(md.noncons0, which.par = c('a2'), p.adjust = 'none',scheme = 'add',items2test=c(12:20))[,"adj_pvals"]
+  mirt.p.mat1[(rep),1:9]=DIF(md.noncons0, which.par = c('a1'), p.adjust = 'fdr',scheme = 'add',items2test=c(3:11))[,"adj_pvals"]
+  mirt.p.mat1[(rep),10:18]=DIF(md.noncons0, which.par = c('a2'), p.adjust = 'fdr',scheme = 'add',items2test=c(12:20))[,"adj_pvals"]
   md.refit0 <- multipleGroup(resp, s, group = Group,SE=TRUE,invariance=c('free_means', 'free_var','intercepts',colnames(resp)[-(which(mirt.p.mat1[rep,]<0.05)+2)]))
   #md.refit.r <- multipleGroup(resp, s, group = Group,SE=TRUE,invariance=c('free_means', 'free_var','intercepts',colnames(resp)[-c()]))
   bias.mirt1[rep,1:2]=colSums(coef(md.refit0,simplify=T)$G1$items[,1:r]-Amat1)/10
@@ -1400,8 +1328,8 @@ for (rep in 1:50){
   difrec.mirt.fn1[rep,1]=mean(c(difrec.mirt.fn1[rep,2],difrec.mirt.fn1[rep,3]))
   #ref vs focal1
   md.noncons01 <- multipleGroup(resp01, s, group = Group01,SE=TRUE,invariance=c('free_means', 'free_var','intercepts',colnames(resp01)[1:r]))
-  mirt.p.mat2[(rep),1:9]=DIF(md.noncons01, which.par = c('a1'), p.adjust = 'none',scheme = 'add',items2test=c(3:11))[,"adj_pvals"]
-  mirt.p.mat2[(rep),10:18]=DIF(md.noncons01, which.par = c('a2'), p.adjust = 'none',scheme = 'add',items2test=c(12:20))[,"adj_pvals"]
+  mirt.p.mat2[(rep),1:9]=DIF(md.noncons01, which.par = c('a1'), p.adjust = 'fdr',scheme = 'add',items2test=c(3:11))[,"adj_pvals"]
+  mirt.p.mat2[(rep),10:18]=DIF(md.noncons01, which.par = c('a2'), p.adjust = 'fdr',scheme = 'add',items2test=c(12:20))[,"adj_pvals"]
   #md.refit01 <- multipleGroup(resp01, s, group = Group01,SE=TRUE,invariance=c('free_means', 'free_var','intercepts',colnames(resp)[-(which(mirt.p.mat2[rep,]<0.05)+2)]))
   if ((sum(mirt.p.mat2[rep,]<0.05))==0){
     md.refit01 <-multipleGroup(resp01, s, group = Group01,SE=TRUE,invariance=c('free_means', 'free_var','intercepts',colnames(resp01)[1:J]))
@@ -1416,8 +1344,8 @@ for (rep in 1:50){
   #difrec.mirt.fn2[rep,2]= mean(c(abs((coef(md.refit01,simplify=T)$G1$items[,1]-coef(md.refit01,simplify=T)$G2$items[,1])[c(4,5,6,7,8,9)]-0.5),abs((coef(md.refit01,simplify=T)$G1$items[,2]-coef(md.refit01,simplify=T)$G2$items[,2])[c(12,13,14,15,16,17)]-0.5)))
   #ref vs focal2
   md.noncons02 <- multipleGroup(resp02, s, group = Group02,SE=TRUE,invariance=c('free_means', 'free_var','intercepts',colnames(resp02)[1:r]))
-  mirt.p.mat3[(rep),1:9]=DIF(md.noncons02, which.par = c('a1'), p.adjust = 'none',scheme = 'add',items2test=c(3:11))[,"adj_pvals"]
-  mirt.p.mat3[(rep),10:18]=DIF(md.noncons02, which.par = c('a2'), p.adjust = 'none',scheme = 'add',items2test=c(12:20))[,"adj_pvals"]
+  mirt.p.mat3[(rep),1:9]=DIF(md.noncons02, which.par = c('a1'), p.adjust = 'fdr',scheme = 'add',items2test=c(3:11))[,"adj_pvals"]
+  mirt.p.mat3[(rep),10:18]=DIF(md.noncons02, which.par = c('a2'), p.adjust = 'fdr',scheme = 'add',items2test=c(12:20))[,"adj_pvals"]
   md.refit02 <- multipleGroup(resp02, s, group = Group02,SE=TRUE,invariance=c('free_means', 'free_var','intercepts',colnames(resp02)[-(which(mirt.p.mat3[rep,]<0.05)+2)]))
   bias.mirt3[rep,1:2]=colSums(coef(md.refit02,simplify=T)$G1$items[,1:r]-Amat1)/10
   rmse.mirt3[rep,1:2]=sqrt(colSums((coef(md.refit02,simplify=T)$G1$items[,1:r]-Amat1)^2)/10)
@@ -1426,7 +1354,7 @@ for (rep in 1:50){
   difrec.mirt.fn3[rep,3]= mean(c(abs((coef(md.refit02,simplify=T)$G1$items[,1]-coef(md.refit02,simplify=T)$G3$items[,1])[c(4,5)]-1),abs((coef(md.refit02,simplify=T)$G1$items[,2]-coef(md.refit02,simplify=T)$G3$items[,2])[c(12,13)]-1)))
   #difrec.mirt.fn3[rep,3]= mean(c(abs((coef(md.refit02,simplify=T)$G1$items[,1]-coef(md.refit02,simplify=T)$G3$items[,1])[c(4,5,6,7,8,9)]-1),abs((coef(md.refit02,simplify=T)$G1$items[,2]-coef(md.refit02,simplify=T)$G3$items[,2])[c(12,13,14,15,16,17)]-1)))
   rep
-  }
+}
 sum(mirt.p.mat1[,c(2,3,10,11)]<0.05)/(50*4)
 sum(mirt.p.mat1[,-c(2,3,10,11)]<0.05)/(50*14)
 colMeans(bias.mirt1)
@@ -1478,6 +1406,3 @@ write.csv(rmse.mirt3,file = "Sim7_LRTrmse3.csv")
 write.csv(difrec.mirt.fn1,file = "Sim7_LRTfn1.csv")
 write.csv(difrec.mirt.fn2,file = "Sim7_LRTfn2.csv")
 write.csv(difrec.mirt.fn3,file = "Sim7_LRTfn3.csv")
-
-
-
