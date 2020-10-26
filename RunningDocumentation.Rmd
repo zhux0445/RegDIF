@@ -506,7 +506,7 @@ The second partial derivatives in the Hessian matrix are given by
 \begin{equation}
 \begin{aligned}
 &\frac{\partial^2 \log M}{\partial a_{jr}^2}= \sum_{g=1}^{G} \sum_y^3 \sum_{k=1}^p -\frac{r_{gjyk} q_{gr}^2(P_{jy,(k-1)\mid q_{g}}^{*}Q_{jy,(k-1)\mid q_{g}}^{*}-P_{jyk\mid q_{g}}^{*}Q_{jyk\mid q_{g}}^{*})^2}{P_{jyk\mid q_{g}}^2}\\
-&=\sum_{g=1}^{G} \sum_y^3 \sum_{k=1}^p  -\frac{r_{gjyk} q_{gr}^2(\omega_{jy(k-1)}-\omega_{jyk})}{P_{jyk\mid q_{g}}^2}
+&=\sum_{g=1}^{G} \sum_y^3 \sum_{k=1}^p  -\frac{r_{gjyk} q_{gr}^2(\omega_{jy(k-1)}-\omega_{jyk})^2}{P_{jyk\mid q_{g}}^2}
 \end{aligned}
 \end{equation}
 
