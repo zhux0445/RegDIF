@@ -74,7 +74,7 @@ rgk.est=function(j,Xijk,LiA,y,N.vec){
   return(rbind(rgk,rgk.allgrp))
 }
 
-M_step=function(j,grd,gra,grgamma,grbeta,max.tol,X,y.allgroup){
+M_step=function(j,grd,gra,grgamma,grbeta,max.tol,X,y.allgroup,y,G){
   d <- grd[j,] 
   a <- gra[j,]
   gam=grgamma[,,j]
@@ -120,6 +120,8 @@ M_step=function(j,grd,gra,grgamma,grbeta,max.tol,X,y.allgroup){
         Gamsco.all[yy-1,]=(apply(rgk[(yy*G+1):(yy*G+G),]/P[,,yy]*PQdif[,,yy],1,sum))%*%X
       }
       Gamsco=as.vector(Gamsco.all)[which(gam!=0)]
+    } else {
+      Gamsco=as.null(Gamsco)
     }
     if (sum(ifelse(bet==0,0,1))>0){
       Betsco =numeric(sum(ifelse(bet==0,0,1)))
@@ -136,14 +138,12 @@ M_step=function(j,grd,gra,grgamma,grbeta,max.tol,X,y.allgroup){
         Betsco <- Betsco.all[which(bet!=0)]
       }
         
+    } else {
+      Betsco=as.null(Betsco)
     }
     
-    if (NonUniform==T & sum(ifelse(bet==0,0,1))>0){
       minusgrad <- -c(Dsco,Asco, Gamsco, Betsco)
       grad <- c(Dsco,Asco,Gamsco, Betsco)
-    } else if (NonUniform==T){
-      minusgrad <- -c(Dsco,Asco, Gamsco)
-      grad <- c(Dsco,Asco,Gamsco)
       FI <- matrix(0,length(minusgrad),length(minusgrad))
       for (kk in 1:length(Dsco)){
         for (yy in 1:y){
@@ -161,16 +161,23 @@ M_step=function(j,grd,gra,grgamma,grbeta,max.tol,X,y.allgroup){
       for (kk in (length(Dsco)+1):(length(Dsco)+length(Asco))){
         for (yy in 1:y){
           FI[kk,kk] = FI[kk,kk]+ (-sum(ng[(yy*G+1):(yy*G+G)]*(X%*%ifelse(a==0,0,1))[,(kk-length(Dsco))]*(X%*%ifelse(a==0,0,1))[,(kk-length(Dsco))]*apply(PQdif[,,yy]^2/P[,,yy],1,sum)))
-        }
-        if (length(Asco)>1){
-          n.cross=choose(length(Asco),2)
-          for (c in 1:n.cross){
-            for (yy in 1:y){
-              FI[kk,kk] = FI[kk,kk]+ (-sum(ng[(yy*G+1):(yy*G+G)]*(X%*%ifelse(a==0,0,1))[,(kk-length(Dsco))]*(X%*%ifelse(a==0,0,1))[,(kk-length(Dsco))]*apply(PQdif[,,yy]^2/P[,,yy],1,sum)))
-            }
+          for (bb in 1:length(Dsco)){
+            FI[kk,bb] <-  FI[kk,bb]+ sum(ng[(yy*G+1):(yy*G+G)]*(X%*%ifelse(a==0,0,1))[,(kk-length(Dsco))]*(Pstar[,bb,yy]*Qstar[,bb,yy])*(PQdif[,bb,yy]/P[,bb,yy]-PQdif[,bb+1,yy]/P[,bb+1,yy]))
+            FI[bb,kk] <-  FI[kk,bb]
           }
         }
+       
+        
+        #if (length(Asco)>1){
+        #  n.cross=choose(length(Asco),2)
+        #  for (c in 1:n.cross){
+        #    for (yy in 1:y){
+        #      FI[kk,kk] = FI[kk,kk]+ (-sum(ng[(yy*G+1):(yy*G+G)]*(X%*%ifelse(a==0,0,1))[,(kk-length(Dsco))]*(X%*%ifelse(a==0,0,1))[,(kk-length(Dsco))]*apply(PQdif[,,yy]^2/P[,,yy],1,sum)))
+        #    }
+        #  }
+        #}
       }
+     
       if (length(Gamsco)>0){
         for (kk in (length(Dsco)+length(Asco)+1):(length(Dsco)+length(Asco)+length(Gamsco))){
           grp.number=which(gam!=0)[kk-(length(Dsco)+length(Asco))]%%(y-1)
@@ -181,30 +188,33 @@ M_step=function(j,grd,gra,grgamma,grbeta,max.tol,X,y.allgroup){
             grp=grp.number+1
             dim.number=which(gam!=0)[kk-(length(Dsco)+length(Asco))]%/%(y-1)+1
           }
-          FI[kk,kk] = -sum(ng[(grp*G+1):(grp*G+G)]*X[,dim.number]*X[,dim.number]*apply(PQdif[,,grp]^2/P[,,grp],1,sum))
-          for (aa in 1:length(asco)){
-            #FI[kk,aa] = FI[aa,kk]=-sum(ng[(grp*G+1):(grp*G+G)]*X[,dim.number]*X[,aa]*apply(PQdif[,,grp]^2/P[,,grp],1,sum))
-          }
+          FI[kk,kk] = FI[kk,2]= FI[2,kk]= -sum(ng[(grp*G+1):(grp*G+G)]*X[,dim.number]*X[,dim.number]*apply(PQdif[,,grp]^2/P[,,grp],1,sum))
+          #if (length(Asco)>1){
+          #  for (aa in 1:length(asco)){
+          #    FI[kk,aa] = FI[aa,kk]=-sum(ng[(grp*G+1):(grp*G+G)]*X[,dim.number]*X[,aa]*apply(PQdif[,,grp]^2/P[,,grp],1,sum))
+          #  }
+          #}
           for (dd in 1:length(Dsco)){
             FI[kk,dd]=FI[dd,kk]=sum(ng[(grp*G+1):(grp*G+G)]*X[,dim.number]*Pstar[,dd,grp]*Qstar[,dd,grp]*(PQdif[,dd,grp]/P[,dd,grp]-PQdif[,dd+1,grp]/P[,dd+1,grp]))
           }
         }
       }
-    } else {
-      minusgrad <- -c(Dsco,Asco, Betsco)
-      grad <- c(Dsco,Asco, Betsco)
-    }
+    
     
     add <- qr.solve(FI,minusgrad)
     d=d+add[1:(m-1)]
-    a=a+add[m]
-    bet0=bet+add[(m+r-1):(m+r)]
-    for (mm in (m+r-1):(m+r)){
-      add[mm]=soft(bet0[mm-m],-eta/FI[mm,mm])-bet[mm-m]
-    }
-    for (mm in (m+r-1):(m+r)){
-      bet[mm-m]=soft(bet0[mm-m],-eta/FI[mm,mm])
+    a[which(a!=0)]= a[which(a!=0)]+add[(length(Dsco)+1):(length(Dsco)+length(Asco))]
+    if (length(Gamsco)>0){
+      gam0=gam
+      gam0[which(gam!=0)]=gam[which(gam!=0)]+add[(length(Dsco)+length(Asco)+1):(length(Dsco)+length(Asco)+length(Gamsco))]
+      for (mm in (length(Dsco)+length(Asco)+1):(length(Dsco)+length(Asco)+length(Gamsco))){
+        add[mm]=soft(  (gam0[which(gam!=0)])[mm-(length(Dsco)+length(Asco))],-eta/FI[mm,mm])- (gam[which(gam!=0)])[mm-(length(Dsco)+length(Asco))]
+      }
+      gam[which(gam!=0)]=gam[which(gam!=0)]+add[(length(Dsco)+length(Asco)+1):(length(Dsco)+length(Asco)+length(Gamsco))]
+      
     }
   }
+  return(c(d=d,a=a,gam=gam,bet=bet))
   #end of M step loop
 }
+

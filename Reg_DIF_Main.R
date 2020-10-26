@@ -24,7 +24,7 @@
 ##################################################
 
 #Reg_DIF <- function(resp,m,r,y,eta,eps =1e-3,max.tol=1e-7,NonUniform=F,gra00=NULL,grd00=NULL,grbeta00=NULL,mu100=NULL,mu200=NULL,mu300=NULL,Sig100= NULL,Sig200= NULL,Sig300= NULL)
-Reg_DIF <- function(resp,m,r,y,N.vec,loading.struc,eta,eps =1e-3,max.tol=1e-7,NonUniform=F,gra00=NULL,grd00=NULL,grbeta00=NULL,mu.list=NULL,Sig.list= NULL)
+Reg_DIF <- function(resp,m,r,y,N.vec,loading.struc,eta,eps =1e-3,max.tol=1e-7,NonUniform=T,gra00=NULL,grd00=NULL,grbeta00=NULL,mu.list=NULL,Sig.list= NULL)
 {
   #make sure the responses are coded from 1 instead of 0
   if(min(resp)==0)
@@ -97,12 +97,12 @@ Reg_DIF <- function(resp,m,r,y,N.vec,loading.struc,eta,eps =1e-3,max.tol=1e-7,No
       rgk=rgk.est(j,Xijk,LiA,y,N.vec)
       Pstar <- Qstar <- array(double(G*(m-1)*(y)),dim=c(G,m-1,y))
       P<- array(double(G*m*(y)),dim=c(G,m,y))
-      M_step()
-      #rescale a and d
-      a=a*Tau[1]
-      gra[j,1] <- a
-      grd[j,] <- d
-      grbeta[j,] <- bet
+      estj=M_step(j,grd,gra,grgamma,grbeta,max.tol,X,y.allgroup,y,G)
+      
+      gra[j,] <- estj[m:(m+r-1)]*Tau  # re-scale a and gamma
+      grd[j,] <- estj[1:(m-1)]
+      grgamma[,,j] <- matrix(estj[(m+r):(m+r+r*(y-1)-1)],y-1,r)*matrix(rep(Tau,(y-1)),y-1,r,byrow = T)
+      grbeta[j,] <- estj[(m+r+r*(y-1)):(m+r+r*(y-1)+(m-1)*(y-1)-1)]
     }
     df.d <- abs(dold-grd)
     df.a <- abs(aold-gra)
