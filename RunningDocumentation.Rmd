@@ -555,7 +555,7 @@ The expectation of the second partial derivatives in the Fisher scoring method a
 
 \begin{equation}
 \begin{aligned}
-E(\frac{\partial^2 \log M}{\partial a_{jr}^2})=\sum_{g=1}^{G} \sum_y^3 \sum_{k=1}^p  -\frac{n_{gy} q_{gr}^2(\omega_{jy(k-1)}-\omega_{jyk})}{P_{jyk\mid q_{g}}},
+E(\frac{\partial^2 \log M}{\partial a_{jr}^2})=\sum_{g=1}^{G} \sum_y^3 \sum_{k=1}^p  -\frac{n_{gy} q_{gr}^2(\omega_{jy(k-1)}-\omega_{jyk})^2}{P_{jyk\mid q_{g}}},
 \end{aligned}
 \end{equation}
 
@@ -1044,7 +1044,7 @@ The second partial derivatives in the Hessian matrix $\frac{\partial^2 \log M}{\
 
 \begin{equation}
 \begin{aligned}
-&\frac{\partial^2 \log M}{\partial \gamma_{jyr}^2}= \frac{\partial^2 \log M}{\partial \gamma_{jyr}\partial a_{jr}}=\sum_{g=1}^{G} \sum_{k=1}^p  -\frac{r_{gjyk} q_{gr}^2(\omega_{jy(k-1)}-\omega_{jyk})}{P_{jyk\mid q_{g}}^2}
+&\frac{\partial^2 \log M}{\partial \gamma_{jyr}^2}= \frac{\partial^2 \log M}{\partial \gamma_{jyr}\partial a_{jr}}=\sum_{g=1}^{G} \sum_{k=1}^p  -\frac{r_{gjyk} q_{gr}^2(\omega_{jy(k-1)}-\omega_{jyk})^2}{P_{jyk\mid q_{g}}^2}
 \end{aligned}
 \end{equation}
 
@@ -1058,7 +1058,7 @@ The expectation of the second partial derivatives in the Fisher scoring method a
 
 \begin{equation}
 \begin{aligned}
-E(\frac{\partial^2 \log M}{\partial \gamma_{jyr}^2})= E(\frac{\partial^2 \log M}{\partial \gamma_{jyr}\partial a_{jr}})= \sum_{g=1}^{G} \sum_{k=1}^p  -\frac{n_{gy} q_{gr}^2(\omega_{jy(k-1)}-\omega_{jyk})}{P_{jyk\mid q_{g}}}.
+E(\frac{\partial^2 \log M}{\partial \gamma_{jyr}^2})= E(\frac{\partial^2 \log M}{\partial \gamma_{jyr}\partial a_{jr}})= \sum_{g=1}^{G} \sum_{k=1}^p  -\frac{n_{gy} q_{gr}^2(\omega_{jy(k-1)}-\omega_{jyk})^2}{P_{jyk\mid q_{g}}}.
 \end{aligned}
 \end{equation}
 
