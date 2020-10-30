@@ -8,7 +8,7 @@ library(dmutate)
 library(Rcpp)
 library(RcppParallel)
 sourceCpp("/Users/ruoyizhu/Documents/GitHub/mirt/matrix.cpp")
-setwd('/Users/zhux0445/Documents/GitHub/RegDIF_SimData')
+setwd('/Users/ruoyizhu/Documents/GitHub/RegDIF_SimData')
 params=read.csv("Para3.csv",row.names = 1)
 responses=read.csv("RESP5.csv",row.names = 1)
 
@@ -16,7 +16,7 @@ soft=function(s, tau) {
   val=sign(s)*max(c(abs(s) - tau,0))
   return(val) }
 # Dataset #4 (2 Non-uniform DIF items per scale)
-J=20
+J=20 
 
 N1=N2=N3=500 
 Group=c(rep('G1', N1), rep('G2', N2), rep('G3', N3))

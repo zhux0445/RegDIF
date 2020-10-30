@@ -506,7 +506,7 @@ The second partial derivatives in the Hessian matrix are given by
 \begin{equation}
 \begin{aligned}
 &\frac{\partial^2 \log M}{\partial a_{jr}^2}= \sum_{g=1}^{G} \sum_y^3 \sum_{k=1}^p -\frac{r_{gjyk} q_{gr}^2(P_{jy,(k-1)\mid q_{g}}^{*}Q_{jy,(k-1)\mid q_{g}}^{*}-P_{jyk\mid q_{g}}^{*}Q_{jyk\mid q_{g}}^{*})^2}{P_{jyk\mid q_{g}}^2}\\
-&=\sum_{g=1}^{G} \sum_y^3 \sum_{k=1}^p  -\frac{r_{gjyk} q_{gr}^2(\omega_{jy(k-1)}-\omega_{jyk})}{P_{jyk\mid q_{g}}^2}
+&=\sum_{g=1}^{G} \sum_y^3 \sum_{k=1}^p  -\frac{r_{gjyk} q_{gr}^2(\omega_{jy(k-1)}-\omega_{jyk})^2}{P_{jyk\mid q_{g}}^2}
 \end{aligned}
 \end{equation}
 
@@ -555,7 +555,7 @@ The expectation of the second partial derivatives in the Fisher scoring method a
 
 \begin{equation}
 \begin{aligned}
-E(\frac{\partial^2 \log M}{\partial a_{jr}^2})=\sum_{g=1}^{G} \sum_y^3 \sum_{k=1}^p  -\frac{n_{gy} q_{gr}^2(\omega_{jy(k-1)}-\omega_{jyk})}{P_{jyk\mid q_{g}}},
+E(\frac{\partial^2 \log M}{\partial a_{jr}^2})=\sum_{g=1}^{G} \sum_y^3 \sum_{k=1}^p  -\frac{n_{gy} q_{gr}^2(\omega_{jy(k-1)}-\omega_{jyk})^2}{P_{jyk\mid q_{g}}},
 \end{aligned}
 \end{equation}
 
@@ -747,6 +747,14 @@ $$\boldsymbol\beta=\begin{pmatrix}
 0 & 0 \\
 \end{pmatrix},$$
 
+wABC
+
+item | 4 | 5 | 12 | 13 |
+------|------|------|------|------|
+Focal 1| 0.886 | 1.052 | 0.998 | 1.275 |
+Focal 2| 1.857 | 2.068 | 1.924 | 2.537 |
+
+
 The first two items are used as anchor items in estimation.
 
 No impact. $\theta_i\sim N(\begin{pmatrix}0\\0\\\end{pmatrix}, \begin{pmatrix}1&0.85\\0.85&1\\\end{pmatrix})$
@@ -795,19 +803,21 @@ RMSE|0.17259|0.16686|0.15026|
 
 Our regularization method has slightly better non-DIF item parameter estimates.
 
-$\emph Table \ 5. \ Absolute \ bias \ for \ DIF \ magnitude \ recoveries \ that \ were \ true \ DIF$
+$\emph Table \ 5. \ Absolute \ bias \ for \ DIF \ magnitude \ recoveries \ for \ true \ DIF \ items$
 
 Group | Omnibus DIF| Group with DIF=0.5| Group with DIF=1| 
 ------|------|------|------|
 Regularization (include false negative)| 0.1529 | 0.3779 | 0.2284 |
 mirt LRT (include false negative)| 0.2222 | 0.4181 | 0.2181 |
 
-$\emph Table \ 6. \ Absolute \ bias \ for \ DIF \ magnitude \ recoveries \ that \ were \ non-DIF$
+$\emph Table \ 6. \ Trait \ Estimation$
 
-Group | Omnibus DIF| Group with DIF=0.5| Group with DIF=1| 
-------|------|------|------|
-Regularization | 0.336 | 0.33 | 0.341 |
-mirt LRT | 0.15696 | 0.1516 | 0.1622 |
+Item Parameters |$\theta_1$| $\theta_2$| 
+------------------ | -----|------|
+Bias| 0.0365 | 0.0374|
+RMSE| 0.3823682 | 0.3806336 |
+SE | 0.3644813 | 0.3590251 |
+
 
 ```{r eval=FALSE, include=FALSE}
 for (rep in 1:50){
@@ -856,6 +866,13 @@ $$\boldsymbol\beta=\begin{pmatrix}
 0 & 0 \\
 0 & 0 \\
 \end{pmatrix},$$
+
+wABC
+
+item | 4 | 5 | 6 | 7 | 8 | 9 | 12 | 13 | 14 | 15 | 16 | 17 |
+------|------|------|------|------|------|------|------|------|------|------|------|------|
+Focal 1| 0.886 | 1.052 | 0.636 | 1.265 | 1.255 | 1.116 | 0.998 | 1.275 | 1.091 | 1.234 | 1.233 | 0.918 |
+Focal 2| 1.857 | 2.067 | 1.385 | 2.521 | 2.513 | 2.117 | 1.923 | 2.537 | 2.218 | 2.448 | 2.399 | 1.684 | 
 
 $\emph Table \ 7. \ Type \ I \ error \ and \ Power \ of \ regularization \ method$
 
@@ -1027,7 +1044,7 @@ The second partial derivatives in the Hessian matrix $\frac{\partial^2 \log M}{\
 
 \begin{equation}
 \begin{aligned}
-&\frac{\partial^2 \log M}{\partial \gamma_{jyr}^2}= \frac{\partial^2 \log M}{\partial \gamma_{jyr}\partial a_{jr}}=\sum_{g=1}^{G} \sum_{k=1}^p  -\frac{r_{gjyk} q_{gr}^2(\omega_{jy(k-1)}-\omega_{jyk})}{P_{jyk\mid q_{g}}^2}
+&\frac{\partial^2 \log M}{\partial \gamma_{jyr}^2}= \frac{\partial^2 \log M}{\partial \gamma_{jyr}\partial a_{jr}}=\sum_{g=1}^{G} \sum_{k=1}^p  -\frac{r_{gjyk} q_{gr}^2(\omega_{jy(k-1)}-\omega_{jyk})^2}{P_{jyk\mid q_{g}}^2}
 \end{aligned}
 \end{equation}
 
@@ -1041,7 +1058,7 @@ The expectation of the second partial derivatives in the Fisher scoring method a
 
 \begin{equation}
 \begin{aligned}
-E(\frac{\partial^2 \log M}{\partial \gamma_{jyr}^2})= E(\frac{\partial^2 \log M}{\partial \gamma_{jyr}\partial a_{jr}})= \sum_{g=1}^{G} \sum_{k=1}^p  -\frac{n_{gy} q_{gr}^2(\omega_{jy(k-1)}-\omega_{jyk})}{P_{jyk\mid q_{g}}}.
+E(\frac{\partial^2 \log M}{\partial \gamma_{jyr}^2})= E(\frac{\partial^2 \log M}{\partial \gamma_{jyr}\partial a_{jr}})= \sum_{g=1}^{G} \sum_{k=1}^p  -\frac{n_{gy} q_{gr}^2(\omega_{jy(k-1)}-\omega_{jyk})^2}{P_{jyk\mid q_{g}}}.
 \end{aligned}
 \end{equation}
 
@@ -1212,6 +1229,13 @@ $$\boldsymbol\Gamma_j=\begin{pmatrix}
 0 & -1 \\
 \end{pmatrix}, for \ j=12,13$$ 
 
+wABC
+
+item | 4 | 5 | 12 | 13 |
+------|------|------|------|------|
+Focal 1| 0.620 | 0.530 | 0.560 | 0.774 |
+Focal 2| 1.331 | 1.242 | 1.292 | 1.813 |
+
 The first two items are used as anchor items in estimation.
 
 No impact. $\theta_i\sim N(\begin{pmatrix}0\\0\\\end{pmatrix}, \begin{pmatrix}1&0.85\\0.85&1\\\end{pmatrix})$
@@ -1234,6 +1258,7 @@ Group | Omnibus DIF| Group with DIF=0.5| Group with DIF=1|
 ------|------|------|------|
 Power| 0.515 | 0.375 | 0.646 |
 Type I| 0.0185 | 0.0238 | 0.0149 |
+
 
 ### Simulation 6
 
@@ -1258,6 +1283,15 @@ $$\boldsymbol\Gamma_j=\begin{pmatrix}
 0 & -1 \\
 \end{pmatrix}, for \ j=12,13,14,15,16,17$$ 
 
+wABC
+
+item | 4 | 5 | 6 | 7 | 8 | 9 | 12 | 13 | 14 | 15 | 16 | 17 |
+------|------|------|------|------|------|------|------|------|------|------|------|------|
+Focal 1| 0.620 | 0.530 | 0.556 | 0.764 | 0.760 | 0.737 | 0.560 | 0.774 | 0.635 | 0.724 | 0.744 | 0.750 |
+Focal 2| 1.331 | 1.242 | 1.076 | 1.788 | 1.771 | 1.686 | 1.292 | 1.813 | 1.452 | 1.702 | 1.751 | 1.589 | 
+
+
+
 
 $\emph Table \ 21. \ Type \ I \ error \ and \ Power \ of \ regularization \ method$
 
@@ -1266,6 +1300,14 @@ Group | Omnibus DIF| Group with DIF=0.5| Group with DIF=1|
 Power| 0.45 | 0.06 | 0.443 |
 Type I| 0.0067 | 0.0033 | 0.0033 |
 
+Adaptive LASSO (selected by GIC)
+
+Group | Omnibus DIF| Group with DIF=0.5| Group with DIF=1| 
+------|------|------|------|
+Power| 0.383 | 0.0086 | 0.3836 |
+Type I| 0 | 0 | 0 |
+
+
 
 $\emph Table \ 22. \ Type \ I \ error \ and \ Power \ of \ mirt \ LRT$
 
@@ -1273,6 +1315,8 @@ Group | Omnibus DIF| Group with DIF=0.5| Group with DIF=1|
 ------|------|------|------|
 Power| 0.656 | 0.185 | 0.746 |
 Type I| 0.0067 | 0.01 | 0.0233 |
+
+
 
 ### Simulation 7
 
@@ -1327,6 +1371,14 @@ Group | Omnibus DIF| Group with DIF=0.5| Group with DIF=1|
 ------|------|------|------|
 Power| 0.9933 | 0.481 | 0.9933 |
 Type I| 0.0333 | 0.02 | 0.02 |
+
+Adaptive LASSO (selected by GIC)
+
+Group | Omnibus DIF| Group with DIF=0.5| Group with DIF=1| 
+------|------|------|------|
+Power| 0.866 | 0.112 | 0.866 |
+Type I| 0.0083 | 0.0083 | 0 |
+
 
 
 $\emph Table \ 26. \ Type \ I \ error \ and \ Power \ of \ mirt \ LRT$
