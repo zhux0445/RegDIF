@@ -9,7 +9,7 @@ library(RcppParallel)
 sourceCpp("/Users/zhux0445/Documents/GitHub/RegDIF/matrix.cpp")
 setwd('/Users/zhux0445/Documents/GitHub/RegDIF_SimData')
 params=read.csv("Para4.csv",row.names = 1)
-responses=read.csv("RESP6.csv",row.names = 1)
+responses=read.csv("RESP8.csv",row.names = 1)
 
 soft=function(s, tau) {
   val=sign(s)*max(c(abs(s) - tau,0))
@@ -17,7 +17,7 @@ soft=function(s, tau) {
 # Dataset #4 (2 Non-uniform DIF items per scale)
 J=20
 
-N1=N2=N3=500 
+N1=N2=N3=1000 
 Group=c(rep('G1', N1), rep('G2', N2), rep('G3', N3))
 N=N1+N2+N3
 
@@ -1070,16 +1070,18 @@ Sig100=matrix(c(1,0.8452613,0.8452613,1),2,2)
 Sig200=matrix(c(1.179328,1.065364,1.065364,1.179328),2,2)
 Sig300=matrix(c(0.9202015,0.8908855,0.8908855,0.9202015),2,2)
 
-for (rep in 1:17){
+for (rep in 2:50){
   resp=responses[((rep-1)*N+1):((rep-1)*N+N1+N2+N3),]
   r=2
   m=2
-  eta.vec=seq(15,30,3)
+  eta.vec=seq(20,46,3)
   bics=rep(0,length(eta.vec))
   ADmat=array(double(J*3*length(eta.vec)),dim = c(J,3,length(eta.vec)))
   Gammas=array(double(2*J*m*length(eta.vec)),dim = c(2,2,J,length(eta.vec)))
   biass=matrix(0,length(eta.vec),3)
   RMSEs=matrix(0,length(eta.vec),3)
+  theta.dist=array(double(2*9*length(eta.vec)),dim=c(9,2,length(eta.vec)))
+  
   
   for (k in 1:length(eta.vec))
   {
@@ -1093,6 +1095,7 @@ for (rep in 1:17){
     Gammas[,,,k]=sim$Gamma
     biass[k,]=sim$bias
     RMSEs[k,]=sim$RMSE
+    theta.dist[,,k]=rbind(sim$mean1,sim$mean2,sim$mean3,sim$Corr1,sim$Corr2,sim$Corr3)
   }
   
   kk=which.min(bics)
@@ -1109,6 +1112,7 @@ for (rep in 1:17){
   write.csv(eta.5[rep],file = paste("eta8_",rep))
   write.csv(ADmat.5[,,rep],file = paste("ADmat8_",rep))
   write.csv(rbind(t(rbind(Gammas.5[c(1,2),1,3:11,rep])),t(rbind(Gammas.5[c(1,2),2,12:20,rep]))),file = paste("Gamma8_",rep))
+  write.csv(theta.dist[,,kk],file = paste("theta8_",rep))
 }
 
 
