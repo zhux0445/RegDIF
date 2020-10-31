@@ -1,4 +1,4 @@
-for(rep in 4:13){
+for(rep in 1:50){
   print(read.csv(paste("/Users/ruoyizhu/Desktop/DIF replication/Beta2_",rep),row.names = 1))
 }
 read.csv(paste("/Users/ruoyizhu/Desktop/DIF replication/Beta2_",rep),row.names = 1)
@@ -424,4 +424,35 @@ sum(sim9lrt1[,c(2,3,10,11)]<0.05)/(50*4)
 sum(sim9lrt1[,-c(2,3,10,11)]<0.05)/(50*14)
 
 
+reps=48
+Gamma.6=array(double(18*2*reps),dim = c(18,2,reps))
+power=matrix(0,reps,3)
+tpI=matrix(0,reps,3)
+for (rep in 1:reps){
+  power[rep,c(2,3)]=c(sum((read.csv(paste("/Users/ruoyizhu/Documents/Github/RegDIF_SimData/Gamma6adapt_",rep),row.names = 1)[c(2,3,4,5,6,7,10,11,12,13,14,15),1])!=0),sum((read.csv(paste("/Users/ruoyizhu/Documents/Github/RegDIF_SimData/Gamma6adapt_",rep),row.names = 1)[c(2,3,4,5,6,7,10,11,12,13,14,15),2])!=0))
+  power[rep,1]=sum(((read.csv(paste("/Users/ruoyizhu/Documents/Github/RegDIF_SimData/Gamma6adapt_",rep),row.names = 1)[c(2,3,4,5,6,7,10,11,12,13,14,15),1])!=0)|((read.csv(paste("/Users/ruoyizhu/Documents/Github/RegDIF_SimData/Gamma6adapt_",rep),row.names = 1)[c(2,3,4,5,6,7,10,11,12,13,14,15),2])!=0))
+  tpI[rep,c(2,3)]=c(sum((read.csv(paste("/Users/ruoyizhu/Documents/Github/RegDIF_SimData/Gamma6adapt_",rep),row.names = 1)[-c(2,3,4,5,6,7,10,11,12,13,14,15),1])!=0),sum((read.csv(paste("/Users/ruoyizhu/Documents/Github/RegDIF_SimData/Gamma6adapt_",rep),row.names = 1)[-c(2,3,4,5,6,7,10,11,12,13,14,15),2])!=0))
+  tpI[rep,1]=sum(((read.csv(paste("/Users/ruoyizhu/Documents/Github/RegDIF_SimData/Gamma6adapt_",rep),row.names = 1)[-c(2,3,4,5,6,7,10,11,12,13,14,15),1])!=0)|((read.csv(paste("/Users/ruoyizhu/Documents/Github/RegDIF_SimData/Gamma6adapt_",rep),row.names = 1)[-c(2,3,4,5,6,7,10,11,12,13,14,15),2])!=0)) 
+  print(c(rep,power[rep,]))
+  print(c(rep,tpI[rep,]))
+}
+
+colSums(power)/(12*reps)
+colSums(tpI)/(6*reps)
+
+reps=20
+Gamma.8=array(double(18*2*reps),dim = c(18,2,reps))
+power=matrix(0,reps,3)
+tpI=matrix(0,reps,3)
+for (rep in 1:20){
+  power[rep,c(2,3)]=c(sum((read.csv(paste("/Users/ruoyizhu/Documents/Github/RegDIF_SimData/Gamma8adapt_",rep),row.names = 1)[c(2,3,4,5,6,7,10,11,12,13,14,15),1])!=0),sum((read.csv(paste("/Users/ruoyizhu/Documents/Github/RegDIF_SimData/Gamma8adapt_",rep),row.names = 1)[c(2,3,4,5,6,7,10,11,12,13,14,15),2])!=0))
+  power[rep,1]=sum(((read.csv(paste("/Users/ruoyizhu/Documents/Github/RegDIF_SimData/Gamma8adapt_",rep),row.names = 1)[c(2,3,4,5,6,7,10,11,12,13,14,15),1])!=0)|((read.csv(paste("/Users/ruoyizhu/Documents/Github/RegDIF_SimData/Gamma8adapt_",rep),row.names = 1)[c(2,3,4,5,6,7,10,11,12,13,14,15),2])!=0))
+  tpI[rep,c(2,3)]=c(sum((read.csv(paste("/Users/ruoyizhu/Documents/Github/RegDIF_SimData/Gamma8adapt_",rep),row.names = 1)[-c(2,3,4,5,6,7,10,11,12,13,14,15),1])!=0),sum((read.csv(paste("/Users/ruoyizhu/Documents/Github/RegDIF_SimData/Gamma8adapt_",rep),row.names = 1)[-c(2,3,4,5,6,7,10,11,12,13,14,15),2])!=0))
+  tpI[rep,1]=sum(((read.csv(paste("/Users/ruoyizhu/Documents/Github/RegDIF_SimData/Gamma8adapt_",rep),row.names = 1)[-c(2,3,4,5,6,7,10,11,12,13,14,15),1])!=0)|((read.csv(paste("/Users/ruoyizhu/Documents/Github/RegDIF_SimData/Gamma8adapt_",rep),row.names = 1)[-c(2,3,4,5,6,7,10,11,12,13,14,15),2])!=0)) 
+  print(c(rep,power[rep,]))
+  print(c(rep,tpI[rep,]))
+}
+
+colSums(power)/(12*reps)
+colSums(tpI)/(6*reps)
 

@@ -757,17 +757,23 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=F,gra00=gra00,
     }
     Sig.gp3=Sigg3/N3
     
-    ##Constraint part
-    #calculation of r_jgk
-    for (j in 1:r)
+    
+    # dimension2
+    for (j in 1:J)
     {
-      d <- grd[j,]
-      a <- gra[j,j]
+      d <- grd[j,] 
+      a <- gra[j,]
+      #gam=grgamma[,,j]
+      bet=grbeta[j,]
+      sparsityj=ifelse(c(d,a,bet),1,0)
       rLiA <- array(double(N*G*m),dim = c(N,G,m))
       for(k in 1:m){
         rLiA[,,k]=Xijk[,j,k]*LiA/Pi
       }
       rgk <- apply(rLiA,c(2,3),sum)
+      rgk1 <- apply(rLiA[1:N1,,],c(2,3),sum)
+      rgk2 <- apply(rLiA[(N1+1):(N1+N2),,],c(2,3),sum)
+      rgk3 <- apply(rLiA[(N1+N2+1):(N1+N2+N3),,],c(2,3),sum)
       
       #M-step loop starts for item j
       miter <- 0
@@ -775,584 +781,45 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=F,gra00=gra00,
       while(sum(abs(add))>max.tol)
       {
         miter <- miter+1
-        for(g in 1:G){
-          Pstar[g,] <- 1/(1+exp(-(d+rep(a*X[g,j]))))
-          P[g,] <- -diff(c(1,Pstar[g,],0))
-        }
-        Qstar <- 1-Pstar
-        
-        #calculating the score vector
-        if (m==2){
-          Dsco <- sum(apply(rgk/P,1,diff)*Pstar*Qstar)
-        }else
-          Dsco <- apply(t(apply(rgk/P,1,diff))*Pstar*Qstar,2,sum)
-        
-        PQdif <- -t(apply(cbind(0,Pstar*Qstar,0),1, diff))
-        Asco <- sum(X[,j]*apply(rgk*PQdif/P,1,sum))
-        minusgrad <- -c(Dsco,Asco)
-        
-        FI <- matrix(0,m,m)
-        if (m==2){
-          for (mm in 1:(m-1)){
-            FI[mm,mm] <- -sum(ng*(Pstar[,mm]*Qstar[,mm])^2*(1/P[,mm]+1/P[,mm+1]))
-            FI[m,mm] <- FI[mm,m] <- sum(ng*X[,j]*Pstar[,mm]*Qstar[,mm]*(PQdif[,mm]/P[,mm]-PQdif[,mm+1]/P[,mm+1]))
+        #loglikelihood function (for each item)
+        sumoverk=numeric(G)
+        obj <- function(x){
+          for(g in 1:G){
+            x1=(sparsityj*x)[1:(m-1)]  #x1 is d
+            x2=(sparsityj*x)[m:(m+r-1)]  #x2 is a
+            x3=(sparsityj*x)[m+r]  #x3 is beta1
+            x4=(sparsityj*x)[m+r+1]  #x4 is beta2
+            sumoverk[g]=rgk1[g,]%*%log(-diff(c(1,1/(1+exp(-(x1+rep(x2%*%X[g,])))),0)))+rgk2[g,]%*%log(-diff(c(1,1/(1+exp(-(x1+rep(x2%*%X[g,])+x3))),0)))+rgk3[g,]%*%log(-diff(c(1,1/(1+exp(-(x1+rep(x2%*%X[g,])+x4))),0)))
           }
-          
-        } else {
-          for (mm in 1:(m-1)){
-            FI[mm,mm] <- -sum(ng*(Pstar[,mm]*Qstar[,mm])^2*(1/P[,mm]+1/P[,mm+1]))
-            FI[m,mm] <- FI[mm,m] <- sum(ng*X[,j]*Pstar[,mm]*Qstar[,mm]*(PQdif[,mm]/P[,mm]-PQdif[,mm+1]/P[,mm+1]))
-          }
-          for (mm in 2:(m-1)){
-            FI[mm,mm-1] <- sum(ng*Pstar[,mm]*Qstar[,mm]*Pstar[,mm-1]*Qstar[,mm-1]*(1/P[,mm]))#(2,1),(3,2)
-          }
-          for (mm in 1:(m-2)){
-            FI[mm,mm+1] <- sum(ng*Pstar[,mm]*Qstar[,mm]*Pstar[,mm+1]*Qstar[,mm+1]*(1/P[,mm+1]))#(1,2),(2,3)
-          }
+          temp=sum(sumoverk)#sum over g
+          return(-temp)
         }
         
-        FI[m,m] <- -sum(ng*X[,j]^2*apply(PQdif^2/P,1,sum))
         
+        #solve for the parameters
+        newp<-optim(c(d,a,bet), obj,  method = "L-BFGS-B")
+        add<-newp$par-c(d,a,bet)
+        d <- newp$par[1:(m-1)]
+        a <- newp$par[m:(m+r-1)]
+        bet=newp$par[(m+r):(m+r+1)]
         
-        add <- qr.solve(FI,minusgrad)
-        
-        d <- d+add[1:(m-1)]
-        a <- a+add[m]
+        #print(miter)
+        #plot(Pstar)
+        #plot(PQdif)
+        #print(minusgrad)
+        #print(FI)
+        #print(add)
+        #print(c(d,a,bet))
       }
       #end of M step loop
       
-      #rescale a and d
-      a=a*Tau[j]
-      gra[j,j] <- a
-      grd[j,] <- d
-    }   
-    
-    
-    ##random part
-    # dimension1
-    #calculation of r_jgk
-    for (j in (r+1):(r+J/2-1))
-    {
-      d <- grd[j,] 
-      a <- gra[j,1]
-      #gam=grgamma[,,j]
-      bet=grbeta[j,]
-      l0normbetaj=0
-      for(l in 1:2) 
-      {
-        l0normbetaj=l0normbetaj+(sparsity[j,l]!=0)
-      }
-      rLiA <- array(double(N*G*m),dim = c(N,G,m))
-      for(k in 1:m){
-        rLiA[,,k]=Xijk[,j,k]*LiA/Pi
-      }
-      rgk <- apply(rLiA,c(2,3),sum)
-      rgk1 <- apply(rLiA[1:N1,,],c(2,3),sum)
-      rgk2 <- apply(rLiA[(N1+1):(N1+N2),,],c(2,3),sum)
-      rgk3 <- apply(rLiA[(N1+N2+1):(N1+N2+N3),,],c(2,3),sum)
       
-      #M-step loop starts for item j
-      if (l0normbetaj==0){
-        miter <- 0
-        add <- max.tol+1
-        while(sum(abs(add))>max.tol)
-        {
-          miter <- miter+1
-          for(g in 1:G){
-            Pstar[g,] <- 1/(1+exp(-(d+rep(a%*%X[g,1]))))#+rep((y1%*%gam)%*%X[g,])
-            P[g,] <- -diff(c(1,Pstar[g,],0))
-          }
-          Qstar <- 1-Pstar
-          
-          #calculating the score vector
-          if (m==2){
-            Dsco <- sum(apply(rgk/P,1,diff)*Pstar*Qstar)
-          }else
-            Dsco <- apply(t(apply(rgk/P,1,diff))*Pstar*Qstar,2,sum)
-          PQdif <- -t(apply(cbind(0,Pstar*Qstar,0),1, diff))
-          Asco = sum(X[,1]*apply(rgk*PQdif/P,1,sum))
-          #  if (NonUniform==T){
-          #  Gamsco = c(apply(X[,1]*apply(rgk2/P2*PQdif2,1,sum),2,sum),apply(X*apply(rgk3/P3*PQdif3,1,sum),2,sum))
-          #}
-          
-          if (NonUniform==T){
-            minusgrad <- -c(Dsco,Asco, Gamsco, Betsco)
-            grad <- c(Dsco,Asco,Gamsco, Betsco)
-          } else {
-            minusgrad <- -c(Dsco,Asco)
-            grad <- c(Dsco,Asco)
-          }
-          
-          if (NonUniform==T){
-            FI <- matrix(0,m+r-1+r*2+(m-1)*2,m+r-1+r*2+(m-1)*2)
-            if (m==2){
-              for (mm in 1:(m-1)){
-                FI[mm,mm] <- -sum(ng1*(Pstar1[,mm]*Qstar1[,mm])^2*(1/P1[,mm]+1/P1[,mm+1])+ng2*(Pstar2[,mm]*Qstar2[,mm])^2*(1/P2[,mm]+1/P2[,mm+1])+ng3*(Pstar3[,mm]*Qstar3[,mm])^2*(1/P3[,mm]+1/P3[,mm+1]))
-                for (nn in m:(m+r-1)){
-                  FI[nn,mm] <- FI[mm,nn] <- sum(ng1*X[,nn-m+1]*Pstar1[,mm]*Qstar1[,mm]*(PQdif1[,mm]/P1[,mm]-PQdif1[,mm+1]/P1[,mm+1])+ng2*X[,nn-m+1]*Pstar2[,mm]*Qstar2[,mm]*(PQdif2[,mm]/P2[,mm]-PQdif2[,mm+1]/P2[,mm+1])+ng3*X[,nn-m+1]*Pstar3[,mm]*Qstar3[,mm]*(PQdif3[,mm]/P3[,mm]-PQdif3[,mm+1]/P3[,mm+1]))
-                }
-              }
-            } else {
-              for (mm in 1:(m-1)){
-                FI[mm,mm] <- -sum(ng*(Pstar[,mm]*Qstar[,mm])^2*(1/P[,mm]+1/P[,mm+1]))
-                for (nn in m:(m+r-1)){
-                  FI[nn,mm] <- FI[mm,nn] <- sum(ng*X[,nn-m+1]*Pstar[,mm]*Qstar[,mm]*(PQdif[,mm]/P[,mm]-PQdif[,mm+1]/P[,mm+1]))
-                }
-              }
-              if (m>2){
-                for (mm in 2:(m-1)){
-                  FI[mm,mm-1] <- sum(ng*Pstar[,mm]*Qstar[,mm]*Pstar[,mm-1]*Qstar[,mm-1]*(1/P[,mm]))#(2,1),(3,2)
-                }
-                for (mm in 1:(m-2)){
-                  FI[mm,mm+1] <- sum(ng*Pstar[,mm]*Qstar[,mm]*Pstar[,mm+1]*Qstar[,mm+1]*(1/P[,mm+1]))#(1,2),(2,3)
-                }
-              }
-            }
-            for (mm in m:(m+r-1)){
-              for (nn in m:(m+r-1)){
-                FI[mm,nn] <- -sum(ng1*X[,mm-m+1]*X[,nn-m+1]*apply(PQdif1^2/P1,1,sum)+ng2*X[,mm-m+1]*X[,nn-m+1]*apply(PQdif2^2/P2,1,sum)+ng3*X[,mm-m+1]*X[,nn-m+1]*apply(PQdif3^2/P3,1,sum))
-              }
-            }
-            
-          } else {
-            FI <- matrix(0,m,m)
-            if (m==2){
-              for (mm in 1:(m-1)){
-                FI[mm,mm] <- -sum(ng*(Pstar[,mm]*Qstar[,mm])^2*(1/P[,mm]+1/P[,mm+1]))
-                FI[m,mm] <- FI[mm,m] <- sum(ng*X[,1]*Pstar[,mm]*Qstar[,mm]*(PQdif[,mm]/P[,mm]-PQdif[,mm+1]/P[,mm+1]))
-              }
-              
-            } else {
-              for (mm in 1:(m-1)){
-                FI[mm,mm] <- -sum(ng*(Pstar[,mm]*Qstar[,mm])^2*(1/P[,mm]+1/P[,mm+1]))
-                FI[m,mm] <- FI[mm,m] <- sum(ng*X[,j]*Pstar[,mm]*Qstar[,mm]*(PQdif[,mm]/P[,mm]-PQdif[,mm+1]/P[,mm+1]))
-              }
-              for (mm in 2:(m-1)){
-                FI[mm,mm-1] <- sum(ng*Pstar[,mm]*Qstar[,mm]*Pstar[,mm-1]*Qstar[,mm-1]*(1/P[,mm]))#(2,1),(3,2)
-              }
-              for (mm in 1:(m-2)){
-                FI[mm,mm+1] <- sum(ng*Pstar[,mm]*Qstar[,mm]*Pstar[,mm+1]*Qstar[,mm+1]*(1/P[,mm+1]))#(1,2),(2,3)
-              }
-            }
-            
-            FI[m,m] <- -sum(ng*X[,1]^2*apply(PQdif^2/P,1,sum))
-          }
-          
-          
-          add <- qr.solve(FI,minusgrad)
-          d=d+add[1:(m-1)]
-          a=a+add[m]
-        }
-        #end of M step loop
-      } else {
-        #M-step loop starts for item j
-        miter <- 0
-        add <- max.tol+1
-        while(sum(abs(add))>max.tol)
-        {
-          miter <- miter+1
-          for(g in 1:G){
-            Pstar1[g,] <- 1/(1+exp(-(d+rep(a%*%X[g,1])+y1%*%bet)))#+rep((y1%*%gam)%*%X[g,])
-            P1[g,] <- -diff(c(1,Pstar1[g,],0))
-            Pstar2[g,] <- 1/(1+exp(-(d+rep(a%*%X[g,1])+y2%*%bet)))#+rep((y2%*%gam)%*%X[g,])
-            P2[g,] <- -diff(c(1,Pstar2[g,],0))
-            Pstar3[g,] <- 1/(1+exp(-(d+rep(a%*%X[g,1])+y3%*%bet)))#+rep((y3%*%gam)%*%X[g,])
-            P3[g,] <- -diff(c(1,Pstar3[g,],0))
-          }
-          Qstar <- 1-Pstar
-          Qstar1 <- 1-Pstar1
-          Qstar2 <- 1-Pstar2
-          Qstar3 <- 1-Pstar3
-          
-          
-          #calculating the score vector
-          if (m==2){
-            Dsco <- sum(apply(rgk1/P1,1,diff)*Pstar1*Qstar1+apply(rgk2/P2,1,diff)*Pstar2*Qstar2+apply(rgk3/P3,1,diff)*Pstar3*Qstar3)
-          }else
-            Dsco <- apply(t(apply(rgk/P,1,diff))*Pstar*Qstar,2,sum)
-          PQdif <- -t(apply(cbind(0,Pstar*Qstar,0),1, diff))
-          PQdif1 <- -t(apply(cbind(0,Pstar1*Qstar1,0),1, diff))
-          PQdif2 <- -t(apply(cbind(0,Pstar2*Qstar2,0),1, diff))
-          PQdif3 <- -t(apply(cbind(0,Pstar3*Qstar3,0),1, diff))
-          Asco = sum(X[,1]*apply(rgk1/P1*PQdif1,1,sum))+sum(X[,1]*apply(rgk2/P2*PQdif2,1,sum))+sum(X[,1]*apply(rgk3/P3*PQdif3,1,sum))
-          #if (NonUniform==T){
-          #  Gamsco = c(apply(X[,1]*apply(rgk2/P2*PQdif2,1,sum),2,sum),apply(X*apply(rgk3/P3*PQdif3,1,sum),2,sum))
-          #}
-          
-          Betsco=numeric(l0normbetaj)
-          if (m==2){
-            if (l0normbetaj==1){
-              Betsco[1] <- sparsity[j,]%*%c(sum(apply(rgk2/P2,1,diff)*Pstar2*Qstar2),sum(apply(rgk3/P3,1,diff)*Pstar3*Qstar3))
-            } else {
-              Betsco[1:l0normbetaj] <- c(sum(apply(rgk2/P2,1,diff)*Pstar2*Qstar2),sum(apply(rgk3/P3,1,diff)*Pstar3*Qstar3))
-            }
-            
-          }else
-            Betsco <- apply(t(apply(rgk/P,1,diff))*Pstar*Qstar,2,sum)
-          if (NonUniform==T){
-            minusgrad <- -c(Dsco,Asco, Gamsco, Betsco)
-            grad <- c(Dsco,Asco,Gamsco, Betsco)
-          } else {
-            minusgrad <- -c(Dsco,Asco, Betsco)
-            grad <- c(Dsco,Asco, Betsco)
-          }
-          
-          if (NonUniform==T){
-            FI <- matrix(0,m+r-1+r*2+(m-1)*2,m+r-1+r*2+(m-1)*2)
-            if (m==2){
-              for (mm in 1:(m-1)){
-                FI[mm,mm] <- -sum(ng1*(Pstar1[,mm]*Qstar1[,mm])^2*(1/P1[,mm]+1/P1[,mm+1])+ng2*(Pstar2[,mm]*Qstar2[,mm])^2*(1/P2[,mm]+1/P2[,mm+1])+ng3*(Pstar3[,mm]*Qstar3[,mm])^2*(1/P3[,mm]+1/P3[,mm+1]))
-                for (nn in m:(m+r-1)){
-                  FI[nn,mm] <- FI[mm,nn] <- sum(ng1*X[,nn-m+1]*Pstar1[,mm]*Qstar1[,mm]*(PQdif1[,mm]/P1[,mm]-PQdif1[,mm+1]/P1[,mm+1])+ng2*X[,nn-m+1]*Pstar2[,mm]*Qstar2[,mm]*(PQdif2[,mm]/P2[,mm]-PQdif2[,mm+1]/P2[,mm+1])+ng3*X[,nn-m+1]*Pstar3[,mm]*Qstar3[,mm]*(PQdif3[,mm]/P3[,mm]-PQdif3[,mm+1]/P3[,mm+1]))
-                }
-              }
-            } else {
-              for (mm in 1:(m-1)){
-                FI[mm,mm] <- -sum(ng*(Pstar[,mm]*Qstar[,mm])^2*(1/P[,mm]+1/P[,mm+1]))
-                for (nn in m:(m+r-1)){
-                  FI[nn,mm] <- FI[mm,nn] <- sum(ng*X[,nn-m+1]*Pstar[,mm]*Qstar[,mm]*(PQdif[,mm]/P[,mm]-PQdif[,mm+1]/P[,mm+1]))
-                }
-              }
-              if (m>2){
-                for (mm in 2:(m-1)){
-                  FI[mm,mm-1] <- sum(ng*Pstar[,mm]*Qstar[,mm]*Pstar[,mm-1]*Qstar[,mm-1]*(1/P[,mm]))#(2,1),(3,2)
-                }
-                for (mm in 1:(m-2)){
-                  FI[mm,mm+1] <- sum(ng*Pstar[,mm]*Qstar[,mm]*Pstar[,mm+1]*Qstar[,mm+1]*(1/P[,mm+1]))#(1,2),(2,3)
-                }
-              }
-            }
-            for (mm in m:(m+r-1)){
-              for (nn in m:(m+r-1)){
-                FI[mm,nn] <- -sum(ng1*X[,mm-m+1]*X[,nn-m+1]*apply(PQdif1^2/P1,1,sum)+ng2*X[,mm-m+1]*X[,nn-m+1]*apply(PQdif2^2/P2,1,sum)+ng3*X[,mm-m+1]*X[,nn-m+1]*apply(PQdif3^2/P3,1,sum))
-              }
-            }
-            
-          } else {
-            FI <- matrix(0,m+l0normbetaj,m+l0normbetaj)
-            if (m==2){
-              for (mm in 1:(m-1)){
-                FI[mm,mm] <- -sum(ng1*(Pstar1[,mm]*Qstar1[,mm])^2*(1/P1[,mm]+1/P1[,mm+1])+ng2*(Pstar2[,mm]*Qstar2[,mm])^2*(1/P2[,mm]+1/P2[,mm+1])+ng3*(Pstar3[,mm]*Qstar3[,mm])^2*(1/P3[,mm]+1/P3[,mm+1]))
-                FI[m,mm] <- FI[mm,m] <- sum(ng1*X[,1]*Pstar1[,mm]*Qstar1[,mm]*(PQdif1[,mm]/P1[,mm]-PQdif1[,mm+1]/P1[,mm+1])+ng2*X[,1]*Pstar2[,mm]*Qstar2[,mm]*(PQdif2[,mm]/P2[,mm]-PQdif2[,mm+1]/P2[,mm+1])+ng3*X[,1]*Pstar3[,mm]*Qstar3[,mm]*(PQdif3[,mm]/P3[,mm]-PQdif3[,mm+1]/P3[,mm+1]))
-              }
-              if (l0normbetaj==1){
-                for (mm in (m+1):(m+l0normbetaj)){
-                  FI[mm,mm] <- (sparsity[j,]%*%c(-sum(ng2*(Pstar2[,1]*Qstar2[,1])^2*(1/P2[,1]+1/P2[,2])),-sum(ng3*(Pstar3[,1]*Qstar3[,1])^2*(1/P3[,1]+1/P3[,2]))))
-                  FI[m,mm] <- FI[mm,m] <- (sparsity[j,]%*%c(sum(ng2*X[,1]*Pstar2[,1]*Qstar2[,1]*(PQdif2[,1]/P2[,1]-PQdif2[,2]/P2[,2])),sum(ng3*X[,1]*Pstar3[,1]*Qstar3[,1]*(PQdif3[,1]/P3[,1]-PQdif3[,2]/P3[,2]))))
-                  FI[mm,m-1] <- FI[m-1,mm] <- (sparsity[j,]%*%c(-sum(ng2*(Pstar2[,1]*Qstar2[,1])^2*(1/P2[,1]+1/P2[,2])),-sum(ng3*(Pstar3[,1]*Qstar3[,1])^2*(1/P3[,1]+1/P3[,2]))))
-                }
-              } else {
-                for (mm in (m+1):(m+l0normbetaj)){
-                  FI[mm,mm] <- (c(-sum(ng2*(Pstar2[,1]*Qstar2[,1])^2*(1/P2[,1]+1/P2[,2])),-sum(ng3*(Pstar3[,1]*Qstar3[,1])^2*(1/P3[,1]+1/P3[,2]))))[mm-2]
-                  FI[m,mm] <- FI[mm,m] <- (c(sum(ng2*X[,1]*Pstar2[,1]*Qstar2[,1]*(PQdif2[,1]/P2[,1]-PQdif2[,2]/P2[,2])),sum(ng3*X[,1]*Pstar3[,1]*Qstar3[,1]*(PQdif3[,1]/P3[,1]-PQdif3[,2]/P3[,2]))))[mm-2]
-                  FI[mm,m-1] <- FI[m-1,mm] <- (c(-sum(ng2*(Pstar2[,1]*Qstar2[,1])^2*(1/P2[,1]+1/P2[,2])),-sum(ng3*(Pstar3[,1]*Qstar3[,1])^2*(1/P3[,1]+1/P3[,2]))))[mm-2]
-                }
-              }
-              
-            } else {
-              for (mm in 1:(m-1)){
-                FI[mm,mm] <- -sum(ng*(Pstar[,mm]*Qstar[,mm])^2*(1/P[,mm]+1/P[,mm+1]))
-                for (nn in m:(m+r-1)){
-                  FI[nn,mm] <- FI[mm,nn] <- sum(ng*X[,nn-m+1]*Pstar[,mm]*Qstar[,mm]*(PQdif[,mm]/P[,mm]-PQdif[,mm+1]/P[,mm+1]))
-                }
-              }
-              if (m>2){
-                for (mm in 2:(m-1)){
-                  FI[mm,mm-1] <- sum(ng*Pstar[,mm]*Qstar[,mm]*Pstar[,mm-1]*Qstar[,mm-1]*(1/P[,mm]))#(2,1),(3,2)
-                }
-                for (mm in 1:(m-2)){
-                  FI[mm,mm+1] <- sum(ng*Pstar[,mm]*Qstar[,mm]*Pstar[,mm+1]*Qstar[,mm+1]*(1/P[,mm+1]))#(1,2),(2,3)
-                }
-              }
-            }
-            FI[m,m] <- -sum(ng1*X[,1]*X[,1]*apply(PQdif1^2/P1,1,sum)+ng2*X[,1]*X[,1]*apply(PQdif2^2/P2,1,sum)+ng3*X[,1]*X[,1]*apply(PQdif3^2/P3,1,sum))
-          }
-          
-          
-          add <- qr.solve(FI,minusgrad)
-          d=d+add[1:(m-1)]
-          a=a+add[m]
-          if (l0normbetaj==2){
-            bet=bet+add[3:4]
-          } else {
-            if (sparsity[j,1]==1){
-              bet=bet+c(add[(m+1):(m+l0normbetaj)],0)
-            } else {
-              bet=bet+c(0,add[(m+1):(m+l0normbetaj)])
-            }
-          }
-        }
-        #end of M step loop
-        
-      }
-      
-      #rescale a and d
-      a=a*Tau[1]
-      
-      gra[j,1] <- a
-      grd[j,] <- d
-      grbeta[j,] <- bet
-    }
-    
-    # dimension2
-    for (j in (r+J/2):J)
-    {
-      d <- grd[j,] 
-      a <- gra[j,2]
-      #gam=grgamma[,,j]
-      bet=grbeta[j,]
-      l0normbetaj=0
-      for(l in 1:2) 
-      {
-        l0normbetaj=l0normbetaj+(sparsity[j,l]!=0)
-      }
-      rLiA <- array(double(N*G*m),dim = c(N,G,m))
-      for(k in 1:m){
-        rLiA[,,k]=Xijk[,j,k]*LiA/Pi
-      }
-      rgk <- apply(rLiA,c(2,3),sum)
-      rgk1 <- apply(rLiA[1:N1,,],c(2,3),sum)
-      rgk2 <- apply(rLiA[(N1+1):(N1+N2),,],c(2,3),sum)
-      rgk3 <- apply(rLiA[(N1+N2+1):(N1+N2+N3),,],c(2,3),sum)
-      
-      #M-step loop starts for item j
-      if (l0normbetaj==0){
-        miter <- 0
-        add <- max.tol+1
-       while(sum(abs(add))>max.tol)
-        {
-          miter <- miter+1
-          for(g in 1:G){
-            Pstar[g,] <- 1/(1+exp(-(d+rep(a%*%X[g,2]))))#+rep((y1%*%gam)%*%X[g,])
-            P[g,] <- -diff(c(1,Pstar[g,],0))
-          }
-          Qstar <- 1-Pstar
-          
-          #calculating the score vector
-          if (m==2){
-            Dsco <- sum(apply(rgk/P,1,diff)*Pstar*Qstar)
-          }else
-            Dsco <- apply(t(apply(rgk/P,1,diff))*Pstar*Qstar,2,sum)
-          PQdif <- -t(apply(cbind(0,Pstar*Qstar,0),1, diff))
-          Asco = sum(X[,2]*apply(rgk*PQdif/P,1,sum))
-          #  if (NonUniform==T){
-          #  Gamsco = c(apply(X[,1]*apply(rgk2/P2*PQdif2,1,sum),2,sum),apply(X*apply(rgk3/P3*PQdif3,1,sum),2,sum))
-          #}
-          
-          if (NonUniform==T){
-            minusgrad <- -c(Dsco,Asco, Gamsco, Betsco)
-            grad <- c(Dsco,Asco,Gamsco, Betsco)
-          } else {
-            minusgrad <- -c(Dsco,Asco)
-            grad <- c(Dsco,Asco)
-          }
-          
-          if (NonUniform==T){
-            FI <- matrix(0,m+r-1+r*2+(m-1)*2,m+r-1+r*2+(m-1)*2)
-            if (m==2){
-              for (mm in 1:(m-1)){
-                FI[mm,mm] <- -sum(ng1*(Pstar1[,mm]*Qstar1[,mm])^2*(1/P1[,mm]+1/P1[,mm+1])+ng2*(Pstar2[,mm]*Qstar2[,mm])^2*(1/P2[,mm]+1/P2[,mm+1])+ng3*(Pstar3[,mm]*Qstar3[,mm])^2*(1/P3[,mm]+1/P3[,mm+1]))
-                for (nn in m:(m+r-1)){
-                  FI[nn,mm] <- FI[mm,nn] <- sum(ng1*X[,nn-m+1]*Pstar1[,mm]*Qstar1[,mm]*(PQdif1[,mm]/P1[,mm]-PQdif1[,mm+1]/P1[,mm+1])+ng2*X[,nn-m+1]*Pstar2[,mm]*Qstar2[,mm]*(PQdif2[,mm]/P2[,mm]-PQdif2[,mm+1]/P2[,mm+1])+ng3*X[,nn-m+1]*Pstar3[,mm]*Qstar3[,mm]*(PQdif3[,mm]/P3[,mm]-PQdif3[,mm+1]/P3[,mm+1]))
-                }
-              }
-            } else {
-              for (mm in 1:(m-1)){
-                FI[mm,mm] <- -sum(ng*(Pstar[,mm]*Qstar[,mm])^2*(1/P[,mm]+1/P[,mm+1]))
-                for (nn in m:(m+r-1)){
-                  FI[nn,mm] <- FI[mm,nn] <- sum(ng*X[,nn-m+1]*Pstar[,mm]*Qstar[,mm]*(PQdif[,mm]/P[,mm]-PQdif[,mm+1]/P[,mm+1]))
-                }
-              }
-              if (m>2){
-                for (mm in 2:(m-1)){
-                  FI[mm,mm-1] <- sum(ng*Pstar[,mm]*Qstar[,mm]*Pstar[,mm-1]*Qstar[,mm-1]*(1/P[,mm]))#(2,1),(3,2)
-                }
-                for (mm in 1:(m-2)){
-                  FI[mm,mm+1] <- sum(ng*Pstar[,mm]*Qstar[,mm]*Pstar[,mm+1]*Qstar[,mm+1]*(1/P[,mm+1]))#(1,2),(2,3)
-                }
-              }
-            }
-            for (mm in m:(m+r-1)){
-              for (nn in m:(m+r-1)){
-                FI[mm,nn] <- -sum(ng1*X[,mm-m+1]*X[,nn-m+1]*apply(PQdif1^2/P1,1,sum)+ng2*X[,mm-m+1]*X[,nn-m+1]*apply(PQdif2^2/P2,1,sum)+ng3*X[,mm-m+1]*X[,nn-m+1]*apply(PQdif3^2/P3,1,sum))
-              }
-            }
-            
-          } else {
-            FI <- matrix(0,m,m)
-            if (m==2){
-              for (mm in 1:(m-1)){
-                FI[mm,mm] <- -sum(ng*(Pstar[,mm]*Qstar[,mm])^2*(1/P[,mm]+1/P[,mm+1]))
-                FI[m,mm] <- FI[mm,m] <- sum(ng*X[,2]*Pstar[,mm]*Qstar[,mm]*(PQdif[,mm]/P[,mm]-PQdif[,mm+1]/P[,mm+1]))
-              }
-              
-            } else {
-              for (mm in 1:(m-1)){
-                FI[mm,mm] <- -sum(ng*(Pstar[,mm]*Qstar[,mm])^2*(1/P[,mm]+1/P[,mm+1]))
-                FI[m,mm] <- FI[mm,m] <- sum(ng*X[,j]*Pstar[,mm]*Qstar[,mm]*(PQdif[,mm]/P[,mm]-PQdif[,mm+1]/P[,mm+1]))
-              }
-              for (mm in 2:(m-1)){
-                FI[mm,mm-1] <- sum(ng*Pstar[,mm]*Qstar[,mm]*Pstar[,mm-1]*Qstar[,mm-1]*(1/P[,mm]))#(2,1),(3,2)
-              }
-              for (mm in 1:(m-2)){
-                FI[mm,mm+1] <- sum(ng*Pstar[,mm]*Qstar[,mm]*Pstar[,mm+1]*Qstar[,mm+1]*(1/P[,mm+1]))#(1,2),(2,3)
-              }
-            }
-            
-            FI[m,m] <- -sum(ng*X[,2]^2*apply(PQdif^2/P,1,sum))
-          }
-          
-          
-          add <- qr.solve(FI,minusgrad)
-          d=d+add[1:(m-1)]
-          a=a+add[m]
-        }
-        #end of M step loop
-      } else {
-        miter <- 0
-        add <- max.tol+1
-        #while(sum(abs(add))>max.tol)
-         for (iii in 1:6) 
-        {
-          miter <- miter+1
-          for(g in 1:G){
-            Pstar1[g,] <- 1/(1+exp(-(d+rep(a%*%X[g,2])+y1%*%bet)))#+rep((y1%*%gam)%*%X[g,])
-            P1[g,] <- -diff(c(1,Pstar1[g,],0))
-            Pstar2[g,] <- 1/(1+exp(-(d+rep(a%*%X[g,2])+y2%*%bet)))#+rep((y2%*%gam)%*%X[g,])
-            P2[g,] <- -diff(c(1,Pstar2[g,],0))
-            Pstar3[g,] <- 1/(1+exp(-(d+rep(a%*%X[g,2])+y3%*%bet)))#+rep((y3%*%gam)%*%X[g,])
-            P3[g,] <- -diff(c(1,Pstar3[g,],0))
-          }
-          Qstar <- 1-Pstar
-          Qstar1 <- 1-Pstar1
-          Qstar2 <- 1-Pstar2
-          Qstar3 <- 1-Pstar3
-          
-          
-          #calculating the score vector
-          if (m==2){
-            Dsco <- sum(apply(rgk1/P1,1,diff)*Pstar1*Qstar1+apply(rgk2/P2,1,diff)*Pstar2*Qstar2+apply(rgk3/P3,1,diff)*Pstar3*Qstar3)
-          }else
-            Dsco <- apply(t(apply(rgk/P,1,diff))*Pstar*Qstar,2,sum)
-          PQdif <- -t(apply(cbind(0,Pstar*Qstar,0),1, diff))
-          PQdif1 <- -t(apply(cbind(0,Pstar1*Qstar1,0),1, diff))
-          PQdif2 <- -t(apply(cbind(0,Pstar2*Qstar2,0),1, diff))
-          PQdif3 <- -t(apply(cbind(0,Pstar3*Qstar3,0),1, diff))
-          Asco = sum(X[,2]*apply(rgk1/P1*PQdif1,1,sum))+sum(X[,2]*apply(rgk2/P2*PQdif2,1,sum))+sum(X[,2]*apply(rgk3/P3*PQdif3,1,sum))
-          #if (NonUniform==T){
-          #  Gamsco = c(apply(X[,2]*apply(rgk2/P2*PQdif2,1,sum),2,sum),apply(X*apply(rgk3/P3*PQdif3,1,sum),2,sum))
-          #}
-          
-          Betsco=numeric(l0normbetaj)
-          if (m==2){
-            if (l0normbetaj==1){
-              Betsco[1] <- sparsity[j,]%*%c(sum(apply(rgk2/P2,1,diff)*Pstar2*Qstar2),sum(apply(rgk3/P3,1,diff)*Pstar3*Qstar3))
-            } else {
-              Betsco[1:l0normbetaj] <- c(sum(apply(rgk2/P2,1,diff)*Pstar2*Qstar2),sum(apply(rgk3/P3,1,diff)*Pstar3*Qstar3))
-            }
-          }else
-            Betsco <- apply(t(apply(rgk/P,1,diff))*Pstar*Qstar,2,sum)
-          if (NonUniform==T){
-            minusgrad <- -c(Dsco,Asco, Gamsco, Betsco)
-            grad <- c(Dsco,Asco,Gamsco, Betsco)
-          } else {
-            minusgrad <- -c(Dsco,Asco, Betsco)
-            grad <- c(Dsco,Asco, Betsco)
-          }
-          
-          if (NonUniform==T){
-            FI <- matrix(0,m+r-1+r*2+(m-1)*2,m+r-1+r*2+(m-1)*2)
-            if (m==2){
-              for (mm in 1:(m-1)){
-                FI[mm,mm] <- -sum(ng1*(Pstar1[,mm]*Qstar1[,mm])^2*(1/P1[,mm]+1/P1[,mm+1])+ng2*(Pstar2[,mm]*Qstar2[,mm])^2*(1/P2[,mm]+1/P2[,mm+1])+ng3*(Pstar3[,mm]*Qstar3[,mm])^2*(1/P3[,mm]+1/P3[,mm+1]))
-                for (nn in m:(m+r-1)){
-                  FI[nn,mm] <- FI[mm,nn] <- sum(ng1*X[,nn-m+1]*Pstar1[,mm]*Qstar1[,mm]*(PQdif1[,mm]/P1[,mm]-PQdif1[,mm+1]/P1[,mm+1])+ng2*X[,nn-m+1]*Pstar2[,mm]*Qstar2[,mm]*(PQdif2[,mm]/P2[,mm]-PQdif2[,mm+1]/P2[,mm+1])+ng3*X[,nn-m+1]*Pstar3[,mm]*Qstar3[,mm]*(PQdif3[,mm]/P3[,mm]-PQdif3[,mm+1]/P3[,mm+1]))
-                }
-              }
-            } else {
-              for (mm in 1:(m-1)){
-                FI[mm,mm] <- -sum(ng*(Pstar[,mm]*Qstar[,mm])^2*(1/P[,mm]+1/P[,mm+1]))
-                for (nn in m:(m+r-1)){
-                  FI[nn,mm] <- FI[mm,nn] <- sum(ng*X[,nn-m+1]*Pstar[,mm]*Qstar[,mm]*(PQdif[,mm]/P[,mm]-PQdif[,mm+1]/P[,mm+1]))
-                }
-              }
-              if (m>2){
-                for (mm in 2:(m-1)){
-                  FI[mm,mm-1] <- sum(ng*Pstar[,mm]*Qstar[,mm]*Pstar[,mm-1]*Qstar[,mm-1]*(1/P[,mm]))#(2,1),(3,2)
-                }
-                for (mm in 1:(m-2)){
-                  FI[mm,mm+1] <- sum(ng*Pstar[,mm]*Qstar[,mm]*Pstar[,mm+1]*Qstar[,mm+1]*(1/P[,mm+1]))#(1,2),(2,3)
-                }
-              }
-            }
-            for (mm in m:(m+r-1)){
-              for (nn in m:(m+r-1)){
-                FI[mm,nn] <- -sum(ng1*X[,mm-m+1]*X[,nn-m+1]*apply(PQdif1^2/P1,1,sum)+ng2*X[,mm-m+1]*X[,nn-m+1]*apply(PQdif2^2/P2,1,sum)+ng3*X[,mm-m+1]*X[,nn-m+1]*apply(PQdif3^2/P3,1,sum))
-              }
-            }
-            
-          } else {
-            FI <- matrix(0,m+l0normbetaj,m+l0normbetaj)
-            if (m==2){
-              for (mm in 1:(m-1)){
-                FI[mm,mm] <- -sum(ng1*(Pstar1[,mm]*Qstar1[,mm])^2*(1/P1[,mm]+1/P1[,mm+1])+ng2*(Pstar2[,mm]*Qstar2[,mm])^2*(1/P2[,mm]+1/P2[,mm+1])+ng3*(Pstar3[,mm]*Qstar3[,mm])^2*(1/P3[,mm]+1/P3[,mm+1]))
-                FI[m,mm] <- FI[mm,m] <- sum(ng1*X[,2]*Pstar1[,mm]*Qstar1[,mm]*(PQdif1[,mm]/P1[,mm]-PQdif1[,mm+1]/P1[,mm+1])+ng2*X[,2]*Pstar2[,mm]*Qstar2[,mm]*(PQdif2[,mm]/P2[,mm]-PQdif2[,mm+1]/P2[,mm+1])+ng3*X[,2]*Pstar3[,mm]*Qstar3[,mm]*(PQdif3[,mm]/P3[,mm]-PQdif3[,mm+1]/P3[,mm+1]))
-              }
-              if (l0normbetaj==1){
-                for (mm in (m+1):(m+l0normbetaj)){
-                  FI[mm,mm] <- (sparsity[j,]%*%c(-sum(ng2*(Pstar2[,1]*Qstar2[,1])^2*(1/P2[,1]+1/P2[,2])),-sum(ng3*(Pstar3[,1]*Qstar3[,1])^2*(1/P3[,1]+1/P3[,2]))))
-                  FI[m,mm] <- FI[mm,m] <- (sparsity[j,]%*%c(sum(ng2*X[,1]*Pstar2[,1]*Qstar2[,1]*(PQdif2[,1]/P2[,1]-PQdif2[,2]/P2[,2])),sum(ng3*X[,1]*Pstar3[,1]*Qstar3[,1]*(PQdif3[,1]/P3[,1]-PQdif3[,2]/P3[,2]))))
-                  FI[mm,m-1] <- FI[m-1,mm] <- (sparsity[j,]%*%c(-sum(ng2*(Pstar2[,1]*Qstar2[,1])^2*(1/P2[,1]+1/P2[,2])),-sum(ng3*(Pstar3[,1]*Qstar3[,1])^2*(1/P3[,1]+1/P3[,2]))))
-                }
-              } else {
-                for (mm in (m+1):(m+l0normbetaj)){
-                  FI[mm,mm] <- (c(-sum(ng2*(Pstar2[,1]*Qstar2[,1])^2*(1/P2[,1]+1/P2[,2])),-sum(ng3*(Pstar3[,1]*Qstar3[,1])^2*(1/P3[,1]+1/P3[,2]))))[mm-2]
-                  FI[m,mm] <- FI[mm,m] <- (c(sum(ng2*X[,1]*Pstar2[,1]*Qstar2[,1]*(PQdif2[,1]/P2[,1]-PQdif2[,2]/P2[,2])),sum(ng3*X[,1]*Pstar3[,1]*Qstar3[,1]*(PQdif3[,1]/P3[,1]-PQdif3[,2]/P3[,2]))))[mm-2]
-                  FI[mm,m-1] <- FI[m-1,mm] <- (c(-sum(ng2*(Pstar2[,1]*Qstar2[,1])^2*(1/P2[,1]+1/P2[,2])),-sum(ng3*(Pstar3[,1]*Qstar3[,1])^2*(1/P3[,1]+1/P3[,2]))))[mm-2]
-                }
-              }
-            } else {
-              for (mm in 1:(m-1)){
-                FI[mm,mm] <- -sum(ng*(Pstar[,mm]*Qstar[,mm])^2*(1/P[,mm]+1/P[,mm+1]))
-                for (nn in m:(m+r-1)){
-                  FI[nn,mm] <- FI[mm,nn] <- sum(ng*X[,nn-m+1]*Pstar[,mm]*Qstar[,mm]*(PQdif[,mm]/P[,mm]-PQdif[,mm+1]/P[,mm+1]))
-                }
-              }
-              if (m>2){
-                for (mm in 2:(m-1)){
-                  FI[mm,mm-1] <- sum(ng*Pstar[,mm]*Qstar[,mm]*Pstar[,mm-1]*Qstar[,mm-1]*(1/P[,mm]))#(2,1),(3,2)
-                }
-                for (mm in 1:(m-2)){
-                  FI[mm,mm+1] <- sum(ng*Pstar[,mm]*Qstar[,mm]*Pstar[,mm+1]*Qstar[,mm+1]*(1/P[,mm+1]))#(1,2),(2,3)
-                }
-              }
-            }
-            FI[m,m] <- -sum(ng1*X[,2]*X[,2]*apply(PQdif1^2/P1,1,sum)+ng2*X[,2]*X[,2]*apply(PQdif2^2/P2,1,sum)+ng3*X[,2]*X[,2]*apply(PQdif3^2/P3,1,sum))
-          }
-          
-          
-          add <- qr.solve(FI,minusgrad)
-          d=d+add[1:(m-1)]
-          a=a+add[m]
-          if (l0normbetaj==2){
-            bet=bet+add[3:4]
-          } else {
-            if (sparsity[j,1]==1){
-              bet=bet+c(add[(m+1):(m+l0normbetaj)],0)
-            } else {
-              bet=bet+c(0,add[(m+1):(m+l0normbetaj)])
-            }
-          }
-        }
-        #end of M step loop
-        
-      }
       
       
       #rescale a and d
-      a=a*Tau[2]
+      a=a*Tau
       
-      gra[j,2] <- a
+      gra[j,] <- a
       grd[j,] <- d
       grbeta[j,] <- bet
     }
@@ -1503,7 +970,7 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=F,gra00=gra00,
   }
   
   BIC=-2*sum(lh)+l0norm*log(N)
-
+  
   Bias=c(colSums(gra-Amat1)/10,colMeans(grd-Dmat1))
   RMSE=c(sqrt(colSums((gra-Amat1)^2)/10),sqrt(colMeans((grd-Dmat1)^2)))
   
@@ -2204,7 +1671,7 @@ sparsity.t=array(double(J*2*reps),dim = c(J,2,reps))
 for (aa in 1:J){
   for (rr in 1:2){
     for (cc in 1:reps)
-    sparsity.t[aa,rr,cc]=ifelse(Betas.1[aa,rr,cc]==0,0,1)
+      sparsity.t[aa,rr,cc]=ifelse(Betas.1[aa,rr,cc]==0,0,1)
   }
 }
 
