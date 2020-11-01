@@ -1120,22 +1120,22 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=F,gra00=gra00,
     iter <- iter+1
     print(c(iter,max(df.a), max(df.d), max(df.beta)))
   }
-  if (iter=500){
-    print("EM cycle stop at 500")
-  }X1=seq(-3,3,by=0.2)
-  G=length(X1)^r
-  gh=t(matrix(rep(X1,r),r,length(X1),byrow = T))
-  idx <- as.matrix(expand.grid(rep(list(1:length(X1)),r)))
-  X <- matrix(gh[idx,1],nrow(idx),r)
-  ng <-  numeric(G)
-  Xijk=array(double(N*J*m),dim = c(N,J,m))
-  for(i in 1:N){
-    for(j in 1:J){
-      for(k in 1:m){
-        Xijk[i,j,k]=ifelse(resp[i,j]==k,1,0)
-      }
-    }
-  }
+ # if (iter=500){
+#    print("EM cycle stop at 500")
+#  }X1=seq(-3,3,by=0.2)
+#  G=length(X1)^r
+#  gh=t(matrix(rep(X1,r),r,length(X1),byrow = T))
+#  idx <- as.matrix(expand.grid(rep(list(1:length(X1)),r)))
+#  X <- matrix(gh[idx,1],nrow(idx),r)
+#  ng <-  numeric(G)
+#  Xijk=array(double(N*J*m),dim = c(N,J,m))
+#  for(i in 1:N){
+#    for(j in 1:J){
+#      for(k in 1:m){
+#        Xijk[i,j,k]=ifelse(resp[i,j]==k,1,0)
+#      }
+#    }
+ # }
   
   
   ######################
