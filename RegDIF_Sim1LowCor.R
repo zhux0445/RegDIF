@@ -7,9 +7,7 @@ library(graphics)
 library(dmutate)
 setwd('/Users/ruoyizhu/Documents/GitHub/RegDIF_SimData')
 params=read.csv("Para1.csv",row.names = 1)
-responses=read.csv("RESP1.csv",row.names = 1)
-beta.1=read.csv("Beta1_ 1.dms",row.names = 1)
-ad.1=read.csv("ADmat1_ 1.dms",row.names = 1)
+responses=read.csv("RESP1lowcor.csv",row.names = 1)
 
 soft=function(s, tau) {
   val=sign(s)*max(c(abs(s) - tau,0))
