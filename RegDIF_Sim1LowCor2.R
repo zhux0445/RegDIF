@@ -15,6 +15,27 @@ responses=read.csv("RESP1lowcor.csv",row.names = 1)
 soft=function(s, tau) {
   val=sign(s)*max(c(abs(s) - tau,0))
   return(val) }
+
+bsearch=function(deltag, a0, b0, L=1e-7, quiet=FALSE, ...) 
+{ 
+    mm=mean(c(a0,b0)) 
+    while(b0-a0 > L) 
+    { 
+      dgm=deltag(mm) 
+      if(dgm < 0) 
+        {
+          a0=mm 
+        } else if (dgm > 0) 
+          { 
+            b0=mm 
+          } else {
+            b0=mm 
+            a0=mm 
+            } 
+      mm=mean(c(a0,b0))
+     } 
+    return(mm)
+ }
 # Dataset #4 (2 Non-uniform DIF items per scale)
 J=20
 
@@ -619,7 +640,16 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=F,gra00=gra00,
 ###############
 # Refit model #
 ###############
-
+#gra000=gra
+#grd000=grd
+#grbeta000=grbeta
+#  Mu.gp1000=Mu.gp1
+#  Mu.gp2000=Mu.gp2
+#  Mu.gp3000=Mu.gp3
+#  Sig.gp1000=Sig.gp1
+#  Sig.gp2000=Sig.gp2
+#  Sig.gp3000=Sig.gp3
+  
 #get the sparsity structure
 sparsity=grbeta
 for (j in 1:J){
@@ -627,12 +657,12 @@ for (j in 1:J){
     sparsity[j,rr]=ifelse(grbeta[j,rr]==0,0,1)
   }
 }
-gra=gra00
-grd=grd00
-grbeta=grbeta00*  sparsity
+#gra=gra00
+#grd=grd00
+#grbeta=grbeta00*sparsity
 
-Pstar <- Qstar <-Pstar1 <- Qstar1 <-Pstar2 <- Qstar2 <-Pstar3 <- Qstar3 <- matrix(double(G*(m-1)),G,m-1)
-P<-P1<-P2<-P3<- matrix(double(G*m),G,m)
+Pstar <- Qstar <-Pstar1 <- Qstar1 <-Pstar2 <- Qstar2 <-Pstar3 <- Qstar3<-Pstar12 <- Qstar12 <-Pstar22 <- Qstar22 <-Pstar32 <- Qstar32 <- matrix(double(G*(m-1)),G,m-1)
+P<-P1<-P2<-P3<-P12<-P22<-P32<- matrix(double(G*m),G,m)
 df.a <- df.d  <- df.gamma <- df.beta <- df.Sig <- 1
 
 iter <- 0
@@ -1077,17 +1107,80 @@ while(max(df.a)>eps | max(df.d)>eps | max(df.beta)>eps)
         
         
         add <- qr.solve(FI,minusgrad)
-        d=d+add[1:(m-1)]
-        a=a+add[m]
+        deltag=function(u){
+          d2=d+add[1:(m-1)]*u
+          a2=a+add[m]*u
+          if (l0normbetaj==2){
+            bet2=bet+add[3:4]*u
+          } else {
+            if (sparsity[j,1]==1){
+              bet2=bet+c(add[(m+1):(m+l0normbetaj)]*u,0)
+            } else {
+              bet2=bet+c(0,add[(m+1):(m+l0normbetaj)]*u)
+            }
+          }
+          
+          #step size selection
+          for(g in 1:G){
+            Pstar12[g,] <- 1/(1+exp(-(d2+rep(a2%*%X[g,1])+y1%*%bet2)))#+rep((y1%*%gam)%*%X[g,])
+            P12[g,] <- -diff(c(1,Pstar12[g,],0))
+            Pstar22[g,] <- 1/(1+exp(-(d2+rep(a2%*%X[g,1])+y2%*%bet2)))#+rep((y2%*%gam)%*%X[g,])
+            P22[g,] <- -diff(c(1,Pstar22[g,],0))
+            Pstar32[g,] <- 1/(1+exp(-(d2+rep(a2%*%X[g,1])+y3%*%bet2)))#+rep((y3%*%gam)%*%X[g,])
+            P32[g,] <- -diff(c(1,Pstar32[g,],0))
+          }
+          Qstar12 <- 1-Pstar12
+          Qstar22 <- 1-Pstar22
+          Qstar32 <- 1-Pstar32
+          
+          
+          #calculating the score vector
+          Dsco <- sum(apply(rgk1/P12,1,diff)*Pstar12*Qstar12+apply(rgk2/P22,1,diff)*Pstar22*Qstar22+apply(rgk3/P32,1,diff)*Pstar32*Qstar32)
+          PQdif12 <- -t(apply(cbind(0,Pstar12*Qstar12,0),1, diff))
+          PQdif22 <- -t(apply(cbind(0,Pstar22*Qstar22,0),1, diff))
+          PQdif32 <- -t(apply(cbind(0,Pstar32*Qstar32,0),1, diff))
+          Asco = sum(X[,1]*apply(rgk1/P12*PQdif12,1,sum))+sum(X[,1]*apply(rgk2/P22*PQdif22,1,sum))+sum(X[,1]*apply(rgk3/P32*PQdif32,1,sum))
+          #if (NonUniform==T){
+          #  Gamsco = c(apply(X[,1]*apply(rgk2/P2*PQdif2,1,sum),2,sum),apply(X*apply(rgk3/P3*PQdif3,1,sum),2,sum))
+          #}
+          
+          Betsco=numeric(l0normbetaj)
+          if (l0normbetaj==1){
+            Betsco[1] <- sparsity[j,]%*%c(sum(apply(rgk2/P22,1,diff)*Pstar22*Qstar22),sum(apply(rgk3/P32,1,diff)*Pstar32*Qstar32))
+          } else {
+            Betsco[1:l0normbetaj] <- c(sum(apply(rgk2/P22,1,diff)*Pstar22*Qstar22),sum(apply(rgk3/P32,1,diff)*Pstar32*Qstar32))
+          }
+          
+          
+          if (NonUniform==T){
+            minusgrad <- -c(Dsco,Asco, Gamsco, Betsco)
+            grad <- c(Dsco,Asco,Gamsco, Betsco)
+          } else {
+            minusgrad <- -c(Dsco,Asco, Betsco)
+            grad <- c(Dsco,Asco, Betsco)
+          }
+          dg=minusgrad%*%add
+          return(dg)
+        }
+        if (deltag(1)>0){
+          u=bsearch(deltag=deltag, a0=0, b0=1, L=1e-7, quiet=FALSE) 
+        } else {
+          u=1
+        }
+        
+        d=d+add[1:(m-1)]*u
+        a=a+add[m]*u
         if (l0normbetaj==2){
-          bet=bet+add[3:4]
+          bet=bet+add[3:4]*u
         } else {
           if (sparsity[j,1]==1){
-            bet=bet+c(add[(m+1):(m+l0normbetaj)],0)
+            bet=bet+c(add[(m+1):(m+l0normbetaj)]*u,0)
           } else {
-            bet=bet+c(0,add[(m+1):(m+l0normbetaj)])
+            bet=bet+c(0,add[(m+1):(m+l0normbetaj)]*u)
           }
         }
+        
+        
       }
       #end of M step loop
       
@@ -1218,8 +1311,7 @@ while(max(df.a)>eps | max(df.d)>eps | max(df.beta)>eps)
     } else {
       miter <- 0
       add <- max.tol+1
-      #while(sum(abs(add))>max.tol)
-      for (iii in 1:6) 
+      while(sum(abs(add*u))>max.tol)
       {
         miter <- miter+1
         for(g in 1:G){
@@ -1339,17 +1431,80 @@ while(max(df.a)>eps | max(df.d)>eps | max(df.beta)>eps)
         
         
         add <- qr.solve(FI,minusgrad)
-        d=d+add[1:(m-1)]
-        a=a+add[m]
+        deltag=function(u){
+          d2=d+add[1:(m-1)]*u
+          a2=a+add[m]*u
+          if (l0normbetaj==2){
+            bet2=bet+add[3:4]*u
+          } else {
+            if (sparsity[j,1]==1){
+              bet2=bet+c(add[(m+1):(m+l0normbetaj)]*u,0)
+            } else {
+              bet2=bet+c(0,add[(m+1):(m+l0normbetaj)]*u)
+            }
+          }
+          
+          #step size selection
+          for(g in 1:G){
+            Pstar12[g,] <- 1/(1+exp(-(d2+rep(a2%*%X[g,2])+y1%*%bet2)))#+rep((y1%*%gam)%*%X[g,])
+            P12[g,] <- -diff(c(1,Pstar12[g,],0))
+            Pstar22[g,] <- 1/(1+exp(-(d2+rep(a2%*%X[g,2])+y2%*%bet2)))#+rep((y2%*%gam)%*%X[g,])
+            P22[g,] <- -diff(c(1,Pstar22[g,],0))
+            Pstar32[g,] <- 1/(1+exp(-(d2+rep(a2%*%X[g,2])+y3%*%bet2)))#+rep((y3%*%gam)%*%X[g,])
+            P32[g,] <- -diff(c(1,Pstar32[g,],0))
+          }
+          Qstar12 <- 1-Pstar12
+          Qstar22 <- 1-Pstar22
+          Qstar32 <- 1-Pstar32
+          
+          
+          #calculating the score vector
+          Dsco <- sum(apply(rgk1/P12,1,diff)*Pstar12*Qstar12+apply(rgk2/P22,1,diff)*Pstar22*Qstar22+apply(rgk3/P32,1,diff)*Pstar32*Qstar32)
+          PQdif12 <- -t(apply(cbind(0,Pstar12*Qstar12,0),1, diff))
+          PQdif22 <- -t(apply(cbind(0,Pstar22*Qstar22,0),1, diff))
+          PQdif32 <- -t(apply(cbind(0,Pstar32*Qstar32,0),1, diff))
+          Asco = sum(X[,2]*apply(rgk1/P12*PQdif12,1,sum))+sum(X[,2]*apply(rgk2/P22*PQdif22,1,sum))+sum(X[,2]*apply(rgk3/P32*PQdif32,1,sum))
+          #if (NonUniform==T){
+          #  Gamsco = c(apply(X[,1]*apply(rgk2/P2*PQdif2,1,sum),2,sum),apply(X*apply(rgk3/P3*PQdif3,1,sum),2,sum))
+          #}
+          
+          Betsco=numeric(l0normbetaj)
+          if (l0normbetaj==1){
+            Betsco[1] <- sparsity[j,]%*%c(sum(apply(rgk2/P22,1,diff)*Pstar22*Qstar22),sum(apply(rgk3/P32,1,diff)*Pstar32*Qstar32))
+          } else {
+            Betsco[1:l0normbetaj] <- c(sum(apply(rgk2/P22,1,diff)*Pstar22*Qstar22),sum(apply(rgk3/P32,1,diff)*Pstar32*Qstar32))
+          }
+          
+          
+          if (NonUniform==T){
+            minusgrad <- -c(Dsco,Asco, Gamsco, Betsco)
+            grad <- c(Dsco,Asco,Gamsco, Betsco)
+          } else {
+            minusgrad <- -c(Dsco,Asco, Betsco)
+            grad <- c(Dsco,Asco, Betsco)
+          }
+          dg=minusgrad%*%add
+          return(dg)
+        }
+        if (deltag(1)>0){
+          u=bsearch(deltag=deltag, a0=0, b0=1, L=1e-7, quiet=FALSE) 
+        } else {
+          u=1
+        }
+          
+        d=d+add[1:(m-1)]*u
+        a=a+add[m]*u
         if (l0normbetaj==2){
-          bet=bet+add[3:4]
+          bet=bet+add[3:4]*u
         } else {
           if (sparsity[j,1]==1){
-            bet=bet+c(add[(m+1):(m+l0normbetaj)],0)
+            bet=bet+c(add[(m+1):(m+l0normbetaj)]*u,0)
           } else {
-            bet=bet+c(0,add[(m+1):(m+l0normbetaj)])
+            bet=bet+c(0,add[(m+1):(m+l0normbetaj)]*u)
           }
         }
+        
+          
       }
       #end of M step loop
       
@@ -1552,11 +1707,11 @@ Sig100=matrix(c(1,0.2753316,0.2753316,1),2,2)
 Sig200=matrix(c(1.3259608,0.3145355,0.3145355,1.1363796),2,2)
 Sig300=matrix(c(1.2270710,0.2503095,0.2503095,1.0718629),2,2)
 
-for (rep in 1:reps){
+for (rep in 6:10){
   resp=responses[((rep-1)*N+1):((rep-1)*N+N1+N2+N3),]
   r=2
   m=2
-  eta.vec=seq(18,48,3)
+  eta.vec=seq(5,29,3)
   bics=rep(0,length(eta.vec))
   ADmat=array(double(J*3*length(eta.vec)),dim = c(J,3,length(eta.vec)))
   #Gammas=array(double(2*J*m*length(eta.vec)),dim = c(2,2,J,length(eta.vec)))
