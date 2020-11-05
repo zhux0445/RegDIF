@@ -1028,13 +1028,15 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=T,gra00=gra00,
     }
   }
   
-  BIC=-2*sum(lh)+l0norm*log(N)
+  #BIC=-2*sum(lh)+l0norm*log(N)
+  AIC=-2*sum(lh)+l0norm*2
   
   Bias=c(colSums(gra-Amat1)/10,colMeans(grd-Dmat1))
   RMSE=c(sqrt(colSums((gra-Amat1)^2)/10),sqrt(colMeans((grd-Dmat1)^2)))
   
   #output esimates and number of iterations
-  return(list(est=cbind(gra,grd),Gamma=grgamma,mean1=Mu.gp1,mean2=Mu.gp2,mean3=Mu.gp3,Corr1=Sig.gp1,Corr2=Sig.gp2,Corr3=Sig.gp3,iter=iter,bic=BIC,bias=Bias,RMSE=RMSE))
+  #return(list(est=cbind(gra,grd),Gamma=grgamma,mean1=Mu.gp1,mean2=Mu.gp2,mean3=Mu.gp3,Corr1=Sig.gp1,Corr2=Sig.gp2,Corr3=Sig.gp3,iter=iter,bic=BIC,bias=Bias,RMSE=RMSE))
+  return(list(est=cbind(gra,grd),Gamma=grgamma,mean1=Mu.gp1,mean2=Mu.gp2,mean3=Mu.gp3,Corr1=Sig.gp1,Corr2=Sig.gp2,Corr3=Sig.gp3,iter=iter,aic=AIC,bias=Bias,RMSE=RMSE))
 }
 #end of function
 
@@ -1071,12 +1073,13 @@ Sig100=matrix(c(1,0.8452613,0.8452613,1),2,2)
 Sig200=matrix(c(1.179328,1.065364,1.065364,1.179328),2,2)
 Sig300=matrix(c(0.9202015,0.8908855,0.8908855,0.9202015),2,2)
 
-for (rep in 2:50){
+for (rep in 1:25){
   resp=responses[((rep-1)*N+1):((rep-1)*N+N1+N2+N3),]
   r=2
   m=2
-  eta.vec=seq(20,46,3)
-  bics=rep(0,length(eta.vec))
+  eta.vec=seq(20,54,2)
+  #bics=rep(0,length(eta.vec))
+  aics=rep(0,length(eta.vec))
   ADmat=array(double(J*3*length(eta.vec)),dim = c(J,3,length(eta.vec)))
   Gammas=array(double(2*J*m*length(eta.vec)),dim = c(2,2,J,length(eta.vec)))
   biass=matrix(0,length(eta.vec),3)
@@ -1090,7 +1093,8 @@ for (rep in 2:50){
     ptm <- proc.time()
     sim=ipest1(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=T,gra00=gra00,grd00=grd00,grgamma00=grgamma00,mu100=mu100,mu200=mu200,mu300=mu300,Sig100=Sig100,Sig200=Sig200,Sig300=Sig300)
     print(proc.time() - ptm)
-    bics[k]=sim$bic
+    #bics[k]=sim$bic
+    aics[k]=sim$aic
     #Gammas[,,,k]=sim$Gamma
     ADmat[,,k]=sim$est
     Gammas[,,,k]=sim$Gamma
@@ -1099,7 +1103,8 @@ for (rep in 2:50){
     theta.dist[,,k]=rbind(sim$mean1,sim$mean2,sim$mean3,sim$Corr1,sim$Corr2,sim$Corr3)
   }
   
-  kk=which.min(bics)
+  #kk=which.min(bics)
+  kk=which.min(aics)
   eta.5[rep]=eta.vec[kk]
   Gammas.5[,,,rep]=Gammas[,,,kk]
   ADmat.5[,,rep]=ADmat[,,kk]
