@@ -11,7 +11,7 @@ library(RcppEigen)
 sourceCpp("/Users/zhux0445/Documents/GitHub/RegDIF/matrix.cpp")
 setwd('/Users/zhux0445/Documents/GitHub/RegDIF_SimData')
 params=read.csv("Para4.csv",row.names = 1)
-responses=read.csv("RESP8.csv",row.names = 1)
+responses=read.csv("RESP6.csv",row.names = 1)
 
 soft=function(s, tau) {
   val=sign(s)*max(c(abs(s) - tau,0))
@@ -19,7 +19,7 @@ soft=function(s, tau) {
 # Dataset #4 (2 Non-uniform DIF items per scale)
 J=20
 
-N1=N2=N3=1000 
+N1=N2=N3=500 
 Group=c(rep('G1', N1), rep('G2', N2), rep('G3', N3))
 N=N1+N2+N3
 
@@ -1073,7 +1073,7 @@ Sig100=matrix(c(1,0.8452613,0.8452613,1),2,2)
 Sig200=matrix(c(1.179328,1.065364,1.065364,1.179328),2,2)
 Sig300=matrix(c(0.9202015,0.8908855,0.8908855,0.9202015),2,2)
 
-for (rep in 1:25){
+for (rep in 1:50){
   resp=responses[((rep-1)*N+1):((rep-1)*N+N1+N2+N3),]
   r=2
   m=2
@@ -1115,10 +1115,10 @@ for (rep in 1:25){
   print(Gammas.5[,,,rep])
   print(biass.5[rep,])
   print(RMSEs.5[rep,])
-  write.csv(eta.5[rep],file = paste("eta8_",rep))
-  write.csv(ADmat.5[,,rep],file = paste("ADmat8_",rep))
-  write.csv(rbind(t(rbind(Gammas.5[c(1,2),1,3:11,rep])),t(rbind(Gammas.5[c(1,2),2,12:20,rep]))),file = paste("Gamma8_",rep))
-  write.csv(theta.dist[,,kk],file = paste("theta8_",rep))
+  write.csv(eta.5[rep],file = paste("eta6AIC_",rep))
+  write.csv(ADmat.5[,,rep],file = paste("ADmat6AIC_",rep))
+  write.csv(rbind(t(rbind(Gammas.5[c(1,2),1,3:11,rep])),t(rbind(Gammas.5[c(1,2),2,12:20,rep]))),file = paste("Gamma6AIC_",rep))
+  write.csv(theta.dist[,,kk],file = paste("theta6AIC_",rep))
 }
 
 
