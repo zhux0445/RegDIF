@@ -1,3 +1,5 @@
+#optim() function is very slow
+
 library(MASS)
 library(mirt) 
 mirtCluster(4)
@@ -6,6 +8,7 @@ library(mvtnorm)
 library(graphics)
 library(dmutate)
 setwd('/Users/zhux0445/Documents/GitHub/RegDIF_SimData')
+setwd('/Users/ruoyizhu/Documents/GitHub/RegDIF_SimData')
 params=read.csv("Para1.csv",row.names = 1)
 responses=read.csv("RESP1lowcor.csv",row.names = 1)
 
@@ -757,8 +760,6 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=F,gra00=gra00,
     }
     Sig.gp3=Sigg3/N3
     
-    
-    # dimension2
     for (j in 1:J)
     {
       d <- grd[j,] 
