@@ -8,13 +8,8 @@ library(mvtnorm)
 library(graphics)
 library(dmutate)
 setwd('/Users/zhux0445/Documents/GitHub/RegDIF_SimData')
-<<<<<<< HEAD
 params=read.csv("Para2.csv",row.names = 1)
 responses=read.csv("RESP2.csv",row.names = 1)
-=======
-params=read.csv("Para1.csv",row.names = 1)
-responses=read.csv("RESP1.csv",row.names = 1)
->>>>>>> ab2deff2bfd189508f85d18112add90f30fe2497
 soft=function(s, tau) {
   val=sign(s)*max(c(abs(s) - tau,0))
   return(val) }
@@ -1502,10 +1497,6 @@ ipest1 <- function(resp,m,r,eta,lam,eps =1e-3,max.tol=1e-7,NonUniform=F,gra00=gr
       l0norm=l0norm+(est.beta[i,j]!=0)
     }
   }
-<<<<<<< HEAD
-=======
-  
->>>>>>> ab2deff2bfd189508f85d18112add90f30fe2497
   AIC=-2*sum(lh)+l0norm*2
   BIC=-2*sum(lh)+l0norm*log(N)
   
@@ -1529,22 +1520,14 @@ Betas.12=array(double(J*2*reps),dim = c(J,2,reps))
 ADmat.12=array(double(J*3*reps),dim = c(J,3,reps)) #a has 2 columns, d has 1 column
 biass.12=matrix(0,reps,3)
 RMSEs.12=matrix(0,reps,3)
-<<<<<<< HEAD
 for (rep in 2:reps){
-=======
-for (rep in 1:reps){
->>>>>>> ab2deff2bfd189508f85d18112add90f30fe2497
   resp=responses[((rep-1)*N+1):((rep-1)*N+N1+N2+N3),]
   r=2
   m=2
   lam=1
   #lam.vec=c(0.5,1,2)
   #eta.vec=seq(18,45,3)
-<<<<<<< HEAD
   eta.vec=seq(1,46,3)
-=======
-  eta.vec=seq(6,20,2)
->>>>>>> ab2deff2bfd189508f85d18112add90f30fe2497
   aics=rep(0,length(eta.vec))
   bics=rep(0,length(eta.vec))
   ADmat=array(double(J*3*length(eta.vec)),dim = c(J,3,length(eta.vec)))
@@ -1582,17 +1565,10 @@ for (rep in 1:reps){
   print(Betas.1[,,rep])
   print(biass.1[rep,])
   print(RMSEs.1[rep,])
-<<<<<<< HEAD
   write.csv(eta.1[rep],file = paste("eta2adapt_",rep))
   write.csv(ADmat.1[,,rep],file = paste("ADmat2adapt_",rep))
   write.csv(Betas.1[,,rep],file = paste("Beta2adapt_",rep))
   write.csv(theta.dist[,,kk],file = paste("theta2adapt_",rep))
-=======
-  write.csv(eta.1[rep],file = paste("eta1adapt_",rep))
-  write.csv(ADmat.1[,,rep],file = paste("ADmat1adapt_",rep))
-  write.csv(Betas.1[,,rep],file = paste("Beta1adapt_",rep))
-  write.csv(theta.dist[,,kk2],file = paste("theta1adapt_",rep))
->>>>>>> ab2deff2bfd189508f85d18112add90f30fe2497
   
   kk2=which.min(aics)
   eta.12[rep]=eta.vec[kk2]
@@ -1601,20 +1577,8 @@ for (rep in 1:reps){
   Betas.12[,,rep]=Betas[,,kk2]
   biass.12[rep,]=biass[kk2,]
   RMSEs.12[rep,]=RMSEs[kk2,]
-<<<<<<< HEAD
   write.csv(eta.12[rep],file = paste("eta2adaptAIC_",rep))
   write.csv(ADmat.12[,,rep],file = paste("ADmat2adaptAIC_",rep))
   write.csv(Betas.12[,,rep],file = paste("Beta2adaptAIC_",rep))
   write.csv(theta.dist[,,kk2],file = paste("theta2adaptAIC_",rep))
-=======
-  print(ADmat.12[,,rep])
-  print(eta.12[rep])
-  print(Betas.12[,,rep])
-  print(biass.12[rep,])
-  print(RMSEs.12[rep,])
-  write.csv(eta.12[rep],file = paste("eta1adaptAIC_",rep))
-  write.csv(ADmat.12[,,rep],file = paste("ADmat1adaptAIC_",rep))
-  write.csv(Betas.12[,,rep],file = paste("Beta1adaptAIC_",rep))
-  write.csv(theta.dist[,,kk2],file = paste("theta1adaptAIC_",rep))
->>>>>>> ab2deff2bfd189508f85d18112add90f30fe2497
 }
