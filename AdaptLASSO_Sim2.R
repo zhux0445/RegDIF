@@ -8,8 +8,8 @@ library(mvtnorm)
 library(graphics)
 library(dmutate)
 setwd('/Users/zhux0445/Documents/GitHub/RegDIF_SimData')
-params=read.csv("Para2.csv",row.names = 1)
-responses=read.csv("RESP4.csv",row.names = 1)
+params=read.csv("Para1.csv",row.names = 1)
+responses=read.csv("RESP1.csv",row.names = 1)
 soft=function(s, tau) {
   val=sign(s)*max(c(abs(s) - tau,0))
   return(val) }
@@ -1498,12 +1498,13 @@ ipest1 <- function(resp,m,r,eta,lam,eps =1e-3,max.tol=1e-7,NonUniform=F,gra00=gr
     }
   }
   
+  AIC=-2*sum(lh)+l0norm*2
   BIC=-2*sum(lh)+l0norm*log(N)
   
   Bias=c(colSums(gra-Amat1)/10,colMeans(grd-Dmat1))
   RMSE=c(sqrt(colSums((gra-Amat1)^2)/10),sqrt(colMeans((grd-Dmat1)^2)))
   
-  return(list(est=cbind(gra,grd),Beta=grbeta,iter=iter,bic=BIC,bias=Bias,RMSE=RMSE,mean1=Mu.gp1,mean2=Mu.gp2,mean3=Mu.gp3,Corr1=Sig.gp1,Corr2=Sig.gp2,Corr3=Sig.gp3))
+  return(list(est=cbind(gra,grd),Beta=grbeta,iter=iter,aic=AIC,bic=BIC,bias=Bias,RMSE=RMSE,mean1=Mu.gp1,mean2=Mu.gp2,mean3=Mu.gp3,Corr1=Sig.gp1,Corr2=Sig.gp2,Corr3=Sig.gp3))
 }
 #end of function
 
@@ -1514,6 +1515,12 @@ Betas.1=array(double(J*2*reps),dim = c(J,2,reps))
 ADmat.1=array(double(J*3*reps),dim = c(J,3,reps)) #a has 2 columns, d has 1 column
 biass.1=matrix(0,reps,3)
 RMSEs.1=matrix(0,reps,3)
+eta.12=numeric(reps)
+#Gammas.1=array(double(2*J*m*50),dim = c(2,2,J,50))
+Betas.12=array(double(J*2*reps),dim = c(J,2,reps))
+ADmat.12=array(double(J*3*reps),dim = c(J,3,reps)) #a has 2 columns, d has 1 column
+biass.12=matrix(0,reps,3)
+RMSEs.12=matrix(0,reps,3)
 for (rep in 1:reps){
   resp=responses[((rep-1)*N+1):((rep-1)*N+N1+N2+N3),]
   r=2
@@ -1522,12 +1529,14 @@ for (rep in 1:reps){
   #lam.vec=c(0.5,1,2)
   #eta.vec=seq(18,45,3)
   eta.vec=seq(6,20,2)
+  aics=rep(0,length(eta.vec))
   bics=rep(0,length(eta.vec))
   ADmat=array(double(J*3*length(eta.vec)),dim = c(J,3,length(eta.vec)))
   #Gammas=array(double(2*J*m*length(eta.vec)),dim = c(2,2,J,length(eta.vec)))
   Betas=array(double(J*2*length(eta.vec)),dim = c(J,2,length(eta.vec)))
   biass=matrix(0,length(eta.vec),3)
   RMSEs=matrix(0,length(eta.vec),3)
+  theta.dist=array(double(2*9*length(eta.vec)),dim=c(9,2,length(eta.vec)))
   
   for (k in 1:length(eta.vec))
   {
@@ -1535,12 +1544,14 @@ for (rep in 1:reps){
     ptm <- proc.time()
     sim=ipest1(resp,m,r,eta,lam,eps =1e-3,max.tol=1e-7,NonUniform=F,gra00=gra00,grd00=grd00,grbeta00=grbeta00,mu100=mu100,mu200=mu200,mu300=mu300,Sig100=Sig100,Sig200=Sig200,Sig300=Sig300)
     print(proc.time() - ptm)
+    aics[k]=sim$aic
     bics[k]=sim$bic
     #Gammas[,,,k]=sim$Gamma
     ADmat[,,k]=sim$est
     Betas[,,k]=sim$Beta
     biass[k,]=sim$bias
     RMSEs[k,]=sim$RMSE
+    theta.dist[,,k]=rbind(sim$mean1,sim$mean2,sim$mean3,sim$Corr1,sim$Corr2,sim$Corr3)
   }
   
   kk=which.min(bics)
@@ -1555,7 +1566,25 @@ for (rep in 1:reps){
   print(Betas.1[,,rep])
   print(biass.1[rep,])
   print(RMSEs.1[rep,])
-  write.csv(eta.1[rep],file = paste("eta4adapt_",rep))
-  write.csv(ADmat.1[,,rep],file = paste("ADmat4adapt_",rep))
-  write.csv(Betas.1[,,rep],file = paste("Beta4adapt_",rep))
+  write.csv(eta.1[rep],file = paste("eta1adapt_",rep))
+  write.csv(ADmat.1[,,rep],file = paste("ADmat1adapt_",rep))
+  write.csv(Betas.1[,,rep],file = paste("Beta1adapt_",rep))
+  write.csv(theta.dist[,,kk2],file = paste("theta1adapt_",rep))
+  
+  kk2=which.min(aics)
+  eta.12[rep]=eta.vec[kk2]
+  #Gammas.13[,,,i]=Gammas[,,,kk]
+  ADmat.12[,,rep]=ADmat[,,kk2]
+  Betas.12[,,rep]=Betas[,,kk2]
+  biass.12[rep,]=biass[kk2,]
+  RMSEs.12[rep,]=RMSEs[kk2,]
+  print(ADmat.12[,,rep])
+  print(eta.12[rep])
+  print(Betas.12[,,rep])
+  print(biass.12[rep,])
+  print(RMSEs.12[rep,])
+  write.csv(eta.12[rep],file = paste("eta1adaptAIC_",rep))
+  write.csv(ADmat.12[,,rep],file = paste("ADmat1adaptAIC_",rep))
+  write.csv(Betas.12[,,rep],file = paste("Beta1adaptAIC_",rep))
+  write.csv(theta.dist[,,kk2],file = paste("theta1adaptAIC_",rep))
 }
