@@ -23,7 +23,7 @@ soft=function(s, tau) {
 # Dataset #4 (2 Non-uniform DIF items per scale)
 J=20
 
-N1=N2=N3=1000 
+N1=N2=N3=500 
 Group=c(rep('G1', N1), rep('G2', N2), rep('G3', N3))
 Group01=c(rep('G1', N1), rep('G2', N2))
 Group02=c(rep('G1', N1), rep('G3', N3))
@@ -1195,12 +1195,13 @@ ipest1 <- function(resp,m,r,eta,lam,eps =1e-3,max.tol=1e-7,NonUniform=T,gra00=gr
   }
   aN=log(log(N))*log(2*J)
   BIC=-2*sum(lh)+l0norm*log(N)
+  AIC=-2*sum(lh)+l0norm*2
   
   Bias=c(colSums(gra-Amat1)/10,colMeans(grd-Dmat1))
   RMSE=c(sqrt(colSums((gra-Amat1)^2)/10),sqrt(colMeans((grd-Dmat1)^2)))
   
   #output esimates and number of iterations
-  return(list(est=cbind(gra,grd),Gamma=grgamma,mean1=Mu.gp1,mean2=Mu.gp2,mean3=Mu.gp3,Corr1=Sig.gp1,Corr2=Sig.gp2,Corr3=Sig.gp3,iter=iter,bic=BIC,bias=Bias,RMSE=RMSE))
+  return(list(est=cbind(gra,grd),Gamma=grgamma,mean1=Mu.gp1,mean2=Mu.gp2,mean3=Mu.gp3,Corr1=Sig.gp1,Corr2=Sig.gp2,Corr3=Sig.gp3,iter=iter,aic=AIC,bic=BIC,bias=Bias,RMSE=RMSE))
 }
 #end of function
 
@@ -1245,7 +1246,7 @@ for (rep in 1:50){
   r=2
   m=2
   lam=1
-  eta.vec=seq(5,35,2) #N=3000
+  eta.vec=seq(1,35,2) #N=3000
   bics=rep(0,length(eta.vec))
   gics=rep(0,length(eta.vec))
   ADmat=array(double(J*3*length(eta.vec)),dim = c(J,3,length(eta.vec)))
@@ -1261,6 +1262,7 @@ for (rep in 1:50){
     ptm <- proc.time()
     sim=ipest1(resp,m,r,eta,lam,eps =1e-3,max.tol=1e-7,NonUniform=T,gra00=gra00,grd00=grd00,grgamma00=grgamma00,mu100=mu100,mu200=mu200,mu300=mu300,Sig100=Sig100,Sig200=Sig200,Sig300=Sig300)
     print(proc.time() - ptm)
+    aics[k]=sim$aic
     bics[k]=sim$bic
     #gics[k]=sim$gic
     #Gammas[,,,k]=sim$Gamma
@@ -1273,7 +1275,7 @@ for (rep in 1:50){
   }
   
   kk=which.min(bics)
-  #kk2=which.min(gics)
+  kk2=which.min(aics)
   eta.5[rep]=eta.vec[kk]
   Gammas.5[,,,rep]=Gammas[,,,kk]
   ADmat.5[,,rep]=ADmat[,,kk]
@@ -1284,19 +1286,19 @@ for (rep in 1:50){
   print(Gammas.5[,,,rep])
   print(biass.5[rep,])
   print(RMSEs.5[rep,])
-  #eta.52[rep]=eta.vec[kk2]
-  #Gammas.52[,,,rep]=Gammas[,,,kk2]
-  #ADmat.52[,,rep]=ADmat[,,kk2]
-  #biass.52[rep,]=biass[kk2,]
-  #RMSEs.52[rep,]=RMSEs[kk2,]
+  eta.52[rep]=eta.vec[kk2]
+  Gammas.52[,,,rep]=Gammas[,,,kk2]
+  ADmat.52[,,rep]=ADmat[,,kk2]
+  biass.52[rep,]=biass[kk2,]
+  RMSEs.52[rep,]=RMSEs[kk2,]
   write.csv(eta.5[rep],file = paste("eta7adapt_",rep))
   write.csv(ADmat.5[,,rep],file = paste("ADmat7adapt_",rep))
   write.csv(rbind(t(rbind(Gammas.5[c(1,2),1,3:11,rep])),t(rbind(Gammas.5[c(1,2),2,12:20,rep]))),file = paste("Gamma7adapt_",rep))
   write.csv(theta.dist[,,kk],file = paste("theta7adapt_",rep))
-  #write.csv(eta.52[rep],file = paste("eta62adapt_",rep))
-  #write.csv(ADmat.52[,,rep],file = paste("ADmat62adapt_",rep))
-  #write.csv(rbind(t(rbind(Gammas.52[c(1,2),1,3:11,rep])),t(rbind(Gammas.52[c(1,2),2,12:20,rep]))),file = paste("Gamma62adapt_",rep))
-  
+  write.csv(eta.52[rep],file = paste("eta7adaptAIC_",rep))
+  write.csv(ADmat.52[,,rep],file = paste("ADmat7adaptAIC_",rep))
+  write.csv(rbind(t(rbind(Gammas.52[c(1,2),1,3:11,rep])),t(rbind(Gammas.52[c(1,2),2,12:20,rep]))),file = paste("Gamma7adaptAIC_",rep))
+  write.csv(theta.dist[,,kk2],file = paste("theta7adaptAIC_",rep))
   }
 
 
