@@ -23,7 +23,7 @@ soft=function(s, tau) {
 # Dataset #4 (2 Non-uniform DIF items per scale)
 J=20
 
-N1=N2=N3=500 
+N1=N2=N3=1000 
 Group=c(rep('G1', N1), rep('G2', N2), rep('G3', N3))
 Group01=c(rep('G1', N1), rep('G2', N2))
 Group02=c(rep('G1', N1), rep('G3', N3))
@@ -1248,7 +1248,7 @@ for (rep in 1:50){
   lam=1
   eta.vec=seq(1,35,2) #N=3000
   bics=rep(0,length(eta.vec))
-  gics=rep(0,length(eta.vec))
+  aics=rep(0,length(eta.vec))
   ADmat=array(double(J*3*length(eta.vec)),dim = c(J,3,length(eta.vec)))
   Gammas=array(double(2*J*m*length(eta.vec)),dim = c(2,2,J,length(eta.vec)))
   biass=matrix(0,length(eta.vec),3)
