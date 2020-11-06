@@ -1529,92 +1529,65 @@ Betas.12=array(double(J*2*reps),dim = c(J,2,reps))
 ADmat.12=array(double(J*3*reps),dim = c(J,3,reps)) #a has 2 columns, d has 1 column
 biass.12=matrix(0,reps,3)
 RMSEs.12=matrix(0,reps,3)
-<<<<<<< HEAD
 for (rep in 2:reps){
-=======
-for (rep in 1:reps){
->>>>>>> ab2deff2bfd189508f85d18112add90f30fe2497
-  resp=responses[((rep-1)*N+1):((rep-1)*N+N1+N2+N3),]
-  r=2
-  m=2
-  lam=1
-  #lam.vec=c(0.5,1,2)
-  #eta.vec=seq(18,45,3)
-<<<<<<< HEAD
-  eta.vec=seq(1,46,3)
-=======
-  eta.vec=seq(6,20,2)
->>>>>>> ab2deff2bfd189508f85d18112add90f30fe2497
-  aics=rep(0,length(eta.vec))
-  bics=rep(0,length(eta.vec))
-  ADmat=array(double(J*3*length(eta.vec)),dim = c(J,3,length(eta.vec)))
-  #Gammas=array(double(2*J*m*length(eta.vec)),dim = c(2,2,J,length(eta.vec)))
-  Betas=array(double(J*2*length(eta.vec)),dim = c(J,2,length(eta.vec)))
-  biass=matrix(0,length(eta.vec),3)
-  RMSEs=matrix(0,length(eta.vec),3)
-  theta.dist=array(double(2*9*length(eta.vec)),dim=c(9,2,length(eta.vec)))
-  
-  for (k in 1:length(eta.vec))
-  {
-    eta=eta.vec[k]
-    ptm <- proc.time()
-    sim=ipest1(resp,m,r,eta,lam,eps =1e-3,max.tol=1e-7,NonUniform=F,gra00=gra00,grd00=grd00,grbeta00=grbeta00,mu100=mu100,mu200=mu200,mu300=mu300,Sig100=Sig100,Sig200=Sig200,Sig300=Sig300)
-    print(proc.time() - ptm)
-    aics[k]=sim$aic
-    bics[k]=sim$bic
-    #Gammas[,,,k]=sim$Gamma
-    ADmat[,,k]=sim$est
-    Betas[,,k]=sim$Beta
-    biass[k,]=sim$bias
-    RMSEs[k,]=sim$RMSE
-    theta.dist[,,k]=rbind(sim$mean1,sim$mean2,sim$mean3,sim$Corr1,sim$Corr2,sim$Corr3)
-  }
-  
-  kk=which.min(bics)
-  eta.1[rep]=eta.vec[kk]
-  #Gammas.13[,,,i]=Gammas[,,,kk]
-  ADmat.1[,,rep]=ADmat[,,kk]
-  Betas.1[,,rep]=Betas[,,kk]
-  biass.1[rep,]=biass[kk,]
-  RMSEs.1[rep,]=RMSEs[kk,]
-  print(ADmat.1[,,rep])
-  print(eta.1[rep])
-  print(Betas.1[,,rep])
-  print(biass.1[rep,])
-  print(RMSEs.1[rep,])
-<<<<<<< HEAD
-  write.csv(eta.1[rep],file = paste("eta2adapt_",rep))
-  write.csv(ADmat.1[,,rep],file = paste("ADmat2adapt_",rep))
-  write.csv(Betas.1[,,rep],file = paste("Beta2adapt_",rep))
-  write.csv(theta.dist[,,kk],file = paste("theta2adapt_",rep))
-=======
-  write.csv(eta.1[rep],file = paste("eta1adapt_",rep))
-  write.csv(ADmat.1[,,rep],file = paste("ADmat1adapt_",rep))
-  write.csv(Betas.1[,,rep],file = paste("Beta1adapt_",rep))
-  write.csv(theta.dist[,,kk2],file = paste("theta1adapt_",rep))
->>>>>>> ab2deff2bfd189508f85d18112add90f30fe2497
-  
-  kk2=which.min(aics)
-  eta.12[rep]=eta.vec[kk2]
-  #Gammas.13[,,,i]=Gammas[,,,kk]
-  ADmat.12[,,rep]=ADmat[,,kk2]
-  Betas.12[,,rep]=Betas[,,kk2]
-  biass.12[rep,]=biass[kk2,]
-  RMSEs.12[rep,]=RMSEs[kk2,]
-<<<<<<< HEAD
-  write.csv(eta.12[rep],file = paste("eta2adaptAIC_",rep))
-  write.csv(ADmat.12[,,rep],file = paste("ADmat2adaptAIC_",rep))
-  write.csv(Betas.12[,,rep],file = paste("Beta2adaptAIC_",rep))
-  write.csv(theta.dist[,,kk2],file = paste("theta2adaptAIC_",rep))
-=======
-  print(ADmat.12[,,rep])
-  print(eta.12[rep])
-  print(Betas.12[,,rep])
-  print(biass.12[rep,])
-  print(RMSEs.12[rep,])
-  write.csv(eta.12[rep],file = paste("eta1adaptAIC_",rep))
-  write.csv(ADmat.12[,,rep],file = paste("ADmat1adaptAIC_",rep))
-  write.csv(Betas.12[,,rep],file = paste("Beta1adaptAIC_",rep))
-  write.csv(theta.dist[,,kk2],file = paste("theta1adaptAIC_",rep))
->>>>>>> ab2deff2bfd189508f85d18112add90f30fe2497
-}
+     resp=responses[((rep-1)*N+1):((rep-1)*N+N1+N2+N3),]
+     r=2
+     m=2
+     lam=1
+    #lam.vec=c(0.5,1,2)
+       #eta.vec=seq(18,45,3)
+       eta.vec=seq(1,46,3)
+       aics=rep(0,length(eta.vec))
+       bics=rep(0,length(eta.vec))
+       ADmat=array(double(J*3*length(eta.vec)),dim = c(J,3,length(eta.vec)))
+       #Gammas=array(double(2*J*m*length(eta.vec)),dim = c(2,2,J,length(eta.vec)))
+         Betas=array(double(J*2*length(eta.vec)),dim = c(J,2,length(eta.vec)))
+         biass=matrix(0,length(eta.vec),3)
+         RMSEs=matrix(0,length(eta.vec),3)
+         theta.dist=array(double(2*9*length(eta.vec)),dim=c(9,2,length(eta.vec)))
+         
+           for (k in 1:length(eta.vec))
+             {
+                 eta=eta.vec[k]
+                 ptm <- proc.time()
+                 sim=ipest1(resp,m,r,eta,lam,eps =1e-3,max.tol=1e-7,NonUniform=F,gra00=gra00,grd00=grd00,grbeta00=grbeta00,mu100=mu100,mu200=mu200,mu300=mu300,Sig100=Sig100,Sig200=Sig200,Sig300=Sig300)
+                 print(proc.time() - ptm)
+                 aics[k]=sim$aic
+                 bics[k]=sim$bic
+                 #Gammas[,,,k]=sim$Gamma
+                   ADmat[,,k]=sim$est
+                   Betas[,,k]=sim$Beta
+                   biass[k,]=sim$bias
+                   RMSEs[k,]=sim$RMSE
+                   theta.dist[,,k]=rbind(sim$mean1,sim$mean2,sim$mean3,sim$Corr1,sim$Corr2,sim$Corr3)
+                 }
+         
+           kk=which.min(bics)
+           eta.1[rep]=eta.vec[kk]
+           #Gammas.13[,,,i]=Gammas[,,,kk]
+             ADmat.1[,,rep]=ADmat[,,kk]
+             Betas.1[,,rep]=Betas[,,kk]
+             biass.1[rep,]=biass[kk,]
+             RMSEs.1[rep,]=RMSEs[kk,]
+             print(ADmat.1[,,rep])
+             print(eta.1[rep])
+             print(Betas.1[,,rep])
+             print(biass.1[rep,])
+             print(RMSEs.1[rep,])
+             write.csv(eta.1[rep],file = paste("eta2adapt_",rep))
+             write.csv(ADmat.1[,,rep],file = paste("ADmat2adapt_",rep))
+             write.csv(Betas.1[,,rep],file = paste("Beta2adapt_",rep))
+             write.csv(theta.dist[,,kk],file = paste("theta2adapt_",rep))
+             
+               kk2=which.min(aics)
+               eta.12[rep]=eta.vec[kk2]
+               #Gammas.13[,,,i]=Gammas[,,,kk]
+                 ADmat.12[,,rep]=ADmat[,,kk2]
+                 Betas.12[,,rep]=Betas[,,kk2]
+                 biass.12[rep,]=biass[kk2,]
+                 RMSEs.12[rep,]=RMSEs[kk2,]
+                 write.csv(eta.12[rep],file = paste("eta2adaptAIC_",rep))
+                 write.csv(ADmat.12[,,rep],file = paste("ADmat2adaptAIC_",rep))
+                 write.csv(Betas.12[,,rep],file = paste("Beta2adaptAIC_",rep))
+                 write.csv(theta.dist[,,kk2],file = paste("theta2adaptAIC_",rep))
+               }
