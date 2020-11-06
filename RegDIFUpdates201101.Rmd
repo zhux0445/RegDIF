@@ -72,8 +72,5 @@ The power of results selected by AIC was much better than those of BIC and GIC, 
 
 3. Simulate traits with lower correlation (Cor($\theta_1$,$\theta_2$) = 0.85 -> Cor($\theta_1$,$\theta_2$)=0.25) 
 
-Regular Newton's method (fisher scoring) optimization in the re-estimation step fails to converge from the regularized parameter estimates in most replications. In those cases, the first derivatives of the log likelihood were relatively large at the first iteration. Then the Newton direction $d^{(t)}$ solving from $\bigtriangledown^2logMd^{(t)}=-\bigtriangledown logM$ would fluctuate in a big magnitude in the following iterations. Using Newton's method with step size selection by the Bisection algorithm should solve the problem. 
-
-
 
 

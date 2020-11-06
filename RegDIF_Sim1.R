@@ -624,10 +624,6 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=F,gra00=gra00,
       sparsity[j,rr]=ifelse(grbeta[j,rr]==0,0,1)
     }
   }
-  gra=gra00
-  grd=grd00
-  grbeta=grbeta00*  sparsity
-  
   Pstar <- Qstar <-Pstar1 <- Qstar1 <-Pstar2 <- Qstar2 <-Pstar3 <- Qstar3 <- matrix(double(G*(m-1)),G,m-1)
   P<-P1<-P2<-P3<- matrix(double(G*m),G,m)
   df.a <- df.d  <- df.gamma <- df.beta <- df.Sig <- 1
@@ -1506,14 +1502,13 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=F,gra00=gra00,
     }
   }
   
-  #BIC=-2*sum(lh)+l0norm*log(N)
-  AIC=-2*sum(lh)+l0norm*2
+  BIC=-2*sum(lh)+l0norm*log(N)
+
   Bias=c(colSums(gra-Amat1)/10,colMeans(grd-Dmat1))
   RMSE=c(sqrt(colSums((gra-Amat1)^2)/10),sqrt(colMeans((grd-Dmat1)^2)))
   
-  #return(list(est=cbind(gra,grd),Beta=grbeta,iter=iter,bic=BIC,bias=Bias,RMSE=RMSE,mean1=Mu.gp1,mean2=Mu.gp2,mean3=Mu.gp3,Corr1=Sig.gp1,Corr2=Sig.gp2,Corr3=Sig.gp3))
-  return(list(est=cbind(gra,grd),Beta=grbeta,iter=iter,aic=AIC,bias=Bias,RMSE=RMSE,mean1=Mu.gp1,mean2=Mu.gp2,mean3=Mu.gp3,Corr1=Sig.gp1,Corr2=Sig.gp2,Corr3=Sig.gp3))
-  }
+  return(list(est=cbind(gra,grd),Beta=grbeta,iter=iter,bic=BIC,bias=Bias,RMSE=RMSE,mean1=Mu.gp1,mean2=Mu.gp2,mean3=Mu.gp3,Corr1=Sig.gp1,Corr2=Sig.gp2,Corr3=Sig.gp3))
+}
 #end of function
 
 ######################################################
@@ -2162,9 +2157,8 @@ for (rep in 1:reps){
   resp=responses[((rep-1)*N+1):((rep-1)*N+N1+N2+N3),]
   r=2
   m=2
-  eta.vec=seq(5,35,2)
-  aics=rep(0,length(eta.vec))
-  #bics=rep(0,length(eta.vec))
+  eta.vec=seq(5,26,3)
+  bics=rep(0,length(eta.vec))
   ADmat=array(double(J*3*length(eta.vec)),dim = c(J,3,length(eta.vec)))
   #Gammas=array(double(2*J*m*length(eta.vec)),dim = c(2,2,J,length(eta.vec)))
   Betas=array(double(J*2*length(eta.vec)),dim = c(J,2,length(eta.vec)))
@@ -2179,8 +2173,7 @@ for (rep in 1:reps){
     ptm <- proc.time()
     sim=ipest1(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=F,gra00=gra00,grd00=grd00,grbeta00=grbeta00,mu100=mu100,mu200=mu200,mu300=mu300,Sig100=Sig100,Sig200=Sig200,Sig300=Sig300)
     print(proc.time() - ptm)
-    #bics[k]=sim$bic
-    aics[k]=sim$aic
+    bics[k]=sim$bic
     #Gammas[,,,k]=sim$Gamma
     ADmat[,,k]=sim$est
     Betas[,,k]=sim$Beta
@@ -2189,8 +2182,7 @@ for (rep in 1:reps){
     theta.dist[,,k]=rbind(sim$mean1,sim$mean2,sim$mean3,sim$Corr1,sim$Corr2,sim$Corr3)
   }
   
-  #kk=which.min(bics)
-  kk=which.min(aics)
+  kk=which.min(bics)
   eta.1[rep]=eta.vec[kk]
   #Gammas.13[,,,i]=Gammas[,,,kk]
   ADmat.1[,,rep]=ADmat[,,kk]
@@ -2202,10 +2194,10 @@ for (rep in 1:reps){
   print(Betas.1[,,rep])
   print(biass.1[rep,])
   print(RMSEs.1[rep,])
-  write.csv(eta.1[rep],file = paste("eta1AIC_",rep))
-  write.csv(ADmat.1[,,rep],file = paste("ADmat1AIC_",rep))
-  write.csv(Betas.1[,,rep],file = paste("Beta1AIC_",rep))
-  write.csv(theta.dist[,,kk],file = paste("theta1AIC_",rep))
+  write.csv(eta.1[rep],file = paste("eta1_",rep))
+  write.csv(ADmat.1[,,rep],file = paste("ADmat1_",rep))
+  write.csv(Betas.1[,,rep],file = paste("Beta1_",rep))
+  write.csv(theta.dist[,,kk],file = paste("theta1_",rep))
 }
 
 sparsity.t=array(double(J*2*reps),dim = c(J,2,reps))

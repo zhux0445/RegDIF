@@ -1246,19 +1246,11 @@ Results of 50 Replications
 
 $\emph Table \ 19. \ Type \ I \ error \ and \ Power \ of \ regularization \ method$
 
-Lasso
-
 Group | Omnibus DIF| Group with DIF=0.5| Group with DIF=1| 
 ------|------|------|------|
 Power| 0.625 | 0.14 | 0.625 |
 Type I| 0.0314 | 0.0171 | 0.0185 |
 
-Adaptive Lasso
-
-Group | Omnibus DIF| Group with DIF=0.5| Group with DIF=1| 
-------|------|------|------|
-Power| 0.675 | 0.090 | 0.675 |
-Type I| 0.00286 | 0.00286 | 0 |
 
 $\emph Table \ 20. \ Type \ I \ error \ and \ Power \ of \ mirt \ LRT$
 
@@ -1314,13 +1306,6 @@ Group | Omnibus DIF| Group with DIF=0.5| Group with DIF=1|
 ------|------|------|------|
 Power| 0.383 | 0.0086 | 0.3836 |
 Type I| 0 | 0 | 0 |
-
-Adaptive LASSO (selected by AIC)
-
-Group | Omnibus DIF| Group with DIF=0.5| Group with DIF=1| 
-------|------|------|------|
-Power| 0.852 | 0.258 | 0.847 |
-Type I| 0.040 | 0.030 | 0.023 |
 
 
 

@@ -8,11 +8,9 @@ library(dmutate)
 library(Rcpp)
 library(RcppParallel)
 sourceCpp("/Users/ruoyizhu/Documents/GitHub/mirt/matrix.cpp")
-sourceCpp("/Users/zhux0445/Documents/GitHub/RegDIF/matrix.cpp")
-setwd('/Users/zhux0445/Documents/GitHub/RegDIF_SimData')
 setwd('/Users/ruoyizhu/Documents/GitHub/RegDIF_SimData')
-params=read.csv("Para4.csv",row.names = 1)
-responses=read.csv("RESP6.csv",row.names = 1)
+params=read.csv("Para3.csv",row.names = 1)
+responses=read.csv("RESP5.csv",row.names = 1)
 
 soft=function(s, tau) {
   val=sign(s)*max(c(abs(s) - tau,0))
@@ -1264,15 +1262,14 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=T,gra00=gra00,
       }
     }
   }
-  #BIC=-2*sum(lh)+l0norm*log(N)
-  AIC=-2*sum(lh)+l0norm*2
+  
+  BIC=-2*sum(lh)+l0norm*log(N)
   
   Bias=c(colSums(gra-Amat1)/10,colMeans(grd-Dmat1))
   RMSE=c(sqrt(colSums((gra-Amat1)^2)/10),sqrt(colMeans((grd-Dmat1)^2)))
   
   #output esimates and number of iterations
-  #return(list(est=cbind(gra,grd),Gamma=grgamma,mean1=Mu.gp1,mean2=Mu.gp2,mean3=Mu.gp3,Corr1=Sig.gp1,Corr2=Sig.gp2,Corr3=Sig.gp3,iter=iter,bic=BIC,bias=Bias,RMSE=RMSE))
-  return(list(est=cbind(gra,grd),Gamma=grgamma,mean1=Mu.gp1,mean2=Mu.gp2,mean3=Mu.gp3,Corr1=Sig.gp1,Corr2=Sig.gp2,Corr3=Sig.gp3,iter=iter,aic=AIC,bias=Bias,RMSE=RMSE))
+  return(list(est=cbind(gra,grd),Gamma=grgamma,mean1=Mu.gp1,mean2=Mu.gp2,mean3=Mu.gp3,Corr1=Sig.gp1,Corr2=Sig.gp2,Corr3=Sig.gp3,iter=iter,bic=BIC,bias=Bias,RMSE=RMSE))
 }
 #end of function
 
@@ -1291,7 +1288,7 @@ ADmat.5=array(double(J*3*reps),dim = c(J,3,reps)) #a has 2 columns, d has 1 colu
 biass.5=matrix(0,reps,3)
 RMSEs.5=matrix(0,reps,3)
 
-StartVals=read.csv("StartingValues6.csv",row.names = 1)
+StartVals=read.csv("StartingValues5.csv",row.names = 1)
 gra00=as.matrix(StartVals[,1:2])
 rownames(gra00) <- c()
 grd00=matrix(StartVals[,3],20,1)
@@ -1309,27 +1306,16 @@ Sig100=matrix(c(1,0.8512375,0.8512375,1),2,2)
 Sig200=matrix(c(1.19,1.05,1.05,1.3),2,2)
 Sig300=matrix(c(0.91,0.87,0.87,1.15),2,2)
 
-# sim6&8
-mu100=c(0,0)
-mu200=c(-0.01446951,0.02860467)
-mu300=c(-0.01246268,-0.00426051)
-Sig100=matrix(c(1,0.8452613,0.8452613,1),2,2)
-Sig200=matrix(c(1.179328,1.065364,1.065364,1.179328),2,2)
-Sig300=matrix(c(0.9202015,0.8908855,0.8908855,0.9202015),2,2)
-
-
 for (rep in 1:reps){
   resp=responses[((rep-1)*N+1):((rep-1)*N+N1+N2+N3),]
   r=2
   m=2
   eta.vec=seq(15,20,1)
-  #bics=rep(0,length(eta.vec))
-  aics=rep(0,length(eta.vec))
+  bics=rep(0,length(eta.vec))
   ADmat=array(double(J*3*length(eta.vec)),dim = c(J,3,length(eta.vec)))
   Gammas=array(double(2*J*m*length(eta.vec)),dim = c(2,2,J,length(eta.vec)))
   biass=matrix(0,length(eta.vec),3)
   RMSEs=matrix(0,length(eta.vec),3)
-  theta.dist=array(double(2*9*length(eta.vec)),dim=c(9,2,length(eta.vec)))
   
   for (k in 1:length(eta.vec))
   {
@@ -1337,18 +1323,15 @@ for (rep in 1:reps){
     ptm <- proc.time()
     sim=ipest1(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=T,gra00=gra00,grd00=grd00,grgamma00=grgamma00,mu100=mu100,mu200=mu200,mu300=mu300,Sig100=Sig100,Sig200=Sig200,Sig300=Sig300)
     print(proc.time() - ptm)
-    #bics[k]=sim$bic
-    aics[k]=sim$aic
+    bics[k]=sim$bic
     #Gammas[,,,k]=sim$Gamma
     ADmat[,,k]=sim$est
     Gammas[,,,k]=sim$Gamma
     biass[k,]=sim$bias
     RMSEs[k,]=sim$RMSE
-    theta.dist[,,k]=rbind(sim$mean1,sim$mean2,sim$mean3,sim$Corr1,sim$Corr2,sim$Corr3)
   }
   
-  #kk=which.min(bics)
-  kk=which.min(aics)
+  kk=which.min(bics)
   eta.5[rep]=eta.vec[kk]
   Gammas.5[,,,rep]=Gammas[,,,kk]
   ADmat.5[,,rep]=ADmat[,,kk]
@@ -1359,10 +1342,9 @@ for (rep in 1:reps){
   print(Gammas.5[,,,rep])
   print(biass.5[rep,])
   print(RMSEs.5[rep,])
-  write.csv(eta.5[rep],file = paste("eta6AIC_",rep))
-  write.csv(ADmat.5[,,rep],file = paste("ADmat6AIC_",rep))
-  write.csv(rbind(t(rbind(Gammas.5[c(1,2),1,3:11,rep])),t(rbind(Gammas.5[c(1,2),2,12:20,rep]))),file = paste("Gamma6AIC_",rep))
-  write.csv(theta.dist[,,kk],file = paste("theta6AIC_",rep))
+  write.csv(eta.5[rep],file = paste("eta5_",rep))
+  write.csv(ADmat.5[,,rep],file = paste("ADmat5_",rep))
+  write.csv(rbind(t(rbind(Gammas.5[c(1,2),1,3:11,rep])),t(rbind(Gammas.5[c(1,2),2,12:20,rep]))),file = paste("Gamma5_",rep))
 }
 
 
