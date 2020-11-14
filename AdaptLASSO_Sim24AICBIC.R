@@ -8,15 +8,16 @@ library(mvtnorm)
 library(graphics)
 library(dmutate)
 setwd('/Users/zhux0445/Documents/GitHub/RegDIF_SimData')
+setwd('/Users/ruoyizhu/Documents/GitHub/RegDIF_SimData')
 params=read.csv("Para2.csv",row.names = 1)
-responses=read.csv("RESP2.csv",row.names = 1)
+responses=read.csv("RESP4.csv",row.names = 1)
 soft=function(s, tau) {
   val=sign(s)*max(c(abs(s) - tau,0))
   return(val) }
 # Dataset #4 (2 Non-uniform DIF items per scale)
 J=20
 
-N1=N2=N3=500
+N1=N2=N3=1000
 Group=c(rep('G1', N1), rep('G2', N2), rep('G3', N3))
 Group01=c(rep('G1', N1), rep('G2', N2))
 Group02=c(rep('G1', N1), rep('G3', N3))
@@ -1520,7 +1521,7 @@ Betas.12=array(double(J*2*reps),dim = c(J,2,reps))
 ADmat.12=array(double(J*3*reps),dim = c(J,3,reps)) #a has 2 columns, d has 1 column
 biass.12=matrix(0,reps,3)
 RMSEs.12=matrix(0,reps,3)
-for (rep in 2:reps){
+for (rep in 7:reps){
 
   resp=responses[((rep-1)*N+1):((rep-1)*N+N1+N2+N3),]
   r=2
@@ -1566,10 +1567,10 @@ for (rep in 2:reps){
   print(Betas.1[,,rep])
   print(biass.1[rep,])
   print(RMSEs.1[rep,])
-  write.csv(eta.1[rep],file = paste("eta2adapt_",rep))
-  write.csv(ADmat.1[,,rep],file = paste("ADmat2adapt_",rep))
-  write.csv(Betas.1[,,rep],file = paste("Beta2adapt_",rep))
-  write.csv(theta.dist[,,kk],file = paste("theta2adapt_",rep))
+  write.csv(eta.1[rep],file = paste("eta4adapt_",rep))
+  write.csv(ADmat.1[,,rep],file = paste("ADmat4adapt_",rep))
+  write.csv(Betas.1[,,rep],file = paste("Beta4adapt_",rep))
+  write.csv(theta.dist[,,kk],file = paste("theta4adapt_",rep))
   
   kk2=which.min(aics)
   eta.12[rep]=eta.vec[kk2]
@@ -1578,9 +1579,9 @@ for (rep in 2:reps){
   Betas.12[,,rep]=Betas[,,kk2]
   biass.12[rep,]=biass[kk2,]
   RMSEs.12[rep,]=RMSEs[kk2,]
-  write.csv(eta.12[rep],file = paste("eta2adaptAIC_",rep))
-  write.csv(ADmat.12[,,rep],file = paste("ADmat2adaptAIC_",rep))
-  write.csv(Betas.12[,,rep],file = paste("Beta2adaptAIC_",rep))
-  write.csv(theta.dist[,,kk2],file = paste("theta2adaptAIC_",rep))
+  write.csv(eta.12[rep],file = paste("eta4adaptAIC_",rep))
+  write.csv(ADmat.12[,,rep],file = paste("ADmat4adaptAIC_",rep))
+  write.csv(Betas.12[,,rep],file = paste("Beta4adaptAIC_",rep))
+  write.csv(theta.dist[,,kk2],file = paste("theta4adaptAIC_",rep))
 }
 
