@@ -10,8 +10,8 @@ library(RcppArmadillo)
 library(RcppEigen)
 sourceCpp("/Users/zhux0445/Documents/GitHub/RegDIF/matrix.cpp")
 setwd('/Users/zhux0445/Documents/GitHub/RegDIF_SimData')
-params=read.csv("Para4.csv",row.names = 1)
-responses=read.csv("RESP6.csv",row.names = 1)
+params=read.csv("Para3.csv",row.names = 1)
+responses=read.csv("RESP5.csv",row.names = 1)
 
 soft=function(s, tau) {
   val=sign(s)*max(c(abs(s) - tau,0))
@@ -1028,7 +1028,7 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=T,gra00=gra00,
     }
   }
   
-  #BIC=-2*sum(lh)+l0norm*log(N)
+  BIC=-2*sum(lh)+l0norm*log(N)
   AIC=-2*sum(lh)+l0norm*2
   
   Bias=c(colSums(gra-Amat1)/10,colMeans(grd-Dmat1))
@@ -1036,7 +1036,7 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=T,gra00=gra00,
   
   #output esimates and number of iterations
   #return(list(est=cbind(gra,grd),Gamma=grgamma,mean1=Mu.gp1,mean2=Mu.gp2,mean3=Mu.gp3,Corr1=Sig.gp1,Corr2=Sig.gp2,Corr3=Sig.gp3,iter=iter,bic=BIC,bias=Bias,RMSE=RMSE))
-  return(list(est=cbind(gra,grd),Gamma=grgamma,mean1=Mu.gp1,mean2=Mu.gp2,mean3=Mu.gp3,Corr1=Sig.gp1,Corr2=Sig.gp2,Corr3=Sig.gp3,iter=iter,aic=AIC,bias=Bias,RMSE=RMSE))
+  return(list(est=cbind(gra,grd),Gamma=grgamma,mean1=Mu.gp1,mean2=Mu.gp2,mean3=Mu.gp3,Corr1=Sig.gp1,Corr2=Sig.gp2,Corr3=Sig.gp3,iter=iter,aic=AIC,bic=BIC,bias=Bias,RMSE=RMSE))
 }
 #end of function
 
@@ -1054,6 +1054,11 @@ Gammas.5=array(double(2*J*m*50),dim = c(2,2,J,50))
 ADmat.5=array(double(J*3*reps),dim = c(J,3,reps)) #a has 2 columns, d has 1 column
 biass.5=matrix(0,reps,3)
 RMSEs.5=matrix(0,reps,3)
+eta.52=numeric(reps)
+Gammas.52=array(double(2*J*m*50),dim = c(2,2,J,50))
+ADmat.52=array(double(J*3*reps),dim = c(J,3,reps)) #a has 2 columns, d has 1 column
+biass.52=matrix(0,reps,3)
+RMSEs.52=matrix(0,reps,3)
 
 StartVals=read.csv("StartingValues6.csv",row.names = 1)
 gra00=as.matrix(StartVals[,1:2])
@@ -1077,8 +1082,8 @@ for (rep in 1:50){
   resp=responses[((rep-1)*N+1):((rep-1)*N+N1+N2+N3),]
   r=2
   m=2
-  eta.vec=seq(20,54,2)
-  #bics=rep(0,length(eta.vec))
+  eta.vec=seq(1,31,2)
+  bics=rep(0,length(eta.vec))
   aics=rep(0,length(eta.vec))
   ADmat=array(double(J*3*length(eta.vec)),dim = c(J,3,length(eta.vec)))
   Gammas=array(double(2*J*m*length(eta.vec)),dim = c(2,2,J,length(eta.vec)))
@@ -1093,7 +1098,7 @@ for (rep in 1:50){
     ptm <- proc.time()
     sim=ipest1(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=T,gra00=gra00,grd00=grd00,grgamma00=grgamma00,mu100=mu100,mu200=mu200,mu300=mu300,Sig100=Sig100,Sig200=Sig200,Sig300=Sig300)
     print(proc.time() - ptm)
-    #bics[k]=sim$bic
+    bics[k]=sim$bic
     aics[k]=sim$aic
     #Gammas[,,,k]=sim$Gamma
     ADmat[,,k]=sim$est
@@ -1115,10 +1120,26 @@ for (rep in 1:50){
   print(Gammas.5[,,,rep])
   print(biass.5[rep,])
   print(RMSEs.5[rep,])
-  write.csv(eta.5[rep],file = paste("eta6AIC_",rep))
-  write.csv(ADmat.5[,,rep],file = paste("ADmat6AIC_",rep))
-  write.csv(rbind(t(rbind(Gammas.5[c(1,2),1,3:11,rep])),t(rbind(Gammas.5[c(1,2),2,12:20,rep]))),file = paste("Gamma6AIC_",rep))
-  write.csv(theta.dist[,,kk],file = paste("theta6AIC_",rep))
+  write.csv(eta.5[rep],file = paste("eta5EMMAIC_",rep))
+  write.csv(ADmat.5[,,rep],file = paste("ADmat5EMMAIC_",rep))
+  write.csv(rbind(t(rbind(Gammas.5[c(1,2),1,3:11,rep])),t(rbind(Gammas.5[c(1,2),2,12:20,rep]))),file = paste("Gamma5EMMAIC_",rep))
+  write.csv(theta.dist[,,kk],file = paste("theta5EMMAIC_",rep))
+  
+  kk2=which.min(bics)
+  eta.52[rep]=eta.vec[kk2]
+  Gammas.52[,,,rep]=Gammas[,,,kk2]
+  ADmat.52[,,rep]=ADmat[,,kk2]
+  biass.52[rep,]=biass[kk2,]
+  RMSEs.52[rep,]=RMSEs[kk2,]
+  print(ADmat.52[,,rep])
+  print(eta.52[rep])
+  print(Gammas.52[,,,rep])
+  print(biass.52[rep,])
+  print(RMSEs.52[rep,])
+  write.csv(eta.52[rep],file = paste("eta5EMMBIC_",rep))
+  write.csv(ADmat.52[,,rep],file = paste("ADmat5EMMBIC_",rep))
+  write.csv(rbind(t(rbind(Gammas.52[c(1,2),1,3:11,rep])),t(rbind(Gammas.52[c(1,2),2,12:20,rep]))),file = paste("Gamma5EMMBIC_",rep))
+  write.csv(theta.dist[,,kk2],file = paste("theta5EMMBIC_",rep))
 }
 
 
