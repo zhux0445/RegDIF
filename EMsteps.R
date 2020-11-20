@@ -74,7 +74,7 @@ rgk.est=function(j,Xijk,LiA,y,N.vec){
   return(rbind(rgk,rgk.allgrp))
 }
 
-M_step=function(j,grd,gra,grgamma,grbeta,max.tol,X,y.allgroup,y,G){
+M_step=function(j,grd,gra,grgamma,grbeta,max.tol,X,y.allgroup,y,G,eta){
   d <- grd[j,] 
   a <- gra[j,]
   gam=grgamma[,,j]
@@ -113,8 +113,8 @@ M_step=function(j,grd,gra,grgamma,grbeta,max.tol,X,y.allgroup,y,G){
     for (yy in 1:y){
       Asco=Asco+(apply(rgk[(yy*G+1):(yy*G+G),]/P[,,yy]*PQdif[,,yy],1,sum))%*%(X%*%ifelse(a==0,0,1))
     }
+    Gamsco =numeric(sum(ifelse(gam==0,0,1)))
     if (sum(ifelse(gam==0,0,1))>0){
-      Gamsco =numeric(sum(ifelse(gam==0,0,1)))
       Gamsco.all=gam
       for (yy in 2:y){
         Gamsco.all[yy-1,]=(apply(rgk[(yy*G+1):(yy*G+G),]/P[,,yy]*PQdif[,,yy],1,sum))%*%X
@@ -123,8 +123,8 @@ M_step=function(j,grd,gra,grgamma,grbeta,max.tol,X,y.allgroup,y,G){
     } else {
       Gamsco=as.null(Gamsco)
     }
+    Betsco =numeric(sum(ifelse(bet==0,0,1)))
     if (sum(ifelse(bet==0,0,1))>0){
-      Betsco =numeric(sum(ifelse(bet==0,0,1)))
       Betsco.all=bet
       if (m==2){
         for (yy in 2:y){
@@ -218,3 +218,11 @@ M_step=function(j,grd,gra,grgamma,grbeta,max.tol,X,y.allgroup,y,G){
   #end of M step loop
 }
 
+
+sumoverk=function(G,rgky,aj,dj,gamjy,X){
+  sumoverky=numeric(G)
+  for(g in 1:G){
+    sumoverky[g]=rgky[g,]%*%log(-diff(c(1,1/(1+exp(-(dj+rep(aj%*%X[g,])+rep(gamjy%*%X[g,])))),0)))
+  }
+  return(sumoverky)
+}
