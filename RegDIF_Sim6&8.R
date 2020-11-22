@@ -8,10 +8,10 @@ library(Rcpp)
 library(RcppParallel)
 library(RcppArmadillo)
 library(RcppEigen)
-sourceCpp("/Users/zhux0445/Documents/GitHub/RegDIF/matrix.cpp")
-setwd('/Users/zhux0445/Documents/GitHub/RegDIF_SimData')
+sourceCpp("/hyzhu27/Documents/GitHub/RegDIF/matrix.cpp")
+setwd('/hyzhu27/Documents/GitHub/RegDIF_SimData')
 params=read.csv("Para3.csv",row.names = 1)
-responses=read.csv("RESP5.csv",row.names = 1)
+responses=read.csv("RESP7.csv",row.names = 1)
 
 soft=function(s, tau) {
   val=sign(s)*max(c(abs(s) - tau,0))
@@ -19,7 +19,7 @@ soft=function(s, tau) {
 # Dataset #4 (2 Non-uniform DIF items per scale)
 J=20
 
-N1=N2=N3=500 
+N1=N2=N3=1000 
 Group=c(rep('G1', N1), rep('G2', N2), rep('G3', N3))
 N=N1+N2+N3
 
@@ -1060,7 +1060,7 @@ ADmat.52=array(double(J*3*reps),dim = c(J,3,reps)) #a has 2 columns, d has 1 col
 biass.52=matrix(0,reps,3)
 RMSEs.52=matrix(0,reps,3)
 
-StartVals=read.csv("StartingValues6.csv",row.names = 1)
+StartVals=read.csv("StartingValues5.csv",row.names = 1)
 gra00=as.matrix(StartVals[,1:2])
 rownames(gra00) <- c()
 grd00=matrix(StartVals[,3],20,1)
@@ -1120,10 +1120,10 @@ for (rep in 1:50){
   print(Gammas.5[,,,rep])
   print(biass.5[rep,])
   print(RMSEs.5[rep,])
-  write.csv(eta.5[rep],file = paste("eta5EMMAIC_",rep))
-  write.csv(ADmat.5[,,rep],file = paste("ADmat5EMMAIC_",rep))
-  write.csv(rbind(t(rbind(Gammas.5[c(1,2),1,3:11,rep])),t(rbind(Gammas.5[c(1,2),2,12:20,rep]))),file = paste("Gamma5EMMAIC_",rep))
-  write.csv(theta.dist[,,kk],file = paste("theta5EMMAIC_",rep))
+  write.csv(eta.5[rep],file = paste("eta7EMMAIC_",rep))
+  write.csv(ADmat.5[,,rep],file = paste("ADmat7EMMAIC_",rep))
+  write.csv(rbind(t(rbind(Gammas.5[c(1,2),1,3:11,rep])),t(rbind(Gammas.5[c(1,2),2,12:20,rep]))),file = paste("Gamma7EMMAIC_",rep))
+  write.csv(theta.dist[,,kk],file = paste("theta7EMMAIC_",rep))
   
   kk2=which.min(bics)
   eta.52[rep]=eta.vec[kk2]
@@ -1136,10 +1136,10 @@ for (rep in 1:50){
   print(Gammas.52[,,,rep])
   print(biass.52[rep,])
   print(RMSEs.52[rep,])
-  write.csv(eta.52[rep],file = paste("eta5EMMBIC_",rep))
-  write.csv(ADmat.52[,,rep],file = paste("ADmat5EMMBIC_",rep))
-  write.csv(rbind(t(rbind(Gammas.52[c(1,2),1,3:11,rep])),t(rbind(Gammas.52[c(1,2),2,12:20,rep]))),file = paste("Gamma5EMMBIC_",rep))
-  write.csv(theta.dist[,,kk2],file = paste("theta5EMMBIC_",rep))
+  write.csv(eta.52[rep],file = paste("eta7EMMBIC_",rep))
+  write.csv(ADmat.52[,,rep],file = paste("ADmat7EMMBIC_",rep))
+  write.csv(rbind(t(rbind(Gammas.52[c(1,2),1,3:11,rep])),t(rbind(Gammas.52[c(1,2),2,12:20,rep]))),file = paste("Gamma7EMMBIC_",rep))
+  write.csv(theta.dist[,,kk2],file = paste("theta7EMMBIC_",rep))
 }
 
 
