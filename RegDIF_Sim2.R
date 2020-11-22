@@ -276,7 +276,7 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=F,gra00=gra00,
         a <- a+add[m]
       }
       #end of M step loop
-      print(c(j,miter))
+     
       #rescale a and d
       a=a*Tau[j]
       gra[j,j] <- a
@@ -423,7 +423,7 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=F,gra00=gra00,
         #print(c(j,miter,bet))
       }
       #end of M step loop
-      print(c(j,miter,bet))
+    
       #rescale a and d
       a=a*Tau[1]
       
@@ -569,7 +569,7 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=F,gra00=gra00,
         # print(c(miter,bet))
       }
       #end of M step loop
-      print(c(j,miter,bet))
+
       #rescale a and d
       a=a*Tau[2]
       
@@ -701,7 +701,6 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=F,gra00=gra00,
           a=a+add[m]
         }
         #end of M step loop
-        print(c(j,miter))
       } else {
         #M-step loop starts for item j
         miter <- 0
@@ -841,7 +840,6 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=F,gra00=gra00,
           }
         }
         #end of M step loop
-        print(c(j,miter,bet))
       }
       
       #rescale a and d
@@ -966,7 +964,6 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=F,gra00=gra00,
           a=a+add[m]
         }
         #end of M step loop
-        print(c(j,miter))
       } else {
         miter <- 0
         add <- max.tol+1
@@ -1103,7 +1100,6 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=F,gra00=gra00,
           }
         }
         #end of M step loop
-        print(c(j,miter,bet))
       }
       
       
@@ -1119,7 +1115,6 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=F,gra00=gra00,
     df.a <- abs(aold-gra)
     df.beta <- abs(betaold-grbeta)
     iter <- iter+1
-    print(c(iter,max(df.a), max(df.d), max(df.beta)))
   }
  # if (iter=500){
 #    print("EM cycle stop at 500")
@@ -1335,6 +1330,7 @@ for (rep in 1:reps){
   Betas=array(double(J*2*length(eta.vec)),dim = c(J,2,length(eta.vec)))
   biass=matrix(0,length(eta.vec),3)
   RMSEs=matrix(0,length(eta.vec),3)
+  theta.dist=array(double(2*9*length(eta.vec)),dim=c(9,2,length(eta.vec)))
   for (k in 1:length(eta.vec))
   {
     eta=eta.vec[k]
@@ -1346,6 +1342,7 @@ for (rep in 1:reps){
     Betas[,,k]=sim$Beta
     biass[k,]=sim$bias
     RMSEs[k,]=sim$RMSE
+    theta.dist[,,k]=rbind(sim$mean1,sim$mean2,sim$mean3,sim$Corr1,sim$Corr2,sim$Corr3)
   }
   
   kk=which.min(bics)
@@ -1361,26 +1358,28 @@ for (rep in 1:reps){
   print(Betas.2[,,rep])
   print(biass.2[rep,])
   print(RMSEs.2[rep,])
-  write.csv(eta.2[rep],file = paste("eta2_",rep))
-  write.csv(ADmat.2[,,rep],file = paste("ADmat2_",rep))
-  write.csv(Betas.2[,,rep],file = paste("Beta2_",rep))
+  write.csv(eta.2[rep],file = paste("eta1EMMBIC_",rep))
+  write.csv(ADmat.2[,,rep],file = paste("ADmat1EMMBIC_",rep))
+  write.csv(Betas.2[,,rep],file = paste("Beta1EMMBIC_",rep))
+  write.csv(theta.dist[,,kk],file = paste("theta1EMMBIC_",rep))
   
   kk2=which.min(aics)
   
-  eta.22[rep]=eta.vec[kk]
+  eta.22[rep]=eta.vec[kk2]
   #Gammas.13[,,,i]=Gammas[,,,kk]
-  ADmat.22[,,rep]=ADmat[,,kk]
-  Betas.22[,,rep]=Betas[,,kk]
-  biass.22[rep,]=biass[kk,]
-  RMSEs.22[rep,]=RMSEs[kk,]
+  ADmat.22[,,rep]=ADmat[,,kk2]
+  Betas.22[,,rep]=Betas[,,kk2]
+  biass.22[rep,]=biass[kk2,]
+  RMSEs.22[rep,]=RMSEs[kk2,]
   print(ADmat.22[,,rep])
   print(eta.22[rep])
   print(Betas.22[,,rep])
   print(biass.22[rep,])
   print(RMSEs.22[rep,])
-  write.csv(eta.22[rep],file = paste("eta2_",rep))
-  write.csv(ADmat.22[,,rep],file = paste("ADmat2_",rep))
-  write.csv(Betas.22[,,rep],file = paste("Beta2_",rep))
+  write.csv(eta.22[rep],file = paste("eta1EMMAIC_",rep))
+  write.csv(ADmat.22[,,rep],file = paste("ADmat1EMMAIC_",rep))
+  write.csv(Betas.22[,,rep],file = paste("Beta1EMMAIC_",rep))
+  write.csv(theta.dist[,,kk2],file = paste("theta1EMMAIC_",rep))
 }
 
 sparsity.t=array(double(J*2*reps),dim = c(J,2,reps))
