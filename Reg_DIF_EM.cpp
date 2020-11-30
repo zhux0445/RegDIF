@@ -1,20 +1,24 @@
 #include<RcppArmadillo.h>
+#include <RcppEigen.h>
 
 using namespace arma;
 
-// [[Rcpp::depends("RcppArmadillo")]]
+// [[Rcpp::depends(RcppArmadillo, RcppEigen)]]
 
 // [[Rcpp::export]]
-double sumoverk(int G, arma::mat rgky, arma::rowvec aj, arma::rowvec dj, arma::rowvec gamjy, arma::mat X){
-  double sumoverky=0;
+arma::mat sumoverk (int G, arma::mat rgky, arma::rowvec aj, arma::rowvec dj, arma::rowvec gamjy, arma::mat X){
+  arma::mat sumoverky = zeros<mat>(1,1);
+  arma::mat logdiff = zeros<mat>(2,1);
   for (int g =0; g < G; g++ ){
-    arma::mat z(1,2,fill::zeros);
-    double z_1 = 1-1/(1+exp(-(dj+aj*X[g]+gamjy*X[g])))
-    z(1,1) = log(z1);
-    z(1,2) = log(1/(1+exp(-(dj+aj*X[g]+gamjy*X[g]))));
-    sumoverky += (rgky[g]*z);
+    logdiff = join_vert(log(1-1/(1+exp(-(dj+aj*X.row(g).t()+gamjy*X.row(g).t())))),log(1/(1+exp(-(dj+aj*X.row(g).t()+gamjy*X.row(g).t())))));
+    sumoverky += (rgky.row(g))*(logdiff);
   }
   return (sumoverky);
 }
 
-
+// [[Rcpp::export]]
+SEXP eigenMapMatMult(const Eigen::Map<Eigen::MatrixXd> A, Eigen::Map<Eigen::MatrixXd> B){
+  Eigen::MatrixXd C = A * B;
+  
+  return Rcpp::wrap(C);
+}

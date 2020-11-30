@@ -7,17 +7,19 @@
 ##### r: number of trait dimension 
 ##### y: number of examinee groups y=3
 ##### N.vec: number of examinees in each group, 
-##### vector of y, e.g. c(500,500,500)
-##### mu.list: prior mean vector for each group, 
+##### vector of y, e.g. N.vec=c(500,500,500)
+##### Mu.list: prior mean vector for each group, 
 ##### vector of r*y, e.g., the mean vector for 
 ##### three groups are (0,0), (0.1,0.02), (-0.05,0.03), 
-##### then mu.list=c(0,0,0.1,0.02,-0.05,0.03)
+##### then Mu.list=c(0,0,0.1,0.02,-0.05,0.03)
 ##### Sig.list: prior covariance matrix for each group, 
 ##### matrix of r*y by r, each r by r matrix is the 
-##### covariance matrix of each group
+##### covariance matrix of each group e.g. Sig100=matrix(c(1,0.8452613,0.8452613,1),2,2)
+#####                                      Sig200=matrix(c(1.179328,1.065364,1.065364,1.179328),2,2);Sig300=matrix(c(0.9202015,0.8908855,0.8908855,0.9202015),2,2)
+#####                                      Sig.list=rbind(Sig100,Sig200,Sig300)
 ##### gra00: starting values of a, should include the information of known loading structure
 ##### grd00: starting values of d
-##### grbeta00: starting values of beta
+##### grbeta00: starting values of beta; grbeta00=matrix(0,J,2)
 ##### grgamma00: starting values of gamma
 ##################################################                          
 ##### Outputs:
@@ -26,9 +28,10 @@
 ##### detfi: determinant of observed Fisher Information, scalar                        
 ##################################################
 
+
 #Reg_DIF <- function(resp,m,r,y,N.vec=c(500,500,500),loading.struc,eta,eps =1e-3,max.tol=1e-7,NonUniform=T,gra00=NULL,grd00=NULL,grbeta00=NULL,mu.list=NULL,Sig.list= NULL)
 
-NonUnif_Reg_DIF <- function(resp,m,r,y,N.vec,loading.struc,eta,eps =1e-3,max.tol=1e-7,gra00=NULL,grd00=NULL,grbeta00=NULL,mu.list=NULL,Sig.list= NULL)
+NonUnif_Reg_DIF <- function(resp,m,r,y,N.vec,loading.struc,eta,eps =1e-3,max.tol=1e-7,gra00=NULL,grd00=NULL,grbeta00=NULL,Mu.list=NULL,Sig.list= NULL)
 {
   #make sure the responses are coded from 1 instead of 0
   if(min(resp)==0)
@@ -188,27 +191,7 @@ NonUnif_Reg_DIF <- function(resp,m,r,y,N.vec,loading.struc,eta,eps =1e-3,max.tol
     sumoverk1=sumoverk(G=G,rgky=rgk[(G+1):(2*G),],aj=gra[j,],dj=grd[j,],gamjy=c(0,0),X=X)#G,rgky,aj,dj,gamjy,X
     sumoverk2=sumoverk(G=G,rgky=rgk[(2*G+1):(3*G),],aj=gra[j,],dj=grd[j,],gamjy=grgamma[1,,j],X=X)
     sumoverk3=sumoverk(G=G,rgky=rgk[(3*G+1):(4*G),],aj=gra[j,],dj=grd[j,],gamjy=grgamma[2,,j],X=X)
-    temp=sum(sumoverk1)+sum(sumoverk2)+sum(sumoverk3)#-eta*norm(as.matrix(x2), type = "1")##sum over g
-    lh[j]=temp
-  }
-  for (j in 1:J){
-    rgk=rgk.est(j,Xijk,LiA,y,N.vec)
-    rgk1=rgk[(G+1):(2*G),]
-    rgk2=rgk[(2*G+1):(3*G),]
-    rgk3=rgk[(3*G+1):(4*G),]
-    sumoverk1=numeric(G)
-    for(g in 1:G){
-      sumoverk1[g]=rgk1[g,]%*%log(-diff(c(1,1/(1+exp(-(grd[j,]+rep(gra[j,]%*%X[g,])))),0)))
-    }
-    sumoverk2=numeric(G)
-    for(g in 1:G){
-      sumoverk2[g]=rgk2[g,]%*%log(-diff(c(1,1/(1+exp(-(grd[j,]+rep(gra[j,]%*%X[g,])+rep(grgamma[1,,j]%*%X[g,])))),0)))
-    }
-    sumoverk3=numeric(G)
-    for(g in 1:G){
-      sumoverk3[g]=rgk3[g,]%*%log(-diff(c(1,1/(1+exp(-(grd[j,]+rep(gra[j,]%*%X[g,])+rep(grgamma[2,,j]%*%X[g,])))),0)))
-    }
-    temp=sum(sumoverk1)+sum(sumoverk2)+sum(sumoverk3)#-eta*norm(as.matrix(x2), type = "1")##sum over g
+    temp=sumoverk1+sumoverk2+sumoverk3#-eta*norm(as.matrix(x2), type = "1")##sum over g
     lh[j]=temp
   }
   l0norm=0
