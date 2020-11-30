@@ -11,7 +11,7 @@
 ##### Mu.list: prior mean vector for each group, 
 ##### vector of r*y, e.g., the mean vector for 
 ##### three groups are (0,0), (0.1,0.02), (-0.05,0.03), 
-##### then Mu.list=c(0,0,0.1,0.02,-0.05,0.03)
+##### then Mu.list=c(0,0,0.1,0.02,-0.05,0.03);Mu.list=c(mu100,mu200,mu300)
 ##### Sig.list: prior covariance matrix for each group, 
 ##### matrix of r*y by r, each r by r matrix is the 
 ##### covariance matrix of each group e.g. Sig100=matrix(c(1,0.8452613,0.8452613,1),2,2)
@@ -31,7 +31,7 @@
 
 #Reg_DIF <- function(resp,m,r,y,N.vec=c(500,500,500),loading.struc,eta,eps =1e-3,max.tol=1e-7,NonUniform=T,gra00=NULL,grd00=NULL,grbeta00=NULL,mu.list=NULL,Sig.list= NULL)
 
-NonUnif_Reg_DIF <- function(resp,m,r,y,N.vec,loading.struc,eta,eps =1e-3,max.tol=1e-7,gra00=NULL,grd00=NULL,grbeta00=NULL,Mu.list=NULL,Sig.list= NULL)
+NonUnif_Reg_DIF <- function(resp,m,r,y,N.vec,eta,eps =1e-3,max.tol=1e-7,gra00=NULL,grd00=NULL,grbeta00=NULL,grgamma00=NULL,Mu.list=NULL,Sig.list= NULL)
 {
   #make sure the responses are coded from 1 instead of 0
   if(min(resp)==0)
@@ -61,8 +61,8 @@ NonUnif_Reg_DIF <- function(resp,m,r,y,N.vec,loading.struc,eta,eps =1e-3,max.tol
   grd=grd00
   grbeta=grbeta00 #matrix(0,J,2)
   grgamma=grgamma00 #array(0,dim=c((y-1),r,J))
-  Sig.list=Sig.list #rbind(Sig100,Sig200,Sig300)
-  Mu.list=Mu.list #c(mu100,mu200,mu300)
+  Sig.est=Sig.list #rbind(Sig100,Sig200,Sig300)
+  Mu.est=Mu.list #c(mu100,mu200,mu300)
 
   df.a <- df.d  <- df.gamma <- df.beta <- 1
   iter <- 0
@@ -76,7 +76,7 @@ NonUnif_Reg_DIF <- function(resp,m,r,y,N.vec,loading.struc,eta,eps =1e-3,max.tol
     betaold=grbeta
     
     # E STEP
-    LiA=E_step1(N.vec=N.vec,X=X,y=y,y.allgroup=y.allgroup,Mu.list=Mu.list,Sig.list=Sig.list,gra=gra, grd=grd, grbeta=grbeta, grgamma=grgamma)
+    LiA=E_step1(N.vec=N.vec,X=X,y=y,y.allgroup=y.allgroup,Mu.list=Mu.est,Sig.list=Sig.est,gra=gra, grd=grd, grbeta=grbeta, grgamma=grgamma)
     ng=ng.est(LiA=LiA,y=y,N.vec=N.vec)
     #update mu hat and Sigma hat
     Mu.est=numeric(r*y)
@@ -84,7 +84,7 @@ NonUnif_Reg_DIF <- function(resp,m,r,y,N.vec,loading.struc,eta,eps =1e-3,max.tol
       Mu.est[((yy-1)*r+1):((yy-1)*r+r)]=colSums(X*ng[(yy*G+1):(yy*G+G)])/N.vec[yy]
     }
     #update Sigma hat
-    Sig.hat.allgrp=Sig.list
+    Sig.hat.allgrp=Sig.est
     for (yy in 1:y){
       Sig.hat.allgrp[((yy-1)*r+1):((yy-1)*r+r),]=eigenMapMatMult(t(X-rep(Mu.est[((yy-1)*r+1):((yy-1)*r+r)])),((X-rep(Mu.est[((yy-1)*r+1):((yy-1)*r+r)]))*ng[(yy*G+1):(yy*G+G)]))/N.vec[yy]
     }
@@ -97,7 +97,7 @@ NonUnif_Reg_DIF <- function(resp,m,r,y,N.vec,loading.struc,eta,eps =1e-3,max.tol
     #X=(X-mu.hat.mat)/Tau.mat
     Xstar=X/Tau.mat
     for (yy in 1:y){
-      Sig.list[((yy-1)*r+1):((yy-1)*r+r),]=eigenMapMatMult(t(Xstar-rep(Mu.est[((yy-1)*r+1):((yy-1)*r+r)])),((Xstar-rep(Mu.est[((yy-1)*r+1):((yy-1)*r+r)]))*ng[(yy*G+1):(yy*G+G)]))/N.vec[yy]
+      Sig.est[((yy-1)*r+1):((yy-1)*r+r),]=eigenMapMatMult(t(Xstar-rep(Mu.est[((yy-1)*r+1):((yy-1)*r+r)])),((Xstar-rep(Mu.est[((yy-1)*r+1):((yy-1)*r+r)]))*ng[(yy*G+1):(yy*G+G)]))/N.vec[yy]
     }
    
     for (j in 1:J){
@@ -141,7 +141,7 @@ NonUnif_Reg_DIF <- function(resp,m,r,y,N.vec,loading.struc,eta,eps =1e-3,max.tol
     betaold=grbeta
     
     # E STEP
-    LiA=E_step1(N.vec=N.vec,X=X,y=y,y.allgroup=y.allgroup,Mu.list=Mu.list,Sig.list=Sig.list,gra=gra, grd=grd, grbeta=grbeta, grgamma=grgamma)
+    LiA=E_step1(N.vec=N.vec,X=X,y=y,y.allgroup=y.allgroup,Mu.list=Mu.est,Sig.list=Sig.est,gra=gra, grd=grd, grbeta=grbeta, grgamma=grgamma)
     ng=ng.est(LiA=LiA,y=y,N.vec=N.vec)
     #update mu hat and Sigma hat
     Mu.est=numeric(r*y)
@@ -149,7 +149,7 @@ NonUnif_Reg_DIF <- function(resp,m,r,y,N.vec,loading.struc,eta,eps =1e-3,max.tol
       Mu.est[((yy-1)*r+1):((yy-1)*r+r)]=colSums(X*ng[(yy*G+1):(yy*G+G)])/N.vec[yy]
     }
     #update Sigma hat
-    Sig.hat.allgrp=Sig.list
+    Sig.hat.allgrp=Sig.est
     for (yy in 1:y){
       Sig.hat.allgrp[((yy-1)*r+1):((yy-1)*r+r),]=eigenMapMatMult(t(X-rep(Mu.est[((yy-1)*r+1):((yy-1)*r+r)])),((X-rep(Mu.est[((yy-1)*r+1):((yy-1)*r+r)]))*ng[(yy*G+1):(yy*G+G)]))/N.vec[yy]
     }
@@ -162,7 +162,7 @@ NonUnif_Reg_DIF <- function(resp,m,r,y,N.vec,loading.struc,eta,eps =1e-3,max.tol
     #X=(X-mu.hat.mat)/Tau.mat
     Xstar=X/Tau.mat
     for (yy in 1:y){
-      Sig.list[((yy-1)*r+1):((yy-1)*r+r),]=eigenMapMatMult(t(Xstar-rep(Mu.est[((yy-1)*r+1):((yy-1)*r+r)])),((Xstar-rep(Mu.est[((yy-1)*r+1):((yy-1)*r+r)]))*ng[(yy*G+1):(yy*G+G)]))/N.vec[yy]
+      Sig.esy[((yy-1)*r+1):((yy-1)*r+r),]=eigenMapMatMult(t(Xstar-rep(Mu.est[((yy-1)*r+1):((yy-1)*r+r)])),((Xstar-rep(Mu.est[((yy-1)*r+1):((yy-1)*r+r)]))*ng[(yy*G+1):(yy*G+G)]))/N.vec[yy]
     }
     
     for (j in 1:J){
@@ -204,9 +204,11 @@ NonUnif_Reg_DIF <- function(resp,m,r,y,N.vec,loading.struc,eta,eps =1e-3,max.tol
       }
     }
   }
-  
+  AIC=-2*sum(lh)+l0norm*2
   BIC=-2*sum(lh)+l0norm*log(N)
-  return(list(est=cbind(gra,grd),Beta=grbeta,iter=iter,bic=BIC,bias=Bias,RMSE=RMSE,mean1=Mu.gp1,mean2=Mu.gp2,mean3=Mu.gp3,Corr1=Sig.gp1,Corr2=Sig.gp2,Corr3=Sig.gp3))
+  Mu.gp1=Mu.est[1:2];Mu.gp2=Mu.est[3:4];Mu.gp3=Mu.est[5:6]
+  Sig.gp1=Sig.est[1:2,];Sig.gp2=Sig.est[3:4,];Sig.gp3=Sig.est[5:6,]
+  return(list(est=cbind(gra,grd),Gamma=grgamma,iter=iter,aic=AIC,bic=BIC, mean1=Mu.gp1,mean2=Mu.gp2,mean3=Mu.gp3,Corr1=Sig.gp1,Corr2=Sig.gp2,Corr3=Sig.gp3))
 }
 
 

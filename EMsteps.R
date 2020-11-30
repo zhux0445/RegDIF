@@ -220,11 +220,3 @@ M_step=function(j,grd,gra,grgamma,grbeta,max.tol,X,y.allgroup,y,G,eta){
   #end of M step loop
 }
 
-sumoverk=function(G,rgky,aj,dj,gamjy,X){
-  sumoverky=numeric(G)
-  for(g in 1:G){
-    sumoverky[g]=rgky[g,]%*%log(-diff(c(1,1/(1+exp(-(dj+rep(aj%*%X[g,])+rep(gamjy%*%X[g,])))),0)))
-  }
-  return(sum(sumoverky))
-}
-?dmvnorm
