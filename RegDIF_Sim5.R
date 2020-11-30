@@ -1302,8 +1302,7 @@ grd00=matrix(StartVals[,3],20,1)
 grgamma00=array(0,dim=c(r,r,J))
 grgamma00[c(1,2),1,3:11]=t(as.matrix(StartVals[3:11,4:5]))
 grgamma00[c(1,2),2,12:20]=t(as.matrix(StartVals[12:20,4:5]))
-rownames(grbeta00) <- c()
-colnames(grbeta00) <- c()
+
 
 # 2 dif per dim
 mu100=c(0,0)
@@ -1338,6 +1337,8 @@ for (rep in 1:reps){
   N.vec=c(500,500,500)
   Mu.list=c(mu100,mu200,mu300)
   Sig.list=rbind(Sig100,Sig200,Sig300)
+  colnames(Sig.list) <- c()
+  Sig.list=as.matrix(  Sig.list)
   eta.vec=seq(1,31,2)
   bics=rep(0,length(eta.vec))
   aics=rep(0,length(eta.vec))

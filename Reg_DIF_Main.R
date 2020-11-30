@@ -162,7 +162,7 @@ NonUnif_Reg_DIF <- function(resp,m,r,y,N.vec,eta,eps =1e-3,max.tol=1e-7,gra00=NU
     #X=(X-mu.hat.mat)/Tau.mat
     Xstar=X/Tau.mat
     for (yy in 1:y){
-      Sig.esy[((yy-1)*r+1):((yy-1)*r+r),]=eigenMapMatMult(t(Xstar-rep(Mu.est[((yy-1)*r+1):((yy-1)*r+r)])),((Xstar-rep(Mu.est[((yy-1)*r+1):((yy-1)*r+r)]))*ng[(yy*G+1):(yy*G+G)]))/N.vec[yy]
+      Sig.est[((yy-1)*r+1):((yy-1)*r+r),]=eigenMapMatMult(t(Xstar-rep(Mu.est[((yy-1)*r+1):((yy-1)*r+r)])),((Xstar-rep(Mu.est[((yy-1)*r+1):((yy-1)*r+r)]))*ng[(yy*G+1):(yy*G+G)]))/N.vec[yy]
     }
     
     for (j in 1:J){
@@ -183,7 +183,7 @@ NonUnif_Reg_DIF <- function(resp,m,r,y,N.vec,eta,eps =1e-3,max.tol=1e-7,gra00=NU
     iter <- iter+1
   }
   # AIC BIC
-  LiA=E_step1(N.vec=N.vec,X=X,y=y,y.allgroup=y.allgroup,Mu.list=Mu.list,Sig.list=Sig.list,gra=gra, grd=grd, grbeta=grbeta, grgamma=grgamma)
+  LiA=E_step1(N.vec=N.vec,X=X,y=y,y.allgroup=y.allgroup,Mu.list=Mu.est,Sig.list=Sig.est,gra=gra, grd=grd, grbeta=grbeta, grgamma=grgamma)
   ng=ng.est(LiA=LiA,y=y,N.vec=N.vec)
   lh=numeric(J)#likelihood function for each item (overall likelihood by sum over j)
   for (j in 1:J){
