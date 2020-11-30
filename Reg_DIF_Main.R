@@ -199,7 +199,9 @@ NonUnif_Reg_DIF <- function(resp,m,r,y,N.vec,loading.struc,eta,eps =1e-3,max.tol
   {
     for(j in 1:2)
     {
-      l0norm=l0norm+(est.beta[i,j]!=0)
+      for(k in 1:2){
+        l0norm=l0norm+(grgamma[j,k,i]!=0)
+      }
     }
   }
   
