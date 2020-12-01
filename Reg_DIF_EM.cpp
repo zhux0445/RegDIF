@@ -18,18 +18,36 @@ arma::mat sumoverk (int G, arma::mat rgky, arma::rowvec aj, arma::rowvec dj, arm
 
 
 // [[Rcpp::export]]
-arma:: vec ngest (arma::mat LiA, int y, arma:: vec Nvec, int G){
-  arma:: mat Pi = sum(LiA,1);
-  arma:: mat Pirep = repelem(Pi, 1, G);
-  arma:: vec ng = sum(LiA/Pirep,0);
-  arma:: vec ngallgrp = zeros<arma::vec>(G*y);
-  for (int yy =0; yy < y; yy++ ){
-    ngallgrp.subvec(((yy-1)*G),((yy-1)*G+G-1))=sum(LiA.submat((sum(Nvec.subvec(0,yy-1))-Nvec(yy-1)),0,(sum(Nvec[1:yy])),(G-1))/Pirep,0);
+arma::rowvec ngest (arma::mat LiA, int y, arma::uvec Nvec, int G){
+  arma::mat Pi = sum(LiA,1);
+  arma::mat Pirep = repelem(Pi, 1, G);
+  arma::rowvec ng = sum(LiA/Pirep,0);
+  arma::rowvec ngallgrp = zeros<arma::rowvec>(G*y);
+  for (int yy=0; yy<y; yy++){
+    ngallgrp.subvec((yy*G),(yy*G+G-1)) = sum(((LiA.submat((sum(Nvec.subvec(0,yy))-Nvec(yy)),0,(sum(Nvec.subvec(0,yy))-1),(G-1)))/(Pirep.submat((sum(Nvec.subvec(0,yy))-Nvec(yy)),0,(sum(Nvec.subvec(0,yy))-1),(G-1)))),0);
   }
-  return(ng.t());
+  return(join_horiz(ng,ngallgrp));
 }
 
-ng.allgrp[((yy-1)*G+1):((yy-1)*G+G)]=apply(LiA[(sum(N.vec[1:yy])-N.vec[yy]+1):(sum(N.vec[1:yy])),]/Pi[(sum(N.vec[1:yy])-N.vec[yy]+1):(sum(N.vec[1:yy]))],2,sum)
+
+// [[Rcpp::export]]
+arma::mat rgkest (int j, arma::cube Xijk, arma::mat LiA, int y, arma::vec Nvec, int G, int N, int m){
+  arma::mat Pi = sum(LiA,1);
+  arma::cube rLiA = zeros<cube>(N,G,m);
+  arma::mat Pirep = repelem(Pi, 1, G);
+  
+  for (int k=0; k<m; k++){
+    arma::mat Xjkmat = ((Xijk.slice(k)).col(j-1));
+    arma::mat Xijkrep = repelem(Xjkmat, 1, G);
+    rLiA.slice(k)= Xijkrep%LiA/Pirep;
+  }
+  arma::mat rgk = sum( rLiA,0);
+  arma::mat rgky1 = sum( rLiA.rows(0,N/y-1),0);
+  arma::mat rgky2 = sum( rLiA.rows(N/y,2*N/y-1),0);
+  arma::mat rgky3 = sum( rLiA.rows(2*N/y,3*N/y-1),0);
+  return(join_cols(rgk,rgky1,rgky2,rgky3));
+}
+
 
 // [[Rcpp::export]]
 SEXP eigenMapMatMult(const Eigen::Map<Eigen::MatrixXd> A, Eigen::Map<Eigen::MatrixXd> B){

@@ -140,7 +140,7 @@ NonUnif_Reg_DIF <- function(resp,m,r,y,N.vec,eta,eps =1e-3,max.tol=1e-7,gra00=NU
     
     # E STEP
     LiA=E_step1(resp=resp,N.vec=N.vec,X=X,y=y,G=G,y.allgroup=y.allgroup,Mu.list=Mu.est,Sig.list=Sig.est,gra=gra, grd=grd, grbeta=grbeta, grgamma=grgamma)
-    ng=ng.est(LiA=LiA,y=y,N.vec=N.vec,G=G)
+    ng=ngest(LiA=LiA,y=y,Nvec=N.vec,G=G)
     #update mu hat and Sigma hat
     Mu.est=numeric(r*y)
     for (yy in 2:y){
@@ -164,7 +164,7 @@ NonUnif_Reg_DIF <- function(resp,m,r,y,N.vec,eta,eps =1e-3,max.tol=1e-7,gra00=NU
     }
     
     for (j in 1:J){
-      rgk=rgk.est(j=j,Xijk=Xijk,LiA=LiA,y=y,N.vec=N.vec,G=G)
+      rgk=rgkest(j=j,Xijk=Xijk,LiA=LiA,y=y,Nvec=N.vec,G=G,N=N,m=m)
       Pstar <- Qstar <- array(double(G*(m-1)*(y)),dim=c(G,m-1,y))
       P<- array(double(G*m*(y)),dim=c(G,m,y))
       estj=M_step(j=j,ng=ng,rgk=rgk,grd=grd,gra=gra,grgamma=grgamma,grbeta=grbeta,max.tol=max.tol,X=X,y.allgroup=y.allgroup,y=y,G=G,m=m,eta=0)
