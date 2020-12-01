@@ -76,8 +76,8 @@ NonUnif_Reg_DIF <- function(resp,m,r,y,N.vec,eta,eps =1e-3,max.tol=1e-7,gra00=NU
     betaold=grbeta
     
     # E STEP
-    LiA=E_step1(N.vec=N.vec,X=X,y=y,y.allgroup=y.allgroup,Mu.list=Mu.est,Sig.list=Sig.est,gra=gra, grd=grd, grbeta=grbeta, grgamma=grgamma)
-    ng=ng.est(LiA=LiA,y=y,N.vec=N.vec)
+    LiA=E_step1(resp=resp,N.vec=N.vec,X=X,y=y,G=G,y.allgroup=y.allgroup,Mu.list=Mu.est,Sig.list=Sig.est,gra=gra, grd=grd, grbeta=grbeta, grgamma=grgamma)
+    ng=ng.est(LiA=LiA,y=y,N.vec=N.vec,G=G)
     #update mu hat and Sigma hat
     Mu.est=numeric(r*y)
     for (yy in 2:y){
@@ -101,10 +101,8 @@ NonUnif_Reg_DIF <- function(resp,m,r,y,N.vec,eta,eps =1e-3,max.tol=1e-7,gra00=NU
     }
    
     for (j in 1:J){
-      rgk=rgk.est(j,Xijk,LiA,y,N.vec)
-      Pstar <- Qstar <- array(double(G*(m-1)*(y)),dim=c(G,m-1,y))
-      P<- array(double(G*m*(y)),dim=c(G,m,y))
-      estj=M_step(j,grd,gra,grgamma,grbeta,max.tol,X,y.allgroup,y,G,eta)
+      rgk=rgk.est(j=j,Xijk=Xijk,LiA=LiA,y=y,N.vec=N.vec,G=G)
+      estj=M_step(j=j,rgk=rgk,grd=grd,gra=gra,grgamma=grgamma,grbeta=grbeta,max.tol=max.tol,X=X,y.allgroup=y.allgroup,y=y,G=G,m=m,eta=eta)
       
       gra[j,] <- estj[m:(m+r-1)]*Tau  # re-scale a and gamma
       grd[j,] <- estj[1:(m-1)]
@@ -141,8 +139,8 @@ NonUnif_Reg_DIF <- function(resp,m,r,y,N.vec,eta,eps =1e-3,max.tol=1e-7,gra00=NU
     betaold=grbeta
     
     # E STEP
-    LiA=E_step1(N.vec=N.vec,X=X,y=y,y.allgroup=y.allgroup,Mu.list=Mu.est,Sig.list=Sig.est,gra=gra, grd=grd, grbeta=grbeta, grgamma=grgamma)
-    ng=ng.est(LiA=LiA,y=y,N.vec=N.vec)
+    LiA=E_step1(resp=resp,N.vec=N.vec,X=X,y=y,G=G,y.allgroup=y.allgroup,Mu.list=Mu.est,Sig.list=Sig.est,gra=gra, grd=grd, grbeta=grbeta, grgamma=grgamma)
+    ng=ng.est(LiA=LiA,y=y,N.vec=N.vec,G=G)
     #update mu hat and Sigma hat
     Mu.est=numeric(r*y)
     for (yy in 2:y){
@@ -166,10 +164,10 @@ NonUnif_Reg_DIF <- function(resp,m,r,y,N.vec,eta,eps =1e-3,max.tol=1e-7,gra00=NU
     }
     
     for (j in 1:J){
-      rgk=rgk.est(j,Xijk,LiA,y,N.vec)
+      rgk=rgk.est(j=j,Xijk=Xijk,LiA=LiA,y=y,N.vec=N.vec,G=G)
       Pstar <- Qstar <- array(double(G*(m-1)*(y)),dim=c(G,m-1,y))
       P<- array(double(G*m*(y)),dim=c(G,m,y))
-      estj=M_step(j,grd,gra,grgamma,grbeta,max.tol,X,y.allgroup,y,G,eta=0)
+      estj=M_step(j=j,rgk=rgk,grd=grd,gra=gra,grgamma=grgamma,grbeta=grbeta,max.tol=max.tol,X=X,y.allgroup=y.allgroup,y=y,G=G,m=m,eta=0)
       
       gra[j,] <- estj[m:(m+r-1)]*Tau  # re-scale a and gamma
       grd[j,] <- estj[1:(m-1)]
@@ -183,11 +181,12 @@ NonUnif_Reg_DIF <- function(resp,m,r,y,N.vec,eta,eps =1e-3,max.tol=1e-7,gra00=NU
     iter <- iter+1
   }
   # AIC BIC
-  LiA=E_step1(N.vec=N.vec,X=X,y=y,y.allgroup=y.allgroup,Mu.list=Mu.est,Sig.list=Sig.est,gra=gra, grd=grd, grbeta=grbeta, grgamma=grgamma)
-  ng=ng.est(LiA=LiA,y=y,N.vec=N.vec)
+  
+  LiA=E_step1(resp=resp,N.vec=N.vec,X=X,y=y,G=G,y.allgroup=y.allgroup,Mu.list=Mu.est,Sig.list=Sig.est,gra=gra, grd=grd, grbeta=grbeta, grgamma=grgamma)
+  ng=ng.est(LiA=LiA,y=y,N.vec=N.vec,G=G)
   lh=numeric(J)#likelihood function for each item (overall likelihood by sum over j)
   for (j in 1:J){
-    rgk=rgk.est(j,Xijk,LiA,y,N.vec)
+    rgk=rgk.est(j=j,Xijk=Xijk,LiA=LiA,y=y,N.vec=N.vec,G=G)
     sumoverk1=sumoverk(G=G,rgky=rgk[(G+1):(2*G),],aj=gra[j,],dj=grd[j,],gamjy=c(0,0),X=X)#G,rgky,aj,dj,gamjy,X
     sumoverk2=sumoverk(G=G,rgky=rgk[(2*G+1):(3*G),],aj=gra[j,],dj=grd[j,],gamjy=grgamma[1,,j],X=X)
     sumoverk3=sumoverk(G=G,rgky=rgk[(3*G+1):(4*G),],aj=gra[j,],dj=grd[j,],gamjy=grgamma[2,,j],X=X)

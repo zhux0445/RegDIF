@@ -6,7 +6,7 @@ soft=function(s, tau) {
 
 
 #E_step1=function(X=X,y=y,Mu.gp1=Mu.gp1,Mu.gp2=Mu.gp2,Mu.gp3=Mu.gp3,Sig.gp1=Sig.gp1,Sig.gp2=Sig.gp2,Sig.gp3=Sig.gp3,gra=gra,grgamma=grgamma){
-E_step1=function( N.vec, X, y, y.allgroup, Mu.list, Sig.list, gra, grd, grbeta, grgamma){
+E_step1=function( resp, N.vec, X, y, G, y.allgroup, Mu.list, Sig.list, gra, grd, grbeta, grgamma){
   A.allgroups=numeric(nrow(X)*y) #A1, A2, A3
   for (yy in 1:y){
     A.allgroups[((yy-1)*nrow(X)+1):((yy-1)*nrow(X)+nrow(X))]=dmvnorm(X,Mu.list[((yy-1)*r+1):((yy-1)*r+r)],Sig.list[((yy-1)*r+1):((yy-1)*r+r),])
@@ -52,7 +52,7 @@ E_step1=function( N.vec, X, y, y.allgroup, Mu.list, Sig.list, gra, grd, grbeta, 
   return(LiA)
 }
   
-ng.est= function(LiA,y,N.vec){
+ng.est= function(LiA,y,N.vec,G){
   Pi = apply(LiA,1,sum)
   ng = apply(LiA/Pi,2,sum)
   ng.allgrp=numeric(G*y)
@@ -62,7 +62,7 @@ ng.est= function(LiA,y,N.vec){
   return(c(ng,ng.allgrp))
 }
 
-rgk.est=function(j,Xijk,LiA,y,N.vec){
+rgk.est=function(j,Xijk,LiA,y,N.vec,G){
   Pi = apply(LiA,1,sum)
   rLiA <- array(double(N*G*m),dim = c(N,G,m))
   for(k in 1:m){
@@ -76,11 +76,13 @@ rgk.est=function(j,Xijk,LiA,y,N.vec){
   return(rbind(rgk,rgk.allgrp))
 }
 
-M_step=function(j,grd,gra,grgamma,grbeta,max.tol,X,y.allgroup,y,G,eta){
+M_step=function(j,rgk,grd,gra,grgamma,grbeta,max.tol,X,y.allgroup,y,G,m,eta){
   d <- grd[j,] 
   a <- gra[j,]
   gam=grgamma[,,j]
   bet=grbeta[j,]
+  Pstar <- Qstar <- array(double(G*(m-1)*(y)),dim=c(G,m-1,y))
+  P<- array(double(G*m*(y)),dim=c(G,m,y))
   #M-step loop starts for item j
   miter <- 0
   add <- max.tol+1

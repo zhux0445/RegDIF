@@ -1296,6 +1296,7 @@ ADmat.52=array(double(J*3*reps),dim = c(J,3,reps)) #a has 2 columns, d has 1 col
 
 
 StartVals=read.csv("StartingValues5lowcor.csv",row.names = 1)
+StartVals=read.csv("StartingValues5.csv",row.names = 1)
 gra00=as.matrix(StartVals[,1:2])
 rownames(gra00) <- c()
 grd00=matrix(StartVals[,3],20,1)
@@ -1327,15 +1328,46 @@ Sig100=read.csv("StartingValuesSig5lowcor.csv",row.names = 1)[1:2,]
 Sig200=read.csv("StartingValuesSig5lowcor.csv",row.names = 1)[3:4,]
 Sig300=read.csv("StartingValuesSig5lowcor.csv",row.names = 1)[5:6,]
 
+resp=responses[1:1500,]
+s <- 'F1 = 1,3-11
+          F2 = 2,12-20
+          COV = F1*F2'
+Group=c(rep('G1', N1), rep('G2', N2), rep('G3', N3))
+md00 <- multipleGroup(resp, s, group = Group,SE=TRUE,invariance=c('free_means', 'free_var','intercept',colnames(resp)[1:r]))
+gra00=coef(md00,simplify=T)$G1$items[,c("a1","a2")]
+rownames(gra00) <- c()
+grd00=matrix(coef(md00,simplify=T)$G1$items[,c("d")],20,1)
+grgamma00=array(0,dim=c(r,r,J))
+grgamma00[1,1,3:11]=(coef(md00,simplify=T)$G2$items[,c("a1","a2")]-coef(md00,simplify=T)$G1$items[,c("a1","a2")])[3:11,1]
+grgamma00[2,1,3:11]=(coef(md00,simplify=T)$G3$items[,c("a1","a2")]-coef(md00,simplify=T)$G1$items[,c("a1","a2")])[3:11,1]
+grgamma00[1,2,12:20]=(coef(md00,simplify=T)$G2$items[,c("a1","a2")]-coef(md00,simplify=T)$G1$items[,c("a1","a2")])[12:20,2]
+grgamma00[2,2,12:20]=(coef(md00,simplify=T)$G3$items[,c("a1","a2")]-coef(md00,simplify=T)$G1$items[,c("a1","a2")])[12:20,2]
+#grbeta00=matrix(0,J,2)
+#grbeta00[,1]=matrix(coef(md00,simplify=T)$G2$items[,c("d")],20,1)-matrix(coef(md00,simplify=T)$G1$items[,c("d")],20,1)
+#grbeta00[,2]=matrix(coef(md00,simplify=T)$G3$items[,c("d")],20,1)-matrix(coef(md00,simplify=T)$G1$items[,c("d")],20,1)
+Sig100=coef(md00,simplify=T)$G1$cov
+Sig200=coef(md00,simplify=T)$G2$cov
+Sig300=coef(md00,simplify=T)$G3$cov
+Mu100=coef(md00,simplify=T)$G1$means
+Mu200=coef(md00,simplify=T)$G2$means
+Mu300=coef(md00,simplify=T)$G3$means
+
+
 
 
 for (rep in 1:reps){
   resp=responses[((rep-1)*N+1):((rep-1)*N+N1+N2+N3),]
+  if(min(resp)==0)
+  {
+    resp <- resp+1
+  }
   r=2
   m=2
   y=3
   N.vec=c(500,500,500)
   Mu.list=c(mu100,mu200,mu300)
+  colnames(Mu.list) <- c()
+  Mu.list=as.vector( Mu.list)
   Sig.list=rbind(Sig100,Sig200,Sig300)
   colnames(Sig.list) <- c()
   Sig.list=as.matrix(  Sig.list)
