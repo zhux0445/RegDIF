@@ -76,7 +76,7 @@ rgk.est=function(j,Xijk,LiA,y,N.vec,G){
   return(rbind(rgk,rgk.allgrp))
 }
 
-M_step=function(j,rgk,grd,gra,grgamma,grbeta,max.tol,X,y.allgroup,y,G,m,eta){
+M_step=function(j,ng,rgk,grd,gra,grgamma,grbeta,max.tol,X,y.allgroup,y,G,m,eta){
   d <- grd[j,] 
   a <- gra[j,]
   gam=grgamma[,,j]
