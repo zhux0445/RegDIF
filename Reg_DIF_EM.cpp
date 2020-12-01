@@ -17,6 +17,12 @@ arma::mat sumoverk (int G, arma::mat rgky, arma::rowvec aj, arma::rowvec dj, arm
 }
 
 // [[Rcpp::export]]
+arma:: vec ng.est (arma::mat LiA, int y, arma:: vec N.vec, int G){
+  arma:: vec Pi =
+}
+
+
+// [[Rcpp::export]]
 SEXP eigenMapMatMult(const Eigen::Map<Eigen::MatrixXd> A, Eigen::Map<Eigen::MatrixXd> B){
   Eigen::MatrixXd C = A * B;
   
