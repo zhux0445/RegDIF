@@ -16,11 +16,20 @@ arma::mat sumoverk (int G, arma::mat rgky, arma::rowvec aj, arma::rowvec dj, arm
   return (sumoverky);
 }
 
+
 // [[Rcpp::export]]
-arma:: vec ng.est (arma::mat LiA, int y, arma:: vec N.vec, int G){
-  arma:: vec Pi =
+arma:: vec ngest (arma::mat LiA, int y, arma:: vec Nvec, int G){
+  arma:: mat Pi = sum(LiA,1);
+  arma:: mat Pirep = repelem(Pi, 1, G);
+  arma:: vec ng = sum(LiA/Pirep,0);
+  arma:: vec ngallgrp = zeros<arma::vec>(G*y);
+  for (int yy =0; yy < y; yy++ ){
+    ngallgrp.subvec(((yy-1)*G),((yy-1)*G+G-1))=sum(LiA.submat((sum(Nvec.subvec(0,yy-1))-Nvec(yy-1)),0,(sum(Nvec[1:yy])),(G-1))/Pirep,0);
+  }
+  return(ng.t());
 }
 
+ng.allgrp[((yy-1)*G+1):((yy-1)*G+G)]=apply(LiA[(sum(N.vec[1:yy])-N.vec[yy]+1):(sum(N.vec[1:yy])),]/Pi[(sum(N.vec[1:yy])-N.vec[yy]+1):(sum(N.vec[1:yy]))],2,sum)
 
 // [[Rcpp::export]]
 SEXP eigenMapMatMult(const Eigen::Map<Eigen::MatrixXd> A, Eigen::Map<Eigen::MatrixXd> B){
