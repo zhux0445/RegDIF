@@ -8,8 +8,11 @@ library(dmutate)
 library(Rcpp)
 library(RcppParallel)
 library(RcppArmadillo)
+library(RcppEigen)
 sourceCpp("/Users/ruoyizhu/Documents/GitHub/mirt/matrix.cpp")
 sourceCpp("/Users/zhux0445/Documents/GitHub/RegDIF/matrix.cpp")
+sourceCpp("/Users/hyzhu27/Documents/GitHub/RegDIF/matrix.cpp")
+setwd('/Users/hyzhu27/Documents/GitHub/RegDIF_SimData')
 setwd('/Users/zhux0445/Documents/GitHub/RegDIF_SimData')
 setwd('/Users/ruoyizhu/Documents/GitHub/RegDIF_SimData')
 params=read.csv("Para3.csv",row.names = 1)
@@ -1355,7 +1358,7 @@ Mu300=coef(md00,simplify=T)$G3$means
 
 
 
-for (rep in 1:reps){
+for (rep in 29:reps){
   resp=responses[((rep-1)*N+1):((rep-1)*N+N1+N2+N3),]
   if(min(resp)==0)
   {
@@ -1371,7 +1374,7 @@ for (rep in 1:reps){
   Sig.list=rbind(Sig100,Sig200,Sig300)
   colnames(Sig.list) <- c()
   Sig.list=as.matrix(  Sig.list)
-  eta.vec=seq(1,31,2)
+  eta.vec=seq(1,25,2)
   bics=rep(0,length(eta.vec))
   aics=rep(0,length(eta.vec))
   ADmat=array(double(J*3*length(eta.vec)),dim = c(J,3,length(eta.vec)))
@@ -1408,7 +1411,7 @@ for (rep in 1:reps){
   write.csv(eta.5[rep],file = paste("eta5AIClowcor_",rep))
   write.csv(ADmat.5[,,rep],file = paste("ADmat5AIClowcor_",rep))
   write.csv(rbind(t(rbind(Gammas.5[c(1,2),1,3:11,rep])),t(rbind(Gammas.5[c(1,2),2,12:20,rep]))),file = paste("Gamma5AIClowcor_",rep))
-  write.csv(theta.dist[,,kk],file = paste("theta6AIClowcor_",rep))
+  write.csv(theta.dist[,,kk],file = paste("theta5AIClowcor_",rep))
   write.csv(eta.52[rep],file = paste("eta5BIClowcor_",rep))
   write.csv(ADmat.52[,,rep],file = paste("ADmat5BIClowcor_",rep))
   write.csv(rbind(t(rbind(Gammas.52[c(1,2),1,3:11,rep])),t(rbind(Gammas.52[c(1,2),2,12:20,rep]))),file = paste("Gamma5BIClowcor_",rep))
