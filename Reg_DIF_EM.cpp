@@ -55,3 +55,9 @@ SEXP eigenMapMatMult(const Eigen::Map<Eigen::MatrixXd> A, Eigen::Map<Eigen::Matr
   
   return Rcpp::wrap(C);
 }
+
+// [[Rcpp::export]]
+arma::mat E_step1 (arma::mat resp, arma::vec N.vec, arma::mat X, int y, int G, arma::mat y.allgroup, arma::vec Mu.list, arma::mat Sig.list, arma::mat gra, arma::mat grd, arma::mat grbeta, arma::mat grgamma){
+  
+}
+
