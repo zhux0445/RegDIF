@@ -292,60 +292,16 @@ NonUnif_Reg_EMM_DIF <- function(resp,m,r,y,N.vec,eta,eps =1e-3,max.tol=1e-7,gra0
       grgamma[,,j] <- matrix(estj[(m+r):(m+r+r*(y-1)-1)],y-1,r)*matrix(rep(Tau,(y-1)),y-1,r,byrow = T)
       grbeta[j,] <- estj[(m+r+r*(y-1)):(m+r+r*(y-1)+(m-1)*(y-1)-1)]
     }
-    df.d <- abs(dold-grd)
-    df.a <- abs(aold-gra)
-    df.beta <- abs(betaold-grbeta)
-    df.gamma <- abs(gammaold-grgamma)
-    iter <- iter+1
-  }
-  # Re-estimation
-  sparsity=grgamma
-  for (j in 1:J){
-    for (rr in 1:2){
-      for (nn in 1:2){
-        sparsity[nn,rr,j]=ifelse(grgamma[nn,rr,j]==0,0,1)
+   
+    # Re-estimation
+    sparsity=grgamma
+    for (j in 1:J){
+      for (rr in 1:2){
+        for (nn in 1:2){
+          sparsity[nn,rr,j]=ifelse(grgamma[nn,rr,j]==0,0,1)
+        }
       }
     }
-  }
-  
-  gra=gra00
-  grd=grd00
-  grbeta=grbeta00
-  grgamma=grgamma00*sparsity #array(0,dim=c((y-1),r,J))
-  df.a <- df.d  <- df.gamma <- df.beta <- df.Sig <- 1
-  iter <- 0
-  while(max(df.a)>eps | max(df.d)>eps | max(df.beta)>eps| max(df.gamma)>eps) # max(df.Mu)>eps | max(df.Sig)>eps |
-  {
-    aold <- gra
-    dold <- grd
-    gammaold=grgamma
-    betaold=grbeta
-    
-    # E STEP
-    LiA=E_step1(resp=resp,N.vec=N.vec,X=X,y=y,G=G,y.allgroup=y.allgroup,Mu.list=Mu.est,Sig.list=Sig.est,gra=gra, grd=grd, grbeta=grbeta, grgamma=grgamma)
-    ng=ngest(LiA=LiA,y=y,Nvec=N.vec,G=G)
-    #update mu hat and Sigma hat
-    Mu.est=numeric(r*y)
-    for (yy in 2:y){
-      Mu.est[((yy-1)*r+1):((yy-1)*r+r)]=colSums(X*ng[(yy*G+1):(yy*G+G)])/N.vec[yy]
-    }
-    #update Sigma hat
-    Sig.hat.allgrp=Sig.est
-    for (yy in 1:y){
-      Sig.hat.allgrp[((yy-1)*r+1):((yy-1)*r+r),]=eigenMapMatMult(t(X-rep(Mu.est[((yy-1)*r+1):((yy-1)*r+r)])),((X-rep(Mu.est[((yy-1)*r+1):((yy-1)*r+r)]))*ng[(yy*G+1):(yy*G+G)]))/N.vec[yy]
-    }
-    
-    #scale 
-    #mu.hat.mat=matrix(rep(mu.hat,G),G,r,byrow = T)
-    Tau=sqrt(diag(Sig.hat.allgrp[1:r,]))
-    Tau.mat=matrix(rep(Tau,G),G,r,byrow = T)
-    #q_g_star
-    #X=(X-mu.hat.mat)/Tau.mat
-    Xstar=X/Tau.mat
-    for (yy in 1:y){
-      Sig.est[((yy-1)*r+1):((yy-1)*r+r),]=eigenMapMatMult(t(Xstar-rep(Mu.est[((yy-1)*r+1):((yy-1)*r+r)])),((Xstar-rep(Mu.est[((yy-1)*r+1):((yy-1)*r+r)]))*ng[(yy*G+1):(yy*G+G)]))/N.vec[yy]
-    }
-    
     for (j in 1:J){
       rgk=rgkest(j=j,Xijk=Xijk,LiA=LiA,y=y,Nvec=N.vec,G=G,N=N,m=m)
       Pstar <- Qstar <- array(double(G*(m-1)*(y)),dim=c(G,m-1,y))
@@ -363,6 +319,7 @@ NonUnif_Reg_EMM_DIF <- function(resp,m,r,y,N.vec,eta,eps =1e-3,max.tol=1e-7,gra0
     df.gamma <- abs(gammaold-grgamma)
     iter <- iter+1
   }
+
   # AIC BIC
   
   LiA=E_step1(resp=resp,N.vec=N.vec,X=X,y=y,G=G,y.allgroup=y.allgroup,Mu.list=Mu.est,Sig.list=Sig.est,gra=gra, grd=grd, grbeta=grbeta, grgamma=grgamma)
