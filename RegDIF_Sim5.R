@@ -1358,7 +1358,7 @@ Mu300=coef(md00,simplify=T)$G3$means
 
 
 
-for (rep in 29:reps){
+for (rep in 1:reps){
   resp=responses[((rep-1)*N+1):((rep-1)*N+N1+N2+N3),]
   if(min(resp)==0)
   {
@@ -1367,6 +1367,7 @@ for (rep in 29:reps){
   r=2
   m=2
   y=3
+  lam=1
   N.vec=c(500,500,500)
   Mu.list=c(mu100,mu200,mu300)
   colnames(Mu.list) <- c()
@@ -1386,7 +1387,8 @@ for (rep in 29:reps){
     eta=eta.vec[k]
     ptm <- proc.time()
     #sim=ipest1(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=T,gra00=gra00,grd00=grd00,grgamma00=grgamma00,mu100=mu100,mu200=mu200,mu300=mu300,Sig100=Sig100,Sig200=Sig200,Sig300=Sig300)
-    sim=NonUnif_Reg_DIF(resp,m,r,y,N.vec,eta,eps =1e-3,max.tol=1e-7,gra00=gra00,grd00=grd00,grbeta00=matrix(0,J,2),grgamma00=grgamma00,Mu.list=Mu.list,Sig.list= Sig.list)
+    #sim=NonUnif_Reg_DIF(resp,m,r,y,N.vec,eta,eps =1e-3,max.tol=1e-7,gra00=gra00,grd00=grd00,grbeta00=matrix(0,J,2),grgamma00=grgamma00,Mu.list=Mu.list,Sig.list= Sig.list)
+    sim=NonUnif_Reg_Adaptive_DIF(resp,m,r,y,N.vec,eta,lam,eps =1e-3,max.tol=1e-7,gra00=gra00,grd00=grd00,grbeta00=matrix(0,J,2),grgamma00=grgamma00,Mu.list=Mu.list,Sig.list= Sig.list)
     print(proc.time() - ptm)
     bics[k]=sim$bic
     aics[k]=sim$aic
@@ -1408,14 +1410,14 @@ for (rep in 29:reps){
   print(ADmat.52[,,rep])
   print(eta.52[rep])
   print(Gammas.52[,,,rep])
-  write.csv(eta.5[rep],file = paste("eta5AIClowcor_",rep))
-  write.csv(ADmat.5[,,rep],file = paste("ADmat5AIClowcor_",rep))
-  write.csv(rbind(t(rbind(Gammas.5[c(1,2),1,3:11,rep])),t(rbind(Gammas.5[c(1,2),2,12:20,rep]))),file = paste("Gamma5AIClowcor_",rep))
-  write.csv(theta.dist[,,kk],file = paste("theta5AIClowcor_",rep))
-  write.csv(eta.52[rep],file = paste("eta5BIClowcor_",rep))
-  write.csv(ADmat.52[,,rep],file = paste("ADmat5BIClowcor_",rep))
-  write.csv(rbind(t(rbind(Gammas.52[c(1,2),1,3:11,rep])),t(rbind(Gammas.52[c(1,2),2,12:20,rep]))),file = paste("Gamma5BIClowcor_",rep))
-  write.csv(theta.dist[,,kk2],file = paste("theta5BIClowcor_",rep))
+  write.csv(eta.5[rep],file = paste("eta5AdaptAIClowcor_",rep))
+  write.csv(ADmat.5[,,rep],file = paste("ADmat5AdaptAIClowcor_",rep))
+  write.csv(rbind(t(rbind(Gammas.5[c(1,2),1,3:11,rep])),t(rbind(Gammas.5[c(1,2),2,12:20,rep]))),file = paste("Gamma5AdaptAIClowcor_",rep))
+  write.csv(theta.dist[,,kk],file = paste("theta5AdaptAIClowcor_",rep))
+  write.csv(eta.52[rep],file = paste("eta5AdaptBIClowcor_",rep))
+  write.csv(ADmat.52[,,rep],file = paste("ADmat5AdaptBIClowcor_",rep))
+  write.csv(rbind(t(rbind(Gammas.52[c(1,2),1,3:11,rep])),t(rbind(Gammas.52[c(1,2),2,12:20,rep]))),file = paste("Gamma5AdaptBIClowcor_",rep))
+  write.csv(theta.dist[,,kk2],file = paste("theta5AdaptBIClowcor_",rep))
 }
 
 
