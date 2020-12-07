@@ -12,8 +12,8 @@ sourceCpp("/Users/ruoyizhu/Documents/GitHub/mirt/matrix.cpp")
 sourceCpp("/Users/zhux0445/Documents/GitHub/RegDIF/matrix.cpp")
 setwd('/Users/zhux0445/Documents/GitHub/RegDIF_SimData')
 setwd('/Users/ruoyizhu/Documents/GitHub/RegDIF_SimData')
-params=read.csv("Para3.csv",row.names = 1)
-responses=read.csv("RESP7lowcor.csv",row.names = 1)
+params=read.csv("Para4.csv",row.names = 1)
+responses=read.csv("RESP8lowcor.csv",row.names = 1)
 
 soft=function(s, tau) {
   val=sign(s)*max(c(abs(s) - tau,0))
@@ -1295,7 +1295,7 @@ Gammas.52=array(double(2*J*m*50),dim = c(2,2,J,50))
 ADmat.52=array(double(J*3*reps),dim = c(J,3,reps)) #a has 2 columns, d has 1 column
 
 
-StartVals=read.csv("StartingValues5lowcor.csv",row.names = 1)
+StartVals=read.csv("StartingValues6lowcor.csv")
 StartVals=read.csv("StartingValues5.csv",row.names = 1)
 gra00=as.matrix(StartVals[,1:2])
 rownames(gra00) <- c()
@@ -1321,12 +1321,12 @@ Sig100=matrix(c(1,0.8452613,0.8452613,1),2,2)
 Sig200=matrix(c(1.179328,1.065364,1.065364,1.179328),2,2)
 Sig300=matrix(c(0.9202015,0.8908855,0.8908855,0.9202015),2,2)
 
-mu100=read.csv("StartingValuesMu5lowcor.csv",row.names = 1)[1:2,]
-mu200=read.csv("StartingValuesMu5lowcor.csv",row.names = 1)[3:4,]
-mu300=read.csv("StartingValuesMu5lowcor.csv",row.names = 1)[5:6,]
-Sig100=read.csv("StartingValuesSig5lowcor.csv",row.names = 1)[1:2,]
-Sig200=read.csv("StartingValuesSig5lowcor.csv",row.names = 1)[3:4,]
-Sig300=read.csv("StartingValuesSig5lowcor.csv",row.names = 1)[5:6,]
+mu100=read.csv("StartingValuesMu6lowcor.csv")[1:2,]
+mu200=read.csv("StartingValuesMu6lowcor.csv")[3:4,]
+mu300=read.csv("StartingValuesMu6lowcor.csv")[5:6,]
+Sig100=read.csv("StartingValuesSig6lowcor.csv")[1:2,]
+Sig200=read.csv("StartingValuesSig6lowcor.csv")[3:4,]
+Sig300=read.csv("StartingValuesSig6lowcor.csv")[5:6,]
 
 resp=responses[1:1500,]
 s <- 'F1 = 1,3-11
@@ -1383,7 +1383,7 @@ for (rep in 1:50){
     eta=eta.vec[k]
     ptm <- proc.time()
     #sim=ipest1(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=T,gra00=gra00,grd00=grd00,grgamma00=grgamma00,mu100=mu100,mu200=mu200,mu300=mu300,Sig100=Sig100,Sig200=Sig200,Sig300=Sig300)
-    sim=NonUnif_Reg_DIF(resp,m,r,y,N.vec,eta,eps =1e-3,max.tol=1e-7,gra00=gra00,grd00=grd00,grbeta00=matrix(0,J,2),grgamma00=grgamma00,Mu.list=Mu.list,Sig.list= Sig.list)
+    sim=NonUnif_Reg_EMM_DIF(resp,m,r,y,N.vec,eta,eps =1e-3,max.tol=1e-7,gra00=gra00,grd00=grd00,grbeta00=matrix(0,J,2),grgamma00=grgamma00,Mu.list=Mu.list,Sig.list= Sig.list)
     print(proc.time() - ptm)
     bics[k]=sim$bic
     aics[k]=sim$aic
@@ -1405,14 +1405,14 @@ for (rep in 1:50){
   print(ADmat.52[,,rep])
   print(eta.52[rep])
   print(Gammas.52[,,,rep])
-  write.csv(eta.5[rep],file = paste("eta7AIClowcor_",rep))
-  write.csv(ADmat.5[,,rep],file = paste("ADmat7AIClowcor_",rep))
-  write.csv(rbind(t(rbind(Gammas.5[c(1,2),1,3:11,rep])),t(rbind(Gammas.5[c(1,2),2,12:20,rep]))),file = paste("Gamma7AIClowcor_",rep))
-  write.csv(theta.dist[,,kk],file = paste("theta7AIClowcor_",rep))
-  write.csv(eta.52[rep],file = paste("eta7BIClowcor_",rep))
-  write.csv(ADmat.52[,,rep],file = paste("ADmat7BIClowcor_",rep))
-  write.csv(rbind(t(rbind(Gammas.52[c(1,2),1,3:11,rep])),t(rbind(Gammas.52[c(1,2),2,12:20,rep]))),file = paste("Gamma7BIClowcor_",rep))
-  write.csv(theta.dist[,,kk2],file = paste("theta7BIClowcor_",rep))
+  write.csv(eta.5[rep],file = paste("eta8EMMAIClowcor_",rep))
+  write.csv(ADmat.5[,,rep],file = paste("ADmat8EMMAIClowcor_",rep))
+  write.csv(rbind(t(rbind(Gammas.5[c(1,2),1,3:11,rep])),t(rbind(Gammas.5[c(1,2),2,12:20,rep]))),file = paste("Gamma8EMMAIClowcor_",rep))
+  write.csv(theta.dist[,,kk],file = paste("theta8EMMAIClowcor_",rep))
+  write.csv(eta.52[rep],file = paste("eta8EMMBIClowcor_",rep))
+  write.csv(ADmat.52[,,rep],file = paste("ADmat8EMMBIClowcor_",rep))
+  write.csv(rbind(t(rbind(Gammas.52[c(1,2),1,3:11,rep])),t(rbind(Gammas.52[c(1,2),2,12:20,rep]))),file = paste("Gamma8EMMBIClowcor_",rep))
+  write.csv(theta.dist[,,kk2],file = paste("theta8EMMBIClowcor_",rep))
 }
 
 
