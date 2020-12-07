@@ -1355,219 +1355,194 @@ Mu300=coef(md00,simplify=T)$G3$means
 
 
 
-<<<<<<< HEAD
 for (rep in 1:50){
-  =======
-    for (rep in 1:reps){
-      >>>>>>> 622f28bbf4041eb119f968a777c95fae99039896
-      resp=responses[((rep-1)*N+1):((rep-1)*N+N1+N2+N3),]
-      if(min(resp)==0)
-      {
-        resp <- resp+1
-      }
-      r=2
-      m=2
-      y=3
-      <<<<<<< HEAD
-      N.vec=c(1000,1000,1000)
-      =======
-        lam=1
-      N.vec=c(500,500,500)
-      >>>>>>> 622f28bbf4041eb119f968a777c95fae99039896
-      Mu.list=c(mu100,mu200,mu300)
-      colnames(Mu.list) <- c()
-      Mu.list=as.vector( Mu.list)
-      Sig.list=rbind(Sig100,Sig200,Sig300)
-      colnames(Sig.list) <- c()
-      Sig.list=as.matrix(  Sig.list)
-      eta.vec=seq(1,25,2)
-      bics=rep(0,length(eta.vec))
-      aics=rep(0,length(eta.vec))
-      ADmat=array(double(J*3*length(eta.vec)),dim = c(J,3,length(eta.vec)))
-      Gammas=array(double(2*J*m*length(eta.vec)),dim = c(2,2,J,length(eta.vec)))
-      theta.dist=array(double(2*9*length(eta.vec)),dim=c(9,2,length(eta.vec)))
-      
-      for (k in 1:length(eta.vec))
-      {
-        eta=eta.vec[k]
-        ptm <- proc.time()
-        #sim=ipest1(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=T,gra00=gra00,grd00=grd00,grgamma00=grgamma00,mu100=mu100,mu200=mu200,mu300=mu300,Sig100=Sig100,Sig200=Sig200,Sig300=Sig300)
-        #sim=NonUnif_Reg_DIF(resp,m,r,y,N.vec,eta,eps =1e-3,max.tol=1e-7,gra00=gra00,grd00=grd00,grbeta00=matrix(0,J,2),grgamma00=grgamma00,Mu.list=Mu.list,Sig.list= Sig.list)
-        sim=NonUnif_Reg_Adaptive_DIF(resp,m,r,y,N.vec,eta,lam,eps =1e-3,max.tol=1e-7,gra00=gra00,grd00=grd00,grbeta00=matrix(0,J,2),grgamma00=grgamma00,Mu.list=Mu.list,Sig.list= Sig.list)
-        print(proc.time() - ptm)
-        bics[k]=sim$bic
-        aics[k]=sim$aic
-        #Gammas[,,,k]=sim$Gamma
-        ADmat[,,k]=sim$est
-        Gammas[,,,k]=sim$Gamma
-        theta.dist[,,k]=rbind(sim$mean1,sim$mean2,sim$mean3,sim$Corr1,sim$Corr2,sim$Corr3)
-      }
-      
-      #kk=which.min(bics)
-      kk=which.min(aics)
-      eta.5[rep]=eta.vec[kk]
-      Gammas.5[,,,rep]=Gammas[,,,kk]
-      ADmat.5[,,rep]=ADmat[,,kk]
-      kk2=which.min(bics)
-      eta.52[rep]=eta.vec[kk2]
-      Gammas.52[,,,rep]=Gammas[,,,kk2]
-      ADmat.52[,,rep]=ADmat[,,kk2]
-      print(ADmat.52[,,rep])
-      print(eta.52[rep])
-      print(Gammas.52[,,,rep])
-      <<<<<<< HEAD
-      write.csv(eta.5[rep],file = paste("eta7AIClowcor_",rep))
-      write.csv(ADmat.5[,,rep],file = paste("ADmat7AIClowcor_",rep))
-      write.csv(rbind(t(rbind(Gammas.5[c(1,2),1,3:11,rep])),t(rbind(Gammas.5[c(1,2),2,12:20,rep]))),file = paste("Gamma7AIClowcor_",rep))
-      write.csv(theta.dist[,,kk],file = paste("theta7AIClowcor_",rep))
-      write.csv(eta.52[rep],file = paste("eta7BIClowcor_",rep))
-      write.csv(ADmat.52[,,rep],file = paste("ADmat7BIClowcor_",rep))
-      write.csv(rbind(t(rbind(Gammas.52[c(1,2),1,3:11,rep])),t(rbind(Gammas.52[c(1,2),2,12:20,rep]))),file = paste("Gamma7BIClowcor_",rep))
-      write.csv(theta.dist[,,kk2],file = paste("theta7BIClowcor_",rep))
-      =======
-        write.csv(eta.5[rep],file = paste("eta5AdaptAIClowcor_",rep))
-      write.csv(ADmat.5[,,rep],file = paste("ADmat5AdaptAIClowcor_",rep))
-      write.csv(rbind(t(rbind(Gammas.5[c(1,2),1,3:11,rep])),t(rbind(Gammas.5[c(1,2),2,12:20,rep]))),file = paste("Gamma5AdaptAIClowcor_",rep))
-      write.csv(theta.dist[,,kk],file = paste("theta5AdaptAIClowcor_",rep))
-      write.csv(eta.52[rep],file = paste("eta5AdaptBIClowcor_",rep))
-      write.csv(ADmat.52[,,rep],file = paste("ADmat5AdaptBIClowcor_",rep))
-      write.csv(rbind(t(rbind(Gammas.52[c(1,2),1,3:11,rep])),t(rbind(Gammas.52[c(1,2),2,12:20,rep]))),file = paste("Gamma5AdaptBIClowcor_",rep))
-      write.csv(theta.dist[,,kk2],file = paste("theta5AdaptBIClowcor_",rep))
-      >>>>>>> 622f28bbf4041eb119f968a777c95fae99039896
-    }
+  resp=responses[((rep-1)*N+1):((rep-1)*N+N1+N2+N3),]
+  if(min(resp)==0)
+  {
+    resp <- resp+1
+  }
+  r=2
+  m=2
+  y=3
+  N.vec=c(1000,1000,1000)
+  Mu.list=c(mu100,mu200,mu300)
+  colnames(Mu.list) <- c()
+  Mu.list=as.vector( Mu.list)
+  Sig.list=rbind(Sig100,Sig200,Sig300)
+  colnames(Sig.list) <- c()
+  Sig.list=as.matrix(  Sig.list)
+  eta.vec=seq(1,25,2)
+  bics=rep(0,length(eta.vec))
+  aics=rep(0,length(eta.vec))
+  ADmat=array(double(J*3*length(eta.vec)),dim = c(J,3,length(eta.vec)))
+  Gammas=array(double(2*J*m*length(eta.vec)),dim = c(2,2,J,length(eta.vec)))
+  theta.dist=array(double(2*9*length(eta.vec)),dim=c(9,2,length(eta.vec)))
   
+  for (k in 1:length(eta.vec))
+  {
+    eta=eta.vec[k]
+    ptm <- proc.time()
+    #sim=ipest1(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=T,gra00=gra00,grd00=grd00,grgamma00=grgamma00,mu100=mu100,mu200=mu200,mu300=mu300,Sig100=Sig100,Sig200=Sig200,Sig300=Sig300)
+    sim=NonUnif_Reg_DIF(resp,m,r,y,N.vec,eta,eps =1e-3,max.tol=1e-7,gra00=gra00,grd00=grd00,grbeta00=matrix(0,J,2),grgamma00=grgamma00,Mu.list=Mu.list,Sig.list= Sig.list)
+    print(proc.time() - ptm)
+    bics[k]=sim$bic
+    aics[k]=sim$aic
+    #Gammas[,,,k]=sim$Gamma
+    ADmat[,,k]=sim$est
+    Gammas[,,,k]=sim$Gamma
+    theta.dist[,,k]=rbind(sim$mean1,sim$mean2,sim$mean3,sim$Corr1,sim$Corr2,sim$Corr3)
+  }
   
-  #########################################
-  #####                               #####
-  #####  Comparing with mirt LRT add  #####
-  #####                               #####
-  #########################################
-  N1=N2=N3=1000 
-  Group=c(rep('G1', N1), rep('G2', N2), rep('G3', N3))
-  Group01=c(rep('G1', N1), rep('G2', N2))
-  Group02=c(rep('G1', N1), rep('G3', N3))
-  N=N1+N2+N3
-  mirtCluster(4)
-  
-  mirt.p.mat1=matrix(0,50,18) # the first 18 is the number of replications
-  bias.mirt1=matrix(0,50,3)
-  rmse.mirt1=matrix(0,50,3)
-  difrec.mirt.fn1=matrix(0,50,3) # DIF magnitude recovery with false negative included
-  mirt.p.mat2=matrix(0,50,18) # 18 is the number of replications
-  bias.mirt2=matrix(0,50,3)
-  rmse.mirt2=matrix(0,50,3)
-  difrec.mirt.fn2=matrix(0,50,3) # 
-  mirt.p.mat3=matrix(0,50,18) # 18 is the number of replications
-  bias.mirt3=matrix(0,50,3)
-  rmse.mirt3=matrix(0,50,3)
-  difrec.mirt.fn3=matrix(0,50,3) # 
-  
-  for (rep in 1:50){
-    resp=responses[((rep-1)*N+1):((rep-1)*N+N1+N2+N3),]
-    resp01=resp[1:(N1+N2),]
-    resp02=rbind(resp[1:N1,],resp[(N1+N2+1):(N1+N2+N3),])
-    s <- 'D1 = 1,3-11
+  #kk=which.min(bics)
+  kk=which.min(aics)
+  eta.5[rep]=eta.vec[kk]
+  Gammas.5[,,,rep]=Gammas[,,,kk]
+  ADmat.5[,,rep]=ADmat[,,kk]
+  kk2=which.min(bics)
+  eta.52[rep]=eta.vec[kk2]
+  Gammas.52[,,,rep]=Gammas[,,,kk2]
+  ADmat.52[,,rep]=ADmat[,,kk2]
+  print(ADmat.52[,,rep])
+  print(eta.52[rep])
+  print(Gammas.52[,,,rep])
+  write.csv(eta.5[rep],file = paste("eta7AIClowcor_",rep))
+  write.csv(ADmat.5[,,rep],file = paste("ADmat7AIClowcor_",rep))
+  write.csv(rbind(t(rbind(Gammas.5[c(1,2),1,3:11,rep])),t(rbind(Gammas.5[c(1,2),2,12:20,rep]))),file = paste("Gamma7AIClowcor_",rep))
+  write.csv(theta.dist[,,kk],file = paste("theta7AIClowcor_",rep))
+  write.csv(eta.52[rep],file = paste("eta7BIClowcor_",rep))
+  write.csv(ADmat.52[,,rep],file = paste("ADmat7BIClowcor_",rep))
+  write.csv(rbind(t(rbind(Gammas.52[c(1,2),1,3:11,rep])),t(rbind(Gammas.52[c(1,2),2,12:20,rep]))),file = paste("Gamma7BIClowcor_",rep))
+  write.csv(theta.dist[,,kk2],file = paste("theta7BIClowcor_",rep))
+}
+
+
+#########################################
+#####                               #####
+#####  Comparing with mirt LRT add  #####
+#####                               #####
+#########################################
+N1=N2=N3=1000 
+Group=c(rep('G1', N1), rep('G2', N2), rep('G3', N3))
+Group01=c(rep('G1', N1), rep('G2', N2))
+Group02=c(rep('G1', N1), rep('G3', N3))
+N=N1+N2+N3
+mirtCluster(4)
+
+mirt.p.mat1=matrix(0,50,18) # the first 18 is the number of replications
+bias.mirt1=matrix(0,50,3)
+rmse.mirt1=matrix(0,50,3)
+difrec.mirt.fn1=matrix(0,50,3) # DIF magnitude recovery with false negative included
+mirt.p.mat2=matrix(0,50,18) # 18 is the number of replications
+bias.mirt2=matrix(0,50,3)
+rmse.mirt2=matrix(0,50,3)
+difrec.mirt.fn2=matrix(0,50,3) # 
+mirt.p.mat3=matrix(0,50,18) # 18 is the number of replications
+bias.mirt3=matrix(0,50,3)
+rmse.mirt3=matrix(0,50,3)
+difrec.mirt.fn3=matrix(0,50,3) # 
+
+for (rep in 1:50){
+  resp=responses[((rep-1)*N+1):((rep-1)*N+N1+N2+N3),]
+  resp01=resp[1:(N1+N2),]
+  resp02=rbind(resp[1:N1,],resp[(N1+N2+1):(N1+N2+N3),])
+  s <- 'D1 = 1,3-11
           D2 = 2,12-20
           COV = D1*D2'
-    #md.noncons0 <- multipleGroup(resp, cmodel, group = Group,SE=TRUE,invariance=c('free_means', 'free_var','intercepts',colnames(resp)[1:r]))
-    #omnibus
-    # From Phil, when you test DIF on slope you should also test the intercept at the same time
-    md.noncons0 <- multipleGroup(resp, s, group = Group,SE=TRUE,invariance=c('free_means', 'free_var','intercepts',colnames(resp)[1:r]))
-    #md.noncons0 <- multipleGroup(resp, s, group = Group,SE=TRUE,invariance=c('free_means', 'free_var',colnames(resp)[1:r]))
-    mirt.p.mat1[(rep),1:9]=DIF(md.noncons0, which.par = c('a1'), p.adjust = 'none',scheme = 'add',items2test=c(3:11))[,"adj_pvals"]
-    mirt.p.mat1[(rep),10:18]=DIF(md.noncons0, which.par = c('a2'), p.adjust = 'none',scheme = 'add',items2test=c(12:20))[,"adj_pvals"]
-    md.refit0 <- multipleGroup(resp, s, group = Group,SE=TRUE,invariance=c('free_means', 'free_var','intercepts',colnames(resp)[-(which(mirt.p.mat1[rep,]<0.05)+2)]))
-    #md.refit.r <- multipleGroup(resp, s, group = Group,SE=TRUE,invariance=c('free_means', 'free_var','intercepts',colnames(resp)[-c()]))
-    bias.mirt1[rep,1:2]=colSums(coef(md.refit0,simplify=T)$G1$items[,1:r]-Amat1)/10
-    rmse.mirt1[rep,1:2]=sqrt(colSums((coef(md.refit0,simplify=T)$G1$items[,1:r]-Amat1)^2)/10)
-    bias.mirt1[rep,3]=colMeans(coef(md.refit0,simplify=T)$G1$items[,3]-Dmat1)
-    rmse.mirt1[rep,3]=sqrt(colMeans((coef(md.refit0,simplify=T)$G1$items[,3]-Dmat1)^2))
-    difrec.mirt.fn1[rep,2]= mean(c(abs((coef(md.refit0,simplify=T)$G1$items[,1]-coef(md.refit0,simplify=T)$G2$items[,1])[c(4,5)]-0.5),abs((coef(md.refit0,simplify=T)$G1$items[,2]-coef(md.refit0,simplify=T)$G2$items[,2])[c(12,13)]-0.5)))
-    difrec.mirt.fn1[rep,3]= mean(c(abs((coef(md.refit0,simplify=T)$G1$items[,1]-coef(md.refit0,simplify=T)$G3$items[,1])[c(4,5)]-1),abs((coef(md.refit0,simplify=T)$G1$items[,2]-coef(md.refit0,simplify=T)$G3$items[,2])[c(12,13)]-1)))
-    #difrec.mirt.fn1[rep,2]= mean(c(abs((coef(md.refit0,simplify=T)$G1$items[,1]-coef(md.refit0,simplify=T)$G2$items[,1])[c(4,5,6,7,8,9)]-0.5),abs((coef(md.refit0,simplify=T)$G1$items[,2]-coef(md.refit0,simplify=T)$G2$items[,2])[c(12,13,14,15,16,17)]-0.5)))
-    #difrec.mirt.fn1[rep,3]= mean(c(abs((coef(md.refit0,simplify=T)$G1$items[,1]-coef(md.refit0,simplify=T)$G3$items[,1])[c(4,5,6,7,8,9)]-1),abs((coef(md.refit0,simplify=T)$G1$items[,2]-coef(md.refit0,simplify=T)$G3$items[,2])[c(12,13,14,15,16,17)]-1)))
-    difrec.mirt.fn1[rep,1]=mean(c(difrec.mirt.fn1[rep,2],difrec.mirt.fn1[rep,3]))
-    #ref vs focal1
-    md.noncons01 <- multipleGroup(resp01, s, group = Group01,SE=TRUE,invariance=c('free_means', 'free_var','intercepts',colnames(resp01)[1:r]))
-    mirt.p.mat2[(rep),1:9]=DIF(md.noncons01, which.par = c('a1'), p.adjust = 'none',scheme = 'add',items2test=c(3:11))[,"adj_pvals"]
-    mirt.p.mat2[(rep),10:18]=DIF(md.noncons01, which.par = c('a2'), p.adjust = 'none',scheme = 'add',items2test=c(12:20))[,"adj_pvals"]
-    #md.refit01 <- multipleGroup(resp01, s, group = Group01,SE=TRUE,invariance=c('free_means', 'free_var','intercepts',colnames(resp)[-(which(mirt.p.mat2[rep,]<0.05)+2)]))
-    if ((sum(mirt.p.mat2[rep,]<0.05))==0){
-      md.refit01 <-multipleGroup(resp01, s, group = Group01,SE=TRUE,invariance=c('free_means', 'free_var','intercepts',colnames(resp01)[1:J]))
-    } else {
-      md.refit01 <- multipleGroup(resp01, s, group = Group01,SE=TRUE,invariance=c('free_means', 'free_var','intercepts',colnames(resp01)[-(which(mirt.p.mat2[rep,]<0.05)+2)]))
-    }
-    bias.mirt2[rep,1:2]=colSums(coef(md.refit01,simplify=T)$G1$items[,1:r]-Amat1)/10
-    rmse.mirt2[rep,1:2]=sqrt(colSums((coef(md.refit01,simplify=T)$G1$items[,1:r]-Amat1)^2)/10)
-    bias.mirt2[rep,3]=colMeans(coef(md.refit01,simplify=T)$G1$items[,3]-Dmat1)
-    rmse.mirt2[rep,3]=sqrt(colMeans((coef(md.refit01,simplify=T)$G1$items[,3]-Dmat1)^2))
-    difrec.mirt.fn2[rep,2]= mean(c(abs((coef(md.refit01,simplify=T)$G1$items[,1]-coef(md.refit01,simplify=T)$G2$items[,1])[c(4,5)]-0.5),abs((coef(md.refit01,simplify=T)$G1$items[,2]-coef(md.refit01,simplify=T)$G2$items[,2])[c(12,13)]-0.5)))
-    #difrec.mirt.fn2[rep,2]= mean(c(abs((coef(md.refit01,simplify=T)$G1$items[,1]-coef(md.refit01,simplify=T)$G2$items[,1])[c(4,5,6,7,8,9)]-0.5),abs((coef(md.refit01,simplify=T)$G1$items[,2]-coef(md.refit01,simplify=T)$G2$items[,2])[c(12,13,14,15,16,17)]-0.5)))
-    #ref vs focal2
-    md.noncons02 <- multipleGroup(resp02, s, group = Group02,SE=TRUE,invariance=c('free_means', 'free_var','intercepts',colnames(resp02)[1:r]))
-    mirt.p.mat3[(rep),1:9]=DIF(md.noncons02, which.par = c('a1'), p.adjust = 'none',scheme = 'add',items2test=c(3:11))[,"adj_pvals"]
-    mirt.p.mat3[(rep),10:18]=DIF(md.noncons02, which.par = c('a2'), p.adjust = 'none',scheme = 'add',items2test=c(12:20))[,"adj_pvals"]
-    md.refit02 <- multipleGroup(resp02, s, group = Group02,SE=TRUE,invariance=c('free_means', 'free_var','intercepts',colnames(resp02)[-(which(mirt.p.mat3[rep,]<0.05)+2)]))
-    bias.mirt3[rep,1:2]=colSums(coef(md.refit02,simplify=T)$G1$items[,1:r]-Amat1)/10
-    rmse.mirt3[rep,1:2]=sqrt(colSums((coef(md.refit02,simplify=T)$G1$items[,1:r]-Amat1)^2)/10)
-    bias.mirt3[rep,3]=colMeans(coef(md.refit02,simplify=T)$G1$items[,3]-Dmat1)
-    rmse.mirt3[rep,3]=sqrt(colMeans((coef(md.refit02,simplify=T)$G1$items[,3]-Dmat1)^2))
-    difrec.mirt.fn3[rep,3]= mean(c(abs((coef(md.refit02,simplify=T)$G1$items[,1]-coef(md.refit02,simplify=T)$G3$items[,1])[c(4,5)]-1),abs((coef(md.refit02,simplify=T)$G1$items[,2]-coef(md.refit02,simplify=T)$G3$items[,2])[c(12,13)]-1)))
-    #difrec.mirt.fn3[rep,3]= mean(c(abs((coef(md.refit02,simplify=T)$G1$items[,1]-coef(md.refit02,simplify=T)$G3$items[,1])[c(4,5,6,7,8,9)]-1),abs((coef(md.refit02,simplify=T)$G1$items[,2]-coef(md.refit02,simplify=T)$G3$items[,2])[c(12,13,14,15,16,17)]-1)))
-    rep
+  #md.noncons0 <- multipleGroup(resp, cmodel, group = Group,SE=TRUE,invariance=c('free_means', 'free_var','intercepts',colnames(resp)[1:r]))
+  #omnibus
+  # From Phil, when you test DIF on slope you should also test the intercept at the same time
+  md.noncons0 <- multipleGroup(resp, s, group = Group,SE=TRUE,invariance=c('free_means', 'free_var','intercepts',colnames(resp)[1:r]))
+  #md.noncons0 <- multipleGroup(resp, s, group = Group,SE=TRUE,invariance=c('free_means', 'free_var',colnames(resp)[1:r]))
+  mirt.p.mat1[(rep),1:9]=DIF(md.noncons0, which.par = c('a1'), p.adjust = 'none',scheme = 'add',items2test=c(3:11))[,"adj_pvals"]
+  mirt.p.mat1[(rep),10:18]=DIF(md.noncons0, which.par = c('a2'), p.adjust = 'none',scheme = 'add',items2test=c(12:20))[,"adj_pvals"]
+  md.refit0 <- multipleGroup(resp, s, group = Group,SE=TRUE,invariance=c('free_means', 'free_var','intercepts',colnames(resp)[-(which(mirt.p.mat1[rep,]<0.05)+2)]))
+  #md.refit.r <- multipleGroup(resp, s, group = Group,SE=TRUE,invariance=c('free_means', 'free_var','intercepts',colnames(resp)[-c()]))
+  bias.mirt1[rep,1:2]=colSums(coef(md.refit0,simplify=T)$G1$items[,1:r]-Amat1)/10
+  rmse.mirt1[rep,1:2]=sqrt(colSums((coef(md.refit0,simplify=T)$G1$items[,1:r]-Amat1)^2)/10)
+  bias.mirt1[rep,3]=colMeans(coef(md.refit0,simplify=T)$G1$items[,3]-Dmat1)
+  rmse.mirt1[rep,3]=sqrt(colMeans((coef(md.refit0,simplify=T)$G1$items[,3]-Dmat1)^2))
+  difrec.mirt.fn1[rep,2]= mean(c(abs((coef(md.refit0,simplify=T)$G1$items[,1]-coef(md.refit0,simplify=T)$G2$items[,1])[c(4,5)]-0.5),abs((coef(md.refit0,simplify=T)$G1$items[,2]-coef(md.refit0,simplify=T)$G2$items[,2])[c(12,13)]-0.5)))
+  difrec.mirt.fn1[rep,3]= mean(c(abs((coef(md.refit0,simplify=T)$G1$items[,1]-coef(md.refit0,simplify=T)$G3$items[,1])[c(4,5)]-1),abs((coef(md.refit0,simplify=T)$G1$items[,2]-coef(md.refit0,simplify=T)$G3$items[,2])[c(12,13)]-1)))
+  #difrec.mirt.fn1[rep,2]= mean(c(abs((coef(md.refit0,simplify=T)$G1$items[,1]-coef(md.refit0,simplify=T)$G2$items[,1])[c(4,5,6,7,8,9)]-0.5),abs((coef(md.refit0,simplify=T)$G1$items[,2]-coef(md.refit0,simplify=T)$G2$items[,2])[c(12,13,14,15,16,17)]-0.5)))
+  #difrec.mirt.fn1[rep,3]= mean(c(abs((coef(md.refit0,simplify=T)$G1$items[,1]-coef(md.refit0,simplify=T)$G3$items[,1])[c(4,5,6,7,8,9)]-1),abs((coef(md.refit0,simplify=T)$G1$items[,2]-coef(md.refit0,simplify=T)$G3$items[,2])[c(12,13,14,15,16,17)]-1)))
+  difrec.mirt.fn1[rep,1]=mean(c(difrec.mirt.fn1[rep,2],difrec.mirt.fn1[rep,3]))
+  #ref vs focal1
+  md.noncons01 <- multipleGroup(resp01, s, group = Group01,SE=TRUE,invariance=c('free_means', 'free_var','intercepts',colnames(resp01)[1:r]))
+  mirt.p.mat2[(rep),1:9]=DIF(md.noncons01, which.par = c('a1'), p.adjust = 'none',scheme = 'add',items2test=c(3:11))[,"adj_pvals"]
+  mirt.p.mat2[(rep),10:18]=DIF(md.noncons01, which.par = c('a2'), p.adjust = 'none',scheme = 'add',items2test=c(12:20))[,"adj_pvals"]
+  #md.refit01 <- multipleGroup(resp01, s, group = Group01,SE=TRUE,invariance=c('free_means', 'free_var','intercepts',colnames(resp)[-(which(mirt.p.mat2[rep,]<0.05)+2)]))
+  if ((sum(mirt.p.mat2[rep,]<0.05))==0){
+    md.refit01 <-multipleGroup(resp01, s, group = Group01,SE=TRUE,invariance=c('free_means', 'free_var','intercepts',colnames(resp01)[1:J]))
+  } else {
+    md.refit01 <- multipleGroup(resp01, s, group = Group01,SE=TRUE,invariance=c('free_means', 'free_var','intercepts',colnames(resp01)[-(which(mirt.p.mat2[rep,]<0.05)+2)]))
   }
-  sum(mirt.p.mat1[,c(2,3,10,11)]<0.05)/(50*4)
-  sum(mirt.p.mat1[,-c(2,3,10,11)]<0.05)/(50*14)
-  colMeans(bias.mirt1)
-  sqrt(colMeans(rmse.mirt1^2))
-  colMeans(difrec.mirt.fn1)
-  
-  sum(mirt.p.mat2[,c(2,3,10,11)]<0.05)/(18*4)
-  sum(mirt.p.mat2[,-c(2,3,10,11)]<0.05)/(18*14)
-  colMeans(bias.mirt2)
-  sqrt(colMeans(rmse.mirt2^2))
-  colMeans(difrec.mirt.fn2)
-  
-  sum(mirt.p.mat3[1:24,c(2,3,10,11)]<0.05)/(24*4)
-  sum(mirt.p.mat3[1:24,-c(2,3,10,11)]<0.05)/(24*14)
-  colMeans(bias.mirt3)
-  sqrt(colMeans(rmse.mirt3^2))
-  colMeans(difrec.mirt.fn3)
-  
-  
-  
-  # 60% DIF
-  sum(mirt.p.mat1[,c(2,3,4,5,6,7,10,11,12,13,14,15)]<0.05)/(50*12)
-  sum(mirt.p.mat1[,-c(2,3,4,5,6,7,10,11,12,13,14,15)]<0.05)/(50*8)
-  colMeans(bias.mirt1)
-  sqrt(colMeans(rmse.mirt1^2))
-  colMeans(difrec.mirt.fn1)
-  
-  sum(mirt.p.mat2[,c(2,3,4,5,6,7,10,11,12,13,14,15)]<0.05)/(50*12)
-  sum(mirt.p.mat2[,-c(2,3,4,5,6,7,10,11,12,13,14,15)]<0.05)/(50*8)
-  colMeans(bias.mirt2)
-  sqrt(colMeans(rmse.mirt2^2))
-  colMeans(difrec.mirt.fn2)
-  
-  sum(mirt.p.mat3[,c(2,3,4,5,6,7,10,11,12,13,14,15)]<0.05)/(50*12)
-  sum(mirt.p.mat3[,-c(2,3,4,5,6,7,10,11,12,13,14,15)]<0.05)/(50*8)
-  colMeans(bias.mirt3)
-  sqrt(colMeans(rmse.mirt3^2))
-  colMeans(difrec.mirt.fn3)
-  
-  write.csv(mirt.p.mat1,file = "Sim7_LRTpvs1.csv")
-  write.csv(mirt.p.mat2,file = "Sim7_LRTpvs2.csv")
-  write.csv(mirt.p.mat3,file = "Sim7_LRTpvs3.csv")
-  write.csv(bias.mirt1,file = "Sim7_LRTbias1.csv")
-  write.csv(bias.mirt2,file = "Sim7_LRTbias2.csv")
-  write.csv(bias.mirt3,file = "Sim7_LRTbias3.csv")
-  write.csv(rmse.mirt1,file = "Sim7_LRTrmse1.csv")
-  write.csv(rmse.mirt2,file = "Sim7_LRTrmse2.csv")
-  write.csv(rmse.mirt3,file = "Sim7_LRTrmse3.csv")
-  write.csv(difrec.mirt.fn1,file = "Sim7_LRTfn1.csv")
-  write.csv(difrec.mirt.fn2,file = "Sim7_LRTfn2.csv")
-  write.csv(difrec.mirt.fn3,file = "Sim7_LRTfn3.csv")
-  
-  
-  
-  
+  bias.mirt2[rep,1:2]=colSums(coef(md.refit01,simplify=T)$G1$items[,1:r]-Amat1)/10
+  rmse.mirt2[rep,1:2]=sqrt(colSums((coef(md.refit01,simplify=T)$G1$items[,1:r]-Amat1)^2)/10)
+  bias.mirt2[rep,3]=colMeans(coef(md.refit01,simplify=T)$G1$items[,3]-Dmat1)
+  rmse.mirt2[rep,3]=sqrt(colMeans((coef(md.refit01,simplify=T)$G1$items[,3]-Dmat1)^2))
+  difrec.mirt.fn2[rep,2]= mean(c(abs((coef(md.refit01,simplify=T)$G1$items[,1]-coef(md.refit01,simplify=T)$G2$items[,1])[c(4,5)]-0.5),abs((coef(md.refit01,simplify=T)$G1$items[,2]-coef(md.refit01,simplify=T)$G2$items[,2])[c(12,13)]-0.5)))
+  #difrec.mirt.fn2[rep,2]= mean(c(abs((coef(md.refit01,simplify=T)$G1$items[,1]-coef(md.refit01,simplify=T)$G2$items[,1])[c(4,5,6,7,8,9)]-0.5),abs((coef(md.refit01,simplify=T)$G1$items[,2]-coef(md.refit01,simplify=T)$G2$items[,2])[c(12,13,14,15,16,17)]-0.5)))
+  #ref vs focal2
+  md.noncons02 <- multipleGroup(resp02, s, group = Group02,SE=TRUE,invariance=c('free_means', 'free_var','intercepts',colnames(resp02)[1:r]))
+  mirt.p.mat3[(rep),1:9]=DIF(md.noncons02, which.par = c('a1'), p.adjust = 'none',scheme = 'add',items2test=c(3:11))[,"adj_pvals"]
+  mirt.p.mat3[(rep),10:18]=DIF(md.noncons02, which.par = c('a2'), p.adjust = 'none',scheme = 'add',items2test=c(12:20))[,"adj_pvals"]
+  md.refit02 <- multipleGroup(resp02, s, group = Group02,SE=TRUE,invariance=c('free_means', 'free_var','intercepts',colnames(resp02)[-(which(mirt.p.mat3[rep,]<0.05)+2)]))
+  bias.mirt3[rep,1:2]=colSums(coef(md.refit02,simplify=T)$G1$items[,1:r]-Amat1)/10
+  rmse.mirt3[rep,1:2]=sqrt(colSums((coef(md.refit02,simplify=T)$G1$items[,1:r]-Amat1)^2)/10)
+  bias.mirt3[rep,3]=colMeans(coef(md.refit02,simplify=T)$G1$items[,3]-Dmat1)
+  rmse.mirt3[rep,3]=sqrt(colMeans((coef(md.refit02,simplify=T)$G1$items[,3]-Dmat1)^2))
+  difrec.mirt.fn3[rep,3]= mean(c(abs((coef(md.refit02,simplify=T)$G1$items[,1]-coef(md.refit02,simplify=T)$G3$items[,1])[c(4,5)]-1),abs((coef(md.refit02,simplify=T)$G1$items[,2]-coef(md.refit02,simplify=T)$G3$items[,2])[c(12,13)]-1)))
+  #difrec.mirt.fn3[rep,3]= mean(c(abs((coef(md.refit02,simplify=T)$G1$items[,1]-coef(md.refit02,simplify=T)$G3$items[,1])[c(4,5,6,7,8,9)]-1),abs((coef(md.refit02,simplify=T)$G1$items[,2]-coef(md.refit02,simplify=T)$G3$items[,2])[c(12,13,14,15,16,17)]-1)))
+  rep
+}
+sum(mirt.p.mat1[,c(2,3,10,11)]<0.05)/(50*4)
+sum(mirt.p.mat1[,-c(2,3,10,11)]<0.05)/(50*14)
+colMeans(bias.mirt1)
+sqrt(colMeans(rmse.mirt1^2))
+colMeans(difrec.mirt.fn1)
+
+sum(mirt.p.mat2[,c(2,3,10,11)]<0.05)/(18*4)
+sum(mirt.p.mat2[,-c(2,3,10,11)]<0.05)/(18*14)
+colMeans(bias.mirt2)
+sqrt(colMeans(rmse.mirt2^2))
+colMeans(difrec.mirt.fn2)
+
+sum(mirt.p.mat3[1:24,c(2,3,10,11)]<0.05)/(24*4)
+sum(mirt.p.mat3[1:24,-c(2,3,10,11)]<0.05)/(24*14)
+colMeans(bias.mirt3)
+sqrt(colMeans(rmse.mirt3^2))
+colMeans(difrec.mirt.fn3)
+
+
+
+# 60% DIF
+sum(mirt.p.mat1[,c(2,3,4,5,6,7,10,11,12,13,14,15)]<0.05)/(50*12)
+sum(mirt.p.mat1[,-c(2,3,4,5,6,7,10,11,12,13,14,15)]<0.05)/(50*8)
+colMeans(bias.mirt1)
+sqrt(colMeans(rmse.mirt1^2))
+colMeans(difrec.mirt.fn1)
+
+sum(mirt.p.mat2[,c(2,3,4,5,6,7,10,11,12,13,14,15)]<0.05)/(50*12)
+sum(mirt.p.mat2[,-c(2,3,4,5,6,7,10,11,12,13,14,15)]<0.05)/(50*8)
+colMeans(bias.mirt2)
+sqrt(colMeans(rmse.mirt2^2))
+colMeans(difrec.mirt.fn2)
+
+sum(mirt.p.mat3[,c(2,3,4,5,6,7,10,11,12,13,14,15)]<0.05)/(50*12)
+sum(mirt.p.mat3[,-c(2,3,4,5,6,7,10,11,12,13,14,15)]<0.05)/(50*8)
+colMeans(bias.mirt3)
+sqrt(colMeans(rmse.mirt3^2))
+colMeans(difrec.mirt.fn3)
+
+write.csv(mirt.p.mat1,file = "Sim7_LRTpvs1.csv")
+write.csv(mirt.p.mat2,file = "Sim7_LRTpvs2.csv")
+write.csv(mirt.p.mat3,file = "Sim7_LRTpvs3.csv")
+write.csv(bias.mirt1,file = "Sim7_LRTbias1.csv")
+write.csv(bias.mirt2,file = "Sim7_LRTbias2.csv")
+write.csv(bias.mirt3,file = "Sim7_LRTbias3.csv")
+write.csv(rmse.mirt1,file = "Sim7_LRTrmse1.csv")
+write.csv(rmse.mirt2,file = "Sim7_LRTrmse2.csv")
+write.csv(rmse.mirt3,file = "Sim7_LRTrmse3.csv")
+write.csv(difrec.mirt.fn1,file = "Sim7_LRTfn1.csv")
+write.csv(difrec.mirt.fn2,file = "Sim7_LRTfn2.csv")
+write.csv(difrec.mirt.fn3,file = "Sim7_LRTfn3.csv")
