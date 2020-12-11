@@ -88,12 +88,12 @@ SEXP eigenMapMatMult(const Eigen::Map<Eigen::MatrixXd> A, Eigen::Map<Eigen::Matr
 }
 
 // [[Rcpp::export]]
-arma::mat E_step1 (arma::mat resp, arma::vec Nvec, arma::mat X, int y, int G, arma::mat yallgroup, arma::vec Mulist, arma::mat Siglist, arma::mat gra, arma::mat grd, arma::mat grbeta, arma::cube grgamma,int r, int J, int m, int N1, int N2, int N3,int N)
+arma::mat E_step1 (arma::mat resp, arma::vec Nvec, arma::mat X, int y, int G, arma::mat yallgroup, arma::mat Mulist, arma::cube Siglist, arma::mat gra, arma::mat grd, arma::mat grbeta, arma::cube grgamma,int r, int J, int m, int N1, int N2, int N3,int N)
 {
-  arma::vec Aallgroups = zeros<arma::vec>(X.n_rows);
+  arma::vec Aallgroups = zeros<arma::vec>(G*y);
   for (int yy = 0; yy < y; yy++){
-    for (int ii = 0; ii < G; yy++){
-    Aallgroups.subvec((yy*G),(yy*G+G-1))=dmvnrm2(X.row(ii), Mulist.subvec((yy*r),(yy*r+r-1)), Siglist.rows((yy*r),(yy*r+r-1)),FALSE);
+    for (int ii = 0; ii < G; ii++){
+      Aallgroups(yy*G+ii)=dmvnrm2(X.row(ii), Mulist.row(yy), Siglist.slice(yy),FALSE);
     }
   }
   
@@ -118,17 +118,17 @@ arma::mat E_step1 (arma::mat resp, arma::vec Nvec, arma::mat X, int y, int G, ar
         for (int g = 0; g < G; g++)
         {
           pstar1.slice(g) = 1/(1+exp(-(grd+axmat.col(g)+ygamatallgrp(span(0,J-1),span(g,g)))));
-          p1.slice(g) = (-diff(join_vert(ones<rowvec>(J),(pstar1.slice(g)).t(),zeros<rowvec>(J)),0)).t();
+          p1.slice(g) = (-diff(join_horiz(ones<colvec>(J),(pstar1.slice(g)),zeros<colvec>(J)),1,1));
         }
         for (int g = 0; g < G; g++)
         {
           pstar2.slice(g) = 1/(1+exp(-(grd+axmat.col(g)+ygamatallgrp(span(J,2*J-1),span(g,g)))));
-          p2.slice(g) = (-diff(join_vert(ones<rowvec>(J),(pstar2.slice(g)).t(),zeros<rowvec>(J)),0)).t();
+          p2.slice(g) = (-diff(join_horiz(ones<colvec>(J),(pstar2.slice(g)),zeros<colvec>(J)),1,1));
         }
         for (int g = 0; g < G; g++)
         {
           pstar3.slice(g) = 1/(1+exp(-(grd+axmat.col(g)+ygamatallgrp(span(2*J,3*J-1),span(g,g)))));
-          p3.slice(g) = (-diff(join_vert(ones<rowvec>(J),(pstar3.slice(g)).t(),zeros<rowvec>(J)),0)).t();
+          p3.slice(g) = (-diff(join_horiz(ones<colvec>(J),(pstar3.slice(g)),zeros<colvec>(J)),1,1));
         }
         arma::cube pij = zeros<cube>(J,G,N/3); 
         arma::mat LiA = zeros<mat>(N,G); 
