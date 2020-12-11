@@ -99,10 +99,11 @@ SEXP eigenMapMatMult(const Eigen::Map<Eigen::MatrixXd> A, Eigen::Map<Eigen::Matr
 }
 
 // [[Rcpp::export]]
-arma::mat E_step1 (arma::mat resp, arma::vec Nvec, arma::mat X, int y, int G, arma::mat yallgroup, arma::vec Mulist, arma::mat Siglist, arma::mat gra, arma::mat grd, arma::mat grbeta, arma::cube grgamma,int r, int J, int m, int N1, int N2, int N3,int N){
-  arma::vec Aallgroups = zeros<arma::vec>(X.n_rows*y);
+arma::mat E_step1 (arma::mat resp, arma::vec Nvec, arma::mat X, int y, int G, arma::mat yallgroup, arma::vec Mulist, arma::mat Siglist, arma::mat gra, arma::mat grd, arma::mat grbeta, arma::cube grgamma,int r, int J, int m, int N1, int N2, int N3,int N)
+{
+  arma::vec Aallgroups = zeros<arma::vec>(X.n_rows);
   for (int yy = 0; yy < y; yy++){
-    Aallgroups.subvec((yy*X.n_rows),(yy*X.n_rows+X.n_rows-1))=dmvnrm_arma_fast(X, Mulist.subvec((yy*r),(yy*r+r-1)), Siglist.rows((yy*r),(yy*r+r-1)),FALSE);
+    Aallgroups.subvec((yy*G),(yy*G+G-1))=dmvnrm_arma_fast(X, Mulist.subvec((yy*r),(yy*r+r-1)), Siglist.rows((yy*r),(yy*r+r-1)),FALSE);
   }
   
   arma::mat axmat=gra*X.t(); 
