@@ -600,14 +600,6 @@ NonUnif_Reg_Adaptive_DIF <- function(resp,m,r,y,N.vec,eta,lam,eps =1e-3,max.tol=
 
 Reg_DIF <- function(resp,m,r,y,N.vec,eta,eps =1e-3,max.tol=1e-7,gra00=NULL,grd00=NULL,grbeta00=NULL,grgamma00=NULL,Mu.list=NULL,Sig.list= NULL,NonUniform=F)
 {
-  #make sure the responses are coded from 1 instead of 0
-  if(min(resp)==0)
-  {
-    resp <- resp+1
-    resp2 <- as.matrix(resp)
-  } else {
-    resp2 <- as.matrix(resp)-1
-  }
   N <- nrow(resp)
   J <- ncol(resp)
   # Gauss-Hermite quadrature nodes
@@ -676,7 +668,6 @@ Reg_DIF <- function(resp,m,r,y,N.vec,eta,eps =1e-3,max.tol=1e-7,gra00=NULL,grd00
     for (j in 1:J){
       rgk=rgkest(j=j,Xijk=Xijk,LiA=LiA,y=y,Nvec=N.vec,G=G,N=N,m=m)
       estj=M_step(j=j,ng=ng,rgk=rgk,grd=grd,gra=gra,grgamma=grgamma,grbeta=grbeta,max.tol=max.tol,X=X,y.allgroup=y.allgroup,y=y,G=G,m=m,eta=eta)
-      
       gra[j,] <- estj[m:(m+r-1)]*Tau  # re-scale a and gamma
       grd[j,] <- estj[1:(m-1)]
       grgamma[,,j] <- matrix(estj[(m+r):(m+r+r*(y-1)-1)],y-1,r)*matrix(rep(Tau,(y-1)),y-1,r,byrow = T)
@@ -772,20 +763,26 @@ Reg_DIF <- function(resp,m,r,y,N.vec,eta,eps =1e-3,max.tol=1e-7,gra00=NULL,grd00
     lh[j]=temp
   }
   l0norm=0
-  for(i in 1:J) 
-  {
-    for(j in 1:2)
-    {
-      for(k in 1:2){
-        l0norm=l0norm+(grgamma[j,k,i]!=0)
+  if (NonUniform==T){
+    for(i in 1:J){
+      for(j in 1:2){
+        for(k in 1:2){
+          l0norm=l0norm+(grgamma[j,k,i]!=0)
+        }
+      }
+    }
+  }else{
+    for(i in 1:J){
+      for(j in 1:2){
+        l0norm=l0norm+(grbeta[i,j]!=0)
       }
     }
   }
-  AIC=-2*sum(lh)+l0norm*2
+  
   BIC=-2*sum(lh)+l0norm*log(N)
   Mu.gp1=Mu.est[1:2];Mu.gp2=Mu.est[3:4];Mu.gp3=Mu.est[5:6]
   Sig.gp1=Sig.est[1:2,];Sig.gp2=Sig.est[3:4,];Sig.gp3=Sig.est[5:6,]
-  return(list(est=cbind(gra,grd),Gamma=grgamma,iter=iter,aic=AIC,bic=BIC, mean1=Mu.gp1,mean2=Mu.gp2,mean3=Mu.gp3,Corr1=Sig.gp1,Corr2=Sig.gp2,Corr3=Sig.gp3))
+  return(list(est=cbind(gra,grd),Gamma=grgamma,Beta=grbeta,iter=iter,bic=BIC, mean1=Mu.gp1,mean2=Mu.gp2,mean3=Mu.gp3,Corr1=Sig.gp1,Corr2=Sig.gp2,Corr3=Sig.gp3))
 }
 
 # 5

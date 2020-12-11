@@ -37,11 +37,11 @@ double dmvnrm2(arma::rowvec x, arma::rowvec mean, arma::mat sigma, bool logd =fa
 
 
 // [[Rcpp::export]]
-arma::mat sumoverk (int G, arma::mat rgky, arma::rowvec aj, arma::rowvec dj, arma::rowvec gamjy, arma::mat X){
+arma::mat sumoverk (int G, arma::mat rgky, arma::rowvec aj, arma::rowvec dj,arma::rowvec betjy, arma::rowvec gamjy, arma::mat X){
   arma::mat sumoverky = zeros<mat>(1,1);
   arma::mat logdiff = zeros<mat>(2,1);
   for (int g =0; g < G; g++ ){
-    logdiff = join_vert(log(1-1/(1+exp(-(dj+aj*X.row(g).t()+gamjy*X.row(g).t())))),log(1/(1+exp(-(dj+aj*X.row(g).t()+gamjy*X.row(g).t())))));
+    logdiff = join_vert(log(1-1/(1+exp(-(dj+aj*X.row(g).t()+gamjy*X.row(g).t())))),log(1/(1+exp(-(dj+aj*X.row(g).t()+betjy+gamjy*X.row(g).t())))));
     sumoverky += (rgky.row(g))*(logdiff);
   }
   return (sumoverky);
@@ -109,6 +109,10 @@ arma::mat E_step1 (arma::mat resp, arma::vec Nvec, arma::mat X, int y, int G, ar
         ygamatallgrp.rows((yy*J),(yy*J+J-1))=ygamallgroups.rows((yy*J),(yy*J+J-1))*X.t(); 
       }
   arma::mat grbetaallgrp=zeros<mat>(J*y,1); 
+      for (int yy = 0; yy < y; yy++){
+        grbetaallgrp.rows((yy*J),(yy*J+J-1))=(yallgroup.row(yy)*grbeta.t()).t(); 
+      }
+      
   arma::cube pstar1=zeros<cube>(J,(m-1),G); 
   arma::cube pstar2=zeros<cube>(J,(m-1),G); 
   arma::cube pstar3=zeros<cube>(J,(m-1),G); 
@@ -117,17 +121,17 @@ arma::mat E_step1 (arma::mat resp, arma::vec Nvec, arma::mat X, int y, int G, ar
   arma::cube p3=zeros<cube>(J,m,G);
         for (int g = 0; g < G; g++)
         {
-          pstar1.slice(g) = 1/(1+exp(-(grd+axmat.col(g)+ygamatallgrp(span(0,J-1),span(g,g)))));
+          pstar1.slice(g) = 1/(1+exp(-(grd+axmat.col(g)+grbetaallgrp.rows(0,J-1)+ygamatallgrp(span(0,J-1),span(g,g)))));
           p1.slice(g) = (-diff(join_horiz(ones<colvec>(J),(pstar1.slice(g)),zeros<colvec>(J)),1,1));
         }
         for (int g = 0; g < G; g++)
         {
-          pstar2.slice(g) = 1/(1+exp(-(grd+axmat.col(g)+ygamatallgrp(span(J,2*J-1),span(g,g)))));
+          pstar2.slice(g) = 1/(1+exp(-(grd+axmat.col(g)+grbetaallgrp.rows(J,2*J-1)+ygamatallgrp(span(J,2*J-1),span(g,g)))));
           p2.slice(g) = (-diff(join_horiz(ones<colvec>(J),(pstar2.slice(g)),zeros<colvec>(J)),1,1));
         }
         for (int g = 0; g < G; g++)
         {
-          pstar3.slice(g) = 1/(1+exp(-(grd+axmat.col(g)+ygamatallgrp(span(2*J,3*J-1),span(g,g)))));
+          pstar3.slice(g) = 1/(1+exp(-(grd+axmat.col(g)+grbetaallgrp.rows(2*J,3*J-1)+ygamatallgrp(span(2*J,3*J-1),span(g,g)))));
           p3.slice(g) = (-diff(join_horiz(ones<colvec>(J),(pstar3.slice(g)),zeros<colvec>(J)),1,1));
         }
         arma::cube pij = zeros<cube>(J,G,N/3); 
