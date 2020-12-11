@@ -20,30 +20,19 @@ void inplace_tri_mat_mult(arma::rowvec &x, arma::mat const &trimat){
   }
 }
 
-// [[Rcpp::export]]
-arma::vec dmvnrm_arma_fast(arma::mat const &x,  
-                           arma::rowvec const &mean,  
-                           arma::mat const &sigma, 
-                           bool const logd = false) { 
-  using arma::uword;
-  uword const n = x.n_rows, 
-    xdim = x.n_cols;
-  arma::vec out(n);
-  arma::mat const rooti = arma::inv(trimatu(arma::chol(sigma)));
-  double const rootisum = arma::sum(log(rooti.diag())), 
-    constants = -(double)xdim/2.0 * log2pi, 
-    other_terms = rootisum + constants;
-  
-  arma::rowvec z;
-  for (uword i = 0; i < n; i++) {
-    z = (x.row(i) - mean);
-    inplace_tri_mat_mult(z, rooti);
-    out(i) = other_terms - 0.5 * arma::dot(z, z);     
-  }  
-  
-  if (logd)
-    return out;
-  return exp(out);
+//[[Rcpp::export]]
+double dmvnrm2(arma::rowvec x, arma::rowvec mean, arma::mat sigma, bool logd =false){
+  int xdim = x.n_elem;
+  double out;
+  arma::mat upper = inv(trimatu(chol(sigma))).t();
+  double uppersum = sum(log(upper.diag()));
+  double constants = -(static_cast<double>(xdim)/2.0)*log2pi;
+  arma::vec z = upper*(x - mean).t();
+  out = constants - 0.5*sum(z%z) + uppersum;
+  if (logd == false){
+    out = exp(out);
+  }
+  return(out);
 }
 
 
@@ -103,7 +92,9 @@ arma::mat E_step1 (arma::mat resp, arma::vec Nvec, arma::mat X, int y, int G, ar
 {
   arma::vec Aallgroups = zeros<arma::vec>(X.n_rows);
   for (int yy = 0; yy < y; yy++){
-    Aallgroups.subvec((yy*G),(yy*G+G-1))=dmvnrm_arma_fast(X, Mulist.subvec((yy*r),(yy*r+r-1)), Siglist.rows((yy*r),(yy*r+r-1)),FALSE);
+    for (int ii = 0; ii < G; yy++){
+    Aallgroups.subvec((yy*G),(yy*G+G-1))=dmvnrm2(X.row(ii), Mulist.subvec((yy*r),(yy*r+r-1)), Siglist.rows((yy*r),(yy*r+r-1)),FALSE);
+    }
   }
   
   arma::mat axmat=gra*X.t(); 
