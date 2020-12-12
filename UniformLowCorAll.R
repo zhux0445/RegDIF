@@ -97,13 +97,13 @@ for (rep in 2:reps){
   for (k in 1:length(eta.vec))
   {
     eta=eta.vec[k]
+    ptm <- proc.time()
     sim=Reg_DIF(resp=resp,m=2,r=2,y=3,N.vec=c(500,500,500),eta=eta,eps =1e-3,max.tol=1e-7,gra00=gra00,grd00=grd00,grbeta00=grbeta00,grgamma00=array(0,dim=c((y-1),r,J)),Mu.list=c(mu100,mu200,mu300),Sig.list=rbind(Sig100,Sig200,Sig300),NonUniform=F)
+    print(proc.time() - ptm)
     bics[k]=sim$bic
     #Gammas[,,,k]=sim$Gamma
     ADmat[,,k]=sim$est
     Betas[,,k]=sim$Beta
-    biass[k,]=sim$bias
-    RMSEs[k,]=sim$RMSE
     theta.dist[,,k]=rbind(sim$mean1,sim$mean2,sim$mean3,sim$Corr1,sim$Corr2,sim$Corr3)
   }
   
