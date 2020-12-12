@@ -680,19 +680,32 @@ Reg_DIF <- function(resp,m,r,y,N.vec,eta,eps =1e-3,max.tol=1e-7,gra00=NULL,grd00
     iter <- iter+1
   }
   # Re-estimation
-  sparsity=grgamma
-  for (j in 1:J){
-    for (rr in 1:2){
-      for (nn in 1:2){
-        sparsity[nn,rr,j]=ifelse(grgamma[nn,rr,j]==0,0,1)
+  if (NonUniform==T){
+    sparsity=grgamma
+    for (j in 1:J){
+      for (rr in 1:2){
+        for (nn in 1:2){
+          sparsity[nn,rr,j]=ifelse(grgamma[nn,rr,j]==0,0,1)
+        }
       }
     }
+  } else {
+    sparsity=grbeta
+    for (j in 1:J){
+      for (rr in 1:2){
+        sparsity[j,rr]=ifelse(grbeta[j,rr]==0,0,1)
+      }
+    } 
   }
-  
   gra=gra00
   grd=grd00
-  grbeta=grbeta00
-  grgamma=grgamma00*sparsity #array(0,dim=c((y-1),r,J))
+  if (NonUniform==T){
+    grbeta=grbeta00
+    grgamma=grgamma00*sparsity
+  } else {
+    grbeta=grbeta00*sparsity
+    grgamma=grgamma00
+  }
   df.a <- df.d  <- df.gamma <- df.beta <- df.Sig <- 1
   iter <- 0
   while(max(df.a)>eps | max(df.d)>eps | max(df.beta)>eps| max(df.gamma)>eps) # max(df.Mu)>eps | max(df.Sig)>eps |
@@ -716,7 +729,7 @@ Reg_DIF <- function(resp,m,r,y,N.vec,eta,eps =1e-3,max.tol=1e-7,gra00=NULL,grd00
     #update Sigma hat
     Sig.hat.allgrp=Sig.est
     for (yy in 1:y){
-      Sig.hat.allgrp[((yy-1)*r+1):((yy-1)*r+r),]=eigenMapMatMult(t(X-rep(Mu.est[((yy-1)*r+1):((yy-1)*r+r)])),((X-rep(Mu.est[((yy-1)*r+1):((yy-1)*r+r)]))*ng[(yy*G+1):(yy*G+G)]))/N.vec[yy]
+      Sig.hat.allgrp[((yy-1)*r+1):((yy-1)*r+r),]=eigenMapMatMult(t(X-cbind(rep(Mu.est[((yy-1)*r+1)],G),rep(Mu.est[((yy-1)*r+r)],G))),((X-cbind(rep(Mu.est[((yy-1)*r+1)],G),rep(Mu.est[((yy-1)*r+r)],G)))*ng[(yy*G+1):(yy*G+G)]))/N.vec[yy]
     }
     
     #scale 
@@ -727,8 +740,9 @@ Reg_DIF <- function(resp,m,r,y,N.vec,eta,eps =1e-3,max.tol=1e-7,gra00=NULL,grd00
     #X=(X-mu.hat.mat)/Tau.mat
     Xstar=X/Tau.mat
     for (yy in 1:y){
-      Sig.est[((yy-1)*r+1):((yy-1)*r+r),]=eigenMapMatMult(t(Xstar-rep(Mu.est[((yy-1)*r+1):((yy-1)*r+r)])),((Xstar-rep(Mu.est[((yy-1)*r+1):((yy-1)*r+r)]))*ng[(yy*G+1):(yy*G+G)]))/N.vec[yy]
+      Sig.est[((yy-1)*r+1):((yy-1)*r+r),]=eigenMapMatMult(t(Xstar-cbind(rep(Mu.est[((yy-1)*r+1)],G),rep(Mu.est[((yy-1)*r+r)],G))),((Xstar-cbind(rep(Mu.est[((yy-1)*r+1)],G),rep(Mu.est[((yy-1)*r+r)],G)))*ng[(yy*G+1):(yy*G+G)]))/N.vec[yy]
     }
+    
     
     for (j in 1:J){
       rgk=rgkest(j=j,Xijk=Xijk,LiA=LiA,y=y,Nvec=N.vec,G=G,N=N,m=m)
