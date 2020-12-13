@@ -1371,7 +1371,7 @@ for (rep in 1:50){
   Sig.list=rbind(Sig100,Sig200,Sig300)
   colnames(Sig.list) <- c()
   Sig.list=as.matrix(  Sig.list)
-  eta.vec=seq(1,25,2)
+  eta.vec=seq(15,35,2)
   bics=rep(0,length(eta.vec))
   aics=rep(0,length(eta.vec))
   ADmat=array(double(J*3*length(eta.vec)),dim = c(J,3,length(eta.vec)))

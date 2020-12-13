@@ -41,7 +41,7 @@ arma::mat sumoverk (int G, arma::mat rgky, arma::rowvec aj, arma::rowvec dj,arma
   arma::mat sumoverky = zeros<mat>(1,1);
   arma::mat logdiff = zeros<mat>(2,1);
   for (int g =0; g < G; g++ ){
-    logdiff = join_vert(log(1-1/(1+exp(-(dj+aj*X.row(g).t()+gamjy*X.row(g).t())))),log(1/(1+exp(-(dj+aj*X.row(g).t()+betjy+gamjy*X.row(g).t())))));
+    logdiff = join_vert(log(1-1/(1+exp(-(dj+aj*X.row(g).t()+betjy+gamjy*X.row(g).t())))),log(1/(1+exp(-(dj+aj*X.row(g).t()+betjy+gamjy*X.row(g).t())))));
     sumoverky += (rgky.row(g))*(logdiff);
   }
   return (sumoverky);
@@ -186,4 +186,6 @@ arma::mat E_step1 (arma::mat resp, arma::vec Nvec, arma::mat X, int y, int G, ar
             }
   return(LiA);
 }
+
+
 

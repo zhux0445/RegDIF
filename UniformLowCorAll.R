@@ -5,6 +5,10 @@ library(cacIRT)
 library(mvtnorm)
 library(graphics)
 library(dmutate)
+library(Rcpp)
+library(RcppParallel)
+library(RcppArmadillo)
+library(doParallel)
 setwd('/Users/zhux0445/Documents/GitHub/RegDIF_SimData')
 setwd('/Users/ruoyizhu/Documents/GitHub/RegDIF_SimData')
 params=read.csv("Para1.csv",row.names = 1)
@@ -137,7 +141,7 @@ for (rep in 1:reps){
   }
   r=2
   m=2
-  eta.vec=seq(11,35,2)
+  eta.vec=seq(11,31,2)
   bics=rep(0,length(eta.vec))
   ADmat=array(double(J*3*length(eta.vec)),dim = c(J,3,length(eta.vec)))
   #Gammas=array(double(2*J*m*length(eta.vec)),dim = c(2,2,J,length(eta.vec)))
