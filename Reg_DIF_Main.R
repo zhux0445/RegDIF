@@ -803,14 +803,6 @@ Reg_DIF <- function(resp,m,r,y,N.vec,eta,eps =1e-3,max.tol=1e-7,gra00=NULL,grd00
 
 Reg_EMM_DIF <- function(resp,m,r,y,N.vec,eta,eps =1e-3,max.tol=1e-7,gra00=NULL,grd00=NULL,grbeta00=NULL,grgamma00=NULL,Mu.list=NULL,Sig.list= NULL,NonUniform=F)
 {
-  #make sure the responses are coded from 1 instead of 0
-  if(min(resp)==0)
-  {
-    resp <- resp+1
-    resp2 <- as.matrix(resp)
-  } else {
-    resp2 <- as.matrix(resp)-1
-  }
   N <- nrow(resp)
   J <- ncol(resp)
   # Gauss-Hermite quadrature nodes
@@ -862,7 +854,7 @@ Reg_EMM_DIF <- function(resp,m,r,y,N.vec,eta,eps =1e-3,max.tol=1e-7,gra00=NULL,g
     #update Sigma hat
     Sig.hat.allgrp=Sig.est
     for (yy in 1:y){
-      Sig.hat.allgrp[((yy-1)*r+1):((yy-1)*r+r),]=eigenMapMatMult(t(X-rep(Mu.est[((yy-1)*r+1):((yy-1)*r+r)])),((X-rep(Mu.est[((yy-1)*r+1):((yy-1)*r+r)]))*ng[(yy*G+1):(yy*G+G)]))/N.vec[yy]
+      Sig.hat.allgrp[((yy-1)*r+1):((yy-1)*r+r),]=eigenMapMatMult(t(X-cbind(rep(Mu.est[((yy-1)*r+1)],G),rep(Mu.est[((yy-1)*r+r)],G))),((X-cbind(rep(Mu.est[((yy-1)*r+1)],G),rep(Mu.est[((yy-1)*r+r)],G)))*ng[(yy*G+1):(yy*G+G)]))/N.vec[yy]
     }
     
     #scale 
@@ -873,34 +865,20 @@ Reg_EMM_DIF <- function(resp,m,r,y,N.vec,eta,eps =1e-3,max.tol=1e-7,gra00=NULL,g
     #X=(X-mu.hat.mat)/Tau.mat
     Xstar=X/Tau.mat
     for (yy in 1:y){
-      Sig.est[((yy-1)*r+1):((yy-1)*r+r),]=eigenMapMatMult(t(Xstar-rep(Mu.est[((yy-1)*r+1):((yy-1)*r+r)])),((Xstar-rep(Mu.est[((yy-1)*r+1):((yy-1)*r+r)]))*ng[(yy*G+1):(yy*G+G)]))/N.vec[yy]
+      Sig.est[((yy-1)*r+1):((yy-1)*r+r),]=eigenMapMatMult(t(Xstar-cbind(rep(Mu.est[((yy-1)*r+1)],G),rep(Mu.est[((yy-1)*r+r)],G))),((Xstar-cbind(rep(Mu.est[((yy-1)*r+1)],G),rep(Mu.est[((yy-1)*r+r)],G)))*ng[(yy*G+1):(yy*G+G)]))/N.vec[yy]
     }
     
     for (j in 1:J){
       rgk=rgkest(j=j,Xijk=Xijk,LiA=LiA,y=y,Nvec=N.vec,G=G,N=N,m=m)
       estj=M_step(j=j,ng=ng,rgk=rgk,grd=grd,gra=gra,grgamma=grgamma,grbeta=grbeta,max.tol=max.tol,X=X,y.allgroup=y.allgroup,y=y,G=G,m=m,eta=eta)
-      
       gra[j,] <- estj[m:(m+r-1)]*Tau  # re-scale a and gamma
       grd[j,] <- estj[1:(m-1)]
       grgamma[,,j] <- matrix(estj[(m+r):(m+r+r*(y-1)-1)],y-1,r)*matrix(rep(Tau,(y-1)),y-1,r,byrow = T)
       grbeta[j,] <- estj[(m+r+r*(y-1)):(m+r+r*(y-1)+(m-1)*(y-1)-1)]
     }
-    
-    # Re-estimation
-    sparsity=grgamma
-    for (j in 1:J){
-      for (rr in 1:2){
-        for (nn in 1:2){
-          sparsity[nn,rr,j]=ifelse(grgamma[nn,rr,j]==0,0,1)
-        }
-      }
-    }
     for (j in 1:J){
       rgk=rgkest(j=j,Xijk=Xijk,LiA=LiA,y=y,Nvec=N.vec,G=G,N=N,m=m)
-      Pstar <- Qstar <- array(double(G*(m-1)*(y)),dim=c(G,m-1,y))
-      P<- array(double(G*m*(y)),dim=c(G,m,y))
       estj=M_step(j=j,ng=ng,rgk=rgk,grd=grd,gra=gra,grgamma=grgamma,grbeta=grbeta,max.tol=max.tol,X=X,y.allgroup=y.allgroup,y=y,G=G,m=m,eta=0)
-      
       gra[j,] <- estj[m:(m+r-1)]*Tau  # re-scale a and gamma
       grd[j,] <- estj[1:(m-1)]
       grgamma[,,j] <- matrix(estj[(m+r):(m+r+r*(y-1)-1)],y-1,r)*matrix(rep(Tau,(y-1)),y-1,r,byrow = T)
@@ -912,9 +890,7 @@ Reg_EMM_DIF <- function(resp,m,r,y,N.vec,eta,eps =1e-3,max.tol=1e-7,gra00=NULL,g
     df.gamma <- abs(gammaold-grgamma)
     iter <- iter+1
   }
-  
   # AIC BIC
-  
   Mu.est.mat=rbind(Mu.est[1:2],Mu.est[3:4],Mu.est[5:6])
   Sig.est.slice=array(0,c(2,2,3))
   Sig.est.slice[,,1]=Sig.est[1:2,];Sig.est.slice[,,2]=Sig.est[3:4,];Sig.est.slice[,,3]=Sig.est[5:6,]
@@ -923,219 +899,235 @@ Reg_EMM_DIF <- function(resp,m,r,y,N.vec,eta,eps =1e-3,max.tol=1e-7,gra00=NULL,g
   lh=numeric(J)#likelihood function for each item (overall likelihood by sum over j)
   for (j in 1:J){
     rgk=rgkest(j=j,Xijk=Xijk,LiA=LiA,y=y,Nvec=N.vec,G=G,N=N,m=m)
-    sumoverk1=sumoverk(G=G,rgky=rgk[(G+1):(2*G),],aj=gra[j,],dj=grd[j,],gamjy=c(0,0),X=X)#G,rgky,aj,dj,gamjy,X
-    sumoverk2=sumoverk(G=G,rgky=rgk[(2*G+1):(3*G),],aj=gra[j,],dj=grd[j,],gamjy=grgamma[1,,j],X=X)
-    sumoverk3=sumoverk(G=G,rgky=rgk[(3*G+1):(4*G),],aj=gra[j,],dj=grd[j,],gamjy=grgamma[2,,j],X=X)
+    sumoverk1=sumoverk(G=G,rgky=rgk[(G+1):(2*G),],aj=gra[j,],dj=grd[j,],betjy=0,gamjy=c(0,0),X=X)#G,rgky,aj,dj,gamjy,X
+    sumoverk2=sumoverk(G=G,rgky=rgk[(2*G+1):(3*G),],aj=gra[j,],dj=grd[j,],betjy=grbeta[j,1],gamjy=grgamma[1,,j],X=X)
+    sumoverk3=sumoverk(G=G,rgky=rgk[(3*G+1):(4*G),],aj=gra[j,],dj=grd[j,],betjy=grbeta[j,2],gamjy=grgamma[2,,j],X=X)
     temp=sumoverk1+sumoverk2+sumoverk3#-eta*norm(as.matrix(x2), type = "1")##sum over g
     lh[j]=temp
   }
   l0norm=0
-  for(i in 1:J) 
-  {
-    for(j in 1:2)
-    {
-      for(k in 1:2){
-        l0norm=l0norm+(grgamma[j,k,i]!=0)
+  if (NonUniform==T){
+    for(i in 1:J){
+      for(j in 1:2){
+        for(k in 1:2){
+          l0norm=l0norm+(grgamma[j,k,i]!=0)
+        }
+      }
+    }
+  }else{
+    for(i in 1:J){
+      for(j in 1:2){
+        l0norm=l0norm+(grbeta[i,j]!=0)
       }
     }
   }
-  AIC=-2*sum(lh)+l0norm*2
+  
   BIC=-2*sum(lh)+l0norm*log(N)
   Mu.gp1=Mu.est[1:2];Mu.gp2=Mu.est[3:4];Mu.gp3=Mu.est[5:6]
   Sig.gp1=Sig.est[1:2,];Sig.gp2=Sig.est[3:4,];Sig.gp3=Sig.est[5:6,]
-  return(list(est=cbind(gra,grd),Gamma=grgamma,iter=iter,aic=AIC,bic=BIC, mean1=Mu.gp1,mean2=Mu.gp2,mean3=Mu.gp3,Corr1=Sig.gp1,Corr2=Sig.gp2,Corr3=Sig.gp3))
+  return(list(est=cbind(gra,grd),Gamma=grgamma,Beta=grbeta,iter=iter,bic=BIC, mean1=Mu.gp1,mean2=Mu.gp2,mean3=Mu.gp3,Corr1=Sig.gp1,Corr2=Sig.gp2,Corr3=Sig.gp3))
 }
 
 
 # 6
 
-Reg_Adaptive_DIF <- function(resp,m,r,y,N.vec,eta,eps =1e-3,max.tol=1e-7,gra00=NULL,grd00=NULL,grbeta00=NULL,grgamma00=NULL,Mu.list=NULL,Sig.list= NULL,NonUniform=F)
-{
-  #make sure the responses are coded from 1 instead of 0
-  if(min(resp)==0)
-  {
-    resp <- resp+1
-    resp2 <- as.matrix(resp)
-  } else {
-    resp2 <- as.matrix(resp)-1
-  }
-  N <- nrow(resp)
-  J <- ncol(resp)
-  # Gauss-Hermite quadrature nodes
-  X1=seq(-3,3,by=0.2)
-  G=length(X1)^r
-  gh=t(matrix(rep(X1,r),r,length(X1),byrow = T))
-  idx <- as.matrix(expand.grid(rep(list(1:length(X1)),r)))
-  X <- matrix(gh[idx,1],nrow(idx),r)
-  ng <-  numeric(G)
-  Xijk=array(double(N*J*m),dim = c(N,J,m))
-  for(i in 1:N){
-    for(j in 1:J){
-      for(k in 1:m){
-        Xijk[i,j,k]=ifelse(resp[i,j]==k,1,0)
-      }
-    }
-  }
-  y.allgroup=rbind(rep(0,y-1),diag(y-1)) #y1, y2, y3
-  # starting values
-  gra=gra00
-  grd=grd00
-  grbeta=grbeta00 #matrix(0,J,2)
-  grgamma=grgamma00 #array(0,dim=c((y-1),r,J))
-  Sig.est=Sig.list #rbind(Sig100,Sig200,Sig300)
-  Mu.est=Mu.list #c(mu100,mu200,mu300)
-  
-  df.a <- df.d  <- df.gamma <- df.beta <- 1
-  iter <- 0
-  
-  # regularied EM 
-  while(max(df.a)>eps | max(df.d)>eps | max(df.beta)>eps | max(df.gamma)>eps) # max(df.Mu)>eps | max(df.Sig)>eps |
-  {
-    aold <- gra
-    dold <- grd
-    gammaold=grgamma
-    betaold=grbeta
-    
-    # E STEP
-    Mu.est.mat=rbind(Mu.est[1:2],Mu.est[3:4],Mu.est[5:6])
-    Sig.est.slice=array(0,c(2,2,3))
-    Sig.est.slice[,,1]=Sig.est[1:2,];Sig.est.slice[,,2]=Sig.est[3:4,];Sig.est.slice[,,3]=Sig.est[5:6,]
-    LiA=E_step1(resp=resp2,Nvec=N.vec,X=X,y=y,G=G,yallgroup=y.allgroup,Mulist=Mu.est.mat,Siglist=Sig.est.slice,gra=gra, grd=grd, grbeta=grbeta, grgamma=grgamma,r=r,J=J,m=m,N1=N1,N2=N2,N3=N3,N=N)
-    ng=ngest(LiA=LiA,y=y,Nvec=N.vec,G=G)
-    #update mu hat and Sigma hat
-    Mu.est=numeric(r*y)
-    for (yy in 2:y){
-      Mu.est[((yy-1)*r+1):((yy-1)*r+r)]=colSums(X*ng[(yy*G+1):(yy*G+G)])/N.vec[yy]
-    }
-    #update Sigma hat
-    Sig.hat.allgrp=Sig.est
-    for (yy in 1:y){
-      Sig.hat.allgrp[((yy-1)*r+1):((yy-1)*r+r),]=eigenMapMatMult(t(X-rep(Mu.est[((yy-1)*r+1):((yy-1)*r+r)])),((X-rep(Mu.est[((yy-1)*r+1):((yy-1)*r+r)]))*ng[(yy*G+1):(yy*G+G)]))/N.vec[yy]
-    }
-    
-    #scale 
-    #mu.hat.mat=matrix(rep(mu.hat,G),G,r,byrow = T)
-    Tau=sqrt(diag(Sig.hat.allgrp[1:r,]))
-    Tau.mat=matrix(rep(Tau,G),G,r,byrow = T)
-    #q_g_star
-    #X=(X-mu.hat.mat)/Tau.mat
-    Xstar=X/Tau.mat
-    for (yy in 1:y){
-      Sig.est[((yy-1)*r+1):((yy-1)*r+r),]=eigenMapMatMult(t(Xstar-rep(Mu.est[((yy-1)*r+1):((yy-1)*r+r)])),((Xstar-rep(Mu.est[((yy-1)*r+1):((yy-1)*r+r)]))*ng[(yy*G+1):(yy*G+G)]))/N.vec[yy]
-    }
-    
-    for (j in 1:J){
-      rgk=rgkest(j=j,Xijk=Xijk,LiA=LiA,y=y,Nvec=N.vec,G=G,N=N,m=m)
-      estj=M_step(j=j,ng=ng,rgk=rgk,grd=grd,gra=gra,grgamma=grgamma,grbeta=grbeta,max.tol=max.tol,X=X,y.allgroup=y.allgroup,y=y,G=G,m=m,eta=eta)
-      
-      gra[j,] <- estj[m:(m+r-1)]*Tau  # re-scale a and gamma
-      grd[j,] <- estj[1:(m-1)]
-      grgamma[,,j] <- matrix(estj[(m+r):(m+r+r*(y-1)-1)],y-1,r)*matrix(rep(Tau,(y-1)),y-1,r,byrow = T)
-      grbeta[j,] <- estj[(m+r+r*(y-1)):(m+r+r*(y-1)+(m-1)*(y-1)-1)]
-    }
-    df.d <- abs(dold-grd)
-    df.a <- abs(aold-gra)
-    df.beta <- abs(betaold-grbeta)
-    df.gamma <- abs(gammaold-grgamma)
-    iter <- iter+1
-  }
-  # Re-estimation
-  sparsity=grgamma
-  for (j in 1:J){
-    for (rr in 1:2){
-      for (nn in 1:2){
-        sparsity[nn,rr,j]=ifelse(grgamma[nn,rr,j]==0,0,1)
-      }
-    }
-  }
-  
-  gra=gra00
-  grd=grd00
-  grbeta=grbeta00
-  grgamma=grgamma00*sparsity #array(0,dim=c((y-1),r,J))
-  df.a <- df.d  <- df.gamma <- df.beta <- df.Sig <- 1
-  iter <- 0
-  while(max(df.a)>eps | max(df.d)>eps | max(df.beta)>eps| max(df.gamma)>eps) # max(df.Mu)>eps | max(df.Sig)>eps |
-  {
-    aold <- gra
-    dold <- grd
-    gammaold=grgamma
-    betaold=grbeta
-    
-    # E STEP
-    Mu.est.mat=rbind(Mu.est[1:2],Mu.est[3:4],Mu.est[5:6])
-    Sig.est.slice=array(0,c(2,2,3))
-    Sig.est.slice[,,1]=Sig.est[1:2,];Sig.est.slice[,,2]=Sig.est[3:4,];Sig.est.slice[,,3]=Sig.est[5:6,]
-    LiA=E_step1(resp=resp2,Nvec=N.vec,X=X,y=y,G=G,yallgroup=y.allgroup,Mulist=Mu.est.mat,Siglist=Sig.est.slice,gra=gra, grd=grd, grbeta=grbeta, grgamma=grgamma,r=r,J=J,m=m,N1=N1,N2=N2,N3=N3,N=N)
-    ng=ngest(LiA=LiA,y=y,Nvec=N.vec,G=G)
-    #update mu hat and Sigma hat
-    Mu.est=numeric(r*y)
-    for (yy in 2:y){
-      Mu.est[((yy-1)*r+1):((yy-1)*r+r)]=colSums(X*ng[(yy*G+1):(yy*G+G)])/N.vec[yy]
-    }
-    #update Sigma hat
-    Sig.hat.allgrp=Sig.est
-    for (yy in 1:y){
-      Sig.hat.allgrp[((yy-1)*r+1):((yy-1)*r+r),]=eigenMapMatMult(t(X-rep(Mu.est[((yy-1)*r+1):((yy-1)*r+r)])),((X-rep(Mu.est[((yy-1)*r+1):((yy-1)*r+r)]))*ng[(yy*G+1):(yy*G+G)]))/N.vec[yy]
-    }
-    
-    #scale 
-    #mu.hat.mat=matrix(rep(mu.hat,G),G,r,byrow = T)
-    Tau=sqrt(diag(Sig.hat.allgrp[1:r,]))
-    Tau.mat=matrix(rep(Tau,G),G,r,byrow = T)
-    #q_g_star
-    #X=(X-mu.hat.mat)/Tau.mat
-    Xstar=X/Tau.mat
-    for (yy in 1:y){
-      Sig.est[((yy-1)*r+1):((yy-1)*r+r),]=eigenMapMatMult(t(Xstar-rep(Mu.est[((yy-1)*r+1):((yy-1)*r+r)])),((Xstar-rep(Mu.est[((yy-1)*r+1):((yy-1)*r+r)]))*ng[(yy*G+1):(yy*G+G)]))/N.vec[yy]
-    }
-    
-    for (j in 1:J){
-      rgk=rgkest(j=j,Xijk=Xijk,LiA=LiA,y=y,Nvec=N.vec,G=G,N=N,m=m)
-      Pstar <- Qstar <- array(double(G*(m-1)*(y)),dim=c(G,m-1,y))
-      P<- array(double(G*m*(y)),dim=c(G,m,y))
-      estj=M_step(j=j,ng=ng,rgk=rgk,grd=grd,gra=gra,grgamma=grgamma,grbeta=grbeta,max.tol=max.tol,X=X,y.allgroup=y.allgroup,y=y,G=G,m=m,eta=0)
-      
-      gra[j,] <- estj[m:(m+r-1)]*Tau  # re-scale a and gamma
-      grd[j,] <- estj[1:(m-1)]
-      grgamma[,,j] <- matrix(estj[(m+r):(m+r+r*(y-1)-1)],y-1,r)*matrix(rep(Tau,(y-1)),y-1,r,byrow = T)
-      grbeta[j,] <- estj[(m+r+r*(y-1)):(m+r+r*(y-1)+(m-1)*(y-1)-1)]
-    }
-    df.d <- abs(dold-grd)
-    df.a <- abs(aold-gra)
-    df.beta <- abs(betaold-grbeta)
-    df.gamma <- abs(gammaold-grgamma)
-    iter <- iter+1
-  }
-  # AIC BIC
-  Mu.est.mat=rbind(Mu.est[1:2],Mu.est[3:4],Mu.est[5:6])
-  Sig.est.slice=array(0,c(2,2,3))
-  Sig.est.slice[,,1]=Sig.est[1:2,];Sig.est.slice[,,2]=Sig.est[3:4,];Sig.est.slice[,,3]=Sig.est[5:6,]
-  LiA=E_step1(resp=resp2,Nvec=N.vec,X=X,y=y,G=G,yallgroup=y.allgroup,Mulist=Mu.est.mat,Siglist=Sig.est.slice,gra=gra, grd=grd, grbeta=grbeta, grgamma=grgamma,r=r,J=J,m=m,N1=N1,N2=N2,N3=N3,N=N)
-  ng=ngest(LiA=LiA,y=y,Nvec=N.vec,G=G)
-  lh=numeric(J)#likelihood function for each item (overall likelihood by sum over j)
-  for (j in 1:J){
-    rgk=rgkest(j=j,Xijk=Xijk,LiA=LiA,y=y,Nvec=N.vec,G=G,N=N,m=m)
-    sumoverk1=sumoverk(G=G,rgky=rgk[(G+1):(2*G),],aj=gra[j,],dj=grd[j,],gamjy=c(0,0),X=X)#G,rgky,aj,dj,gamjy,X
-    sumoverk2=sumoverk(G=G,rgky=rgk[(2*G+1):(3*G),],aj=gra[j,],dj=grd[j,],gamjy=grgamma[1,,j],X=X)
-    sumoverk3=sumoverk(G=G,rgky=rgk[(3*G+1):(4*G),],aj=gra[j,],dj=grd[j,],gamjy=grgamma[2,,j],X=X)
-    temp=sumoverk1+sumoverk2+sumoverk3#-eta*norm(as.matrix(x2), type = "1")##sum over g
-    lh[j]=temp
-  }
-  l0norm=0
-  for(i in 1:J) 
-  {
-    for(j in 1:2)
+  Reg_Adaptive_DIF <- function(resp,m,r,y,N.vec,eta,lam,eps =1e-3,max.tol=1e-7,gra00=NULL,grd00=NULL,grbeta00=NULL,grgamma00=NULL,Mu.list=NULL,Sig.list= NULL,NonUniform=F)
     {
-      for(k in 1:2){
-        l0norm=l0norm+(grgamma[j,k,i]!=0)
+    N <- nrow(resp)
+    J <- ncol(resp)
+    # Gauss-Hermite quadrature nodes
+    X1=seq(-3,3,by=0.2)
+    G=length(X1)^r
+    gh=t(matrix(rep(X1,r),r,length(X1),byrow = T))
+    idx <- as.matrix(expand.grid(rep(list(1:length(X1)),r)))
+    X <- matrix(gh[idx,1],nrow(idx),r)
+    ng <-  numeric(G)
+    Xijk=array(double(N*J*m),dim = c(N,J,m))
+    for(i in 1:N){
+      for(j in 1:J){
+        for(k in 1:m){
+          Xijk[i,j,k]=ifelse(resp[i,j]==k,1,0)
+        }
       }
     }
+    y.allgroup=rbind(rep(0,y-1),diag(y-1)) #y1, y2, y3
+    # starting values
+    gra=gra00
+    grd=grd00
+    grbeta=grbeta00 #matrix(0,J,2)
+    grgamma=grgamma00 #array(0,dim=c((y-1),r,J))
+    Sig.est=Sig.list #rbind(Sig100,Sig200,Sig300)
+    Mu.est=Mu.list #c(mu100,mu200,mu300)
+    
+    df.a <- df.d  <- df.gamma <- df.beta <- 1
+    iter <- 0
+    
+    # regularied EM 
+    while(max(df.a)>eps | max(df.d)>eps | max(df.beta)>eps | max(df.gamma)>eps) # max(df.Mu)>eps | max(df.Sig)>eps |
+    {
+      aold <- gra
+      dold <- grd
+      gammaold=grgamma
+      betaold=grbeta
+      
+      # E STEP
+      Mu.est.mat=rbind(Mu.est[1:2],Mu.est[3:4],Mu.est[5:6])
+      Sig.est.slice=array(0,c(2,2,3))
+      Sig.est.slice[,,1]=Sig.est[1:2,];Sig.est.slice[,,2]=Sig.est[3:4,];Sig.est.slice[,,3]=Sig.est[5:6,]
+      LiA=E_step1(resp=resp2,Nvec=N.vec,X=X,y=y,G=G,yallgroup=y.allgroup,Mulist=Mu.est.mat,Siglist=Sig.est.slice,gra=gra, grd=grd, grbeta=grbeta, grgamma=grgamma,r=r,J=J,m=m,N1=N1,N2=N2,N3=N3,N=N)
+      ng=ngest(LiA=LiA,y=y,Nvec=N.vec,G=G)
+      #update mu hat and Sigma hat
+      Mu.est=numeric(r*y)
+      for (yy in 2:y){
+        Mu.est[((yy-1)*r+1):((yy-1)*r+r)]=colSums(X*ng[(yy*G+1):(yy*G+G)])/N.vec[yy]
+      }
+      #update Sigma hat
+      Sig.hat.allgrp=Sig.est
+      for (yy in 1:y){
+        Sig.hat.allgrp[((yy-1)*r+1):((yy-1)*r+r),]=eigenMapMatMult(t(X-cbind(rep(Mu.est[((yy-1)*r+1)],G),rep(Mu.est[((yy-1)*r+r)],G))),((X-cbind(rep(Mu.est[((yy-1)*r+1)],G),rep(Mu.est[((yy-1)*r+r)],G)))*ng[(yy*G+1):(yy*G+G)]))/N.vec[yy]
+      }
+      
+      #scale 
+      #mu.hat.mat=matrix(rep(mu.hat,G),G,r,byrow = T)
+      Tau=sqrt(diag(Sig.hat.allgrp[1:r,]))
+      Tau.mat=matrix(rep(Tau,G),G,r,byrow = T)
+      #q_g_star
+      #X=(X-mu.hat.mat)/Tau.mat
+      Xstar=X/Tau.mat
+      for (yy in 1:y){
+        Sig.est[((yy-1)*r+1):((yy-1)*r+r),]=eigenMapMatMult(t(Xstar-cbind(rep(Mu.est[((yy-1)*r+1)],G),rep(Mu.est[((yy-1)*r+r)],G))),((Xstar-cbind(rep(Mu.est[((yy-1)*r+1)],G),rep(Mu.est[((yy-1)*r+r)],G)))*ng[(yy*G+1):(yy*G+G)]))/N.vec[yy]
+      }
+      
+      for (j in 1:J){
+        rgk=rgkest(j=j,Xijk=Xijk,LiA=LiA,y=y,Nvec=N.vec,G=G,N=N,m=m)
+        estj=M_step(j=j,ng=ng,rgk=rgk,grd=grd,gra=gra,grgamma=grgamma,grgamma00=grgamma00,grbeta=grbeta,grbeta00=grbeta00,max.tol=max.col,X=X,y.allgroup=y.allgroup,y=y,G=G,m=m,eta=eta,lam=lam)
+        gra[j,] <- estj[m:(m+r-1)]*Tau  # re-scale a and gamma
+        grd[j,] <- estj[1:(m-1)]
+        grgamma[,,j] <- matrix(estj[(m+r):(m+r+r*(y-1)-1)],y-1,r)*matrix(rep(Tau,(y-1)),y-1,r,byrow = T)
+        grbeta[j,] <- estj[(m+r+r*(y-1)):(m+r+r*(y-1)+(m-1)*(y-1)-1)]
+      }
+      df.d <- abs(dold-grd)
+      df.a <- abs(aold-gra)
+      df.beta <- abs(betaold-grbeta)
+      df.gamma <- abs(gammaold-grgamma)
+      iter <- iter+1
+    }
+    # Re-estimation
+    if (NonUniform==T){
+      sparsity=grgamma
+      for (j in 1:J){
+        for (rr in 1:2){
+          for (nn in 1:2){
+            sparsity[nn,rr,j]=ifelse(grgamma[nn,rr,j]==0,0,1)
+          }
+        }
+      }
+    } else {
+      sparsity=grbeta
+      for (j in 1:J){
+        for (rr in 1:2){
+          sparsity[j,rr]=ifelse(grbeta[j,rr]==0,0,1)
+        }
+      } 
+    }
+    gra=gra00
+    grd=grd00
+    if (NonUniform==T){
+      grbeta=grbeta00
+      grgamma=grgamma00*sparsity
+    } else {
+      grbeta=grbeta00*sparsity
+      grgamma=grgamma00
+    }
+    df.a <- df.d  <- df.gamma <- df.beta <- df.Sig <- 1
+    iter <- 0
+    while(max(df.a)>eps | max(df.d)>eps | max(df.beta)>eps| max(df.gamma)>eps) # max(df.Mu)>eps | max(df.Sig)>eps |
+    {
+      aold <- gra
+      dold <- grd
+      gammaold=grgamma
+      betaold=grbeta
+      
+      # E STEP
+      Mu.est.mat=rbind(Mu.est[1:2],Mu.est[3:4],Mu.est[5:6])
+      Sig.est.slice=array(0,c(2,2,3))
+      Sig.est.slice[,,1]=Sig.est[1:2,];Sig.est.slice[,,2]=Sig.est[3:4,];Sig.est.slice[,,3]=Sig.est[5:6,]
+      LiA=E_step1(resp=resp2,Nvec=N.vec,X=X,y=y,G=G,yallgroup=y.allgroup,Mulist=Mu.est.mat,Siglist=Sig.est.slice,gra=gra, grd=grd, grbeta=grbeta, grgamma=grgamma,r=r,J=J,m=m,N1=N1,N2=N2,N3=N3,N=N)
+      ng=ngest(LiA=LiA,y=y,Nvec=N.vec,G=G)
+      #update mu hat and Sigma hat
+      Mu.est=numeric(r*y)
+      for (yy in 2:y){
+        Mu.est[((yy-1)*r+1):((yy-1)*r+r)]=colSums(X*ng[(yy*G+1):(yy*G+G)])/N.vec[yy]
+      }
+      #update Sigma hat
+      Sig.hat.allgrp=Sig.est
+      for (yy in 1:y){
+        Sig.hat.allgrp[((yy-1)*r+1):((yy-1)*r+r),]=eigenMapMatMult(t(X-cbind(rep(Mu.est[((yy-1)*r+1)],G),rep(Mu.est[((yy-1)*r+r)],G))),((X-cbind(rep(Mu.est[((yy-1)*r+1)],G),rep(Mu.est[((yy-1)*r+r)],G)))*ng[(yy*G+1):(yy*G+G)]))/N.vec[yy]
+      }
+      
+      #scale 
+      #mu.hat.mat=matrix(rep(mu.hat,G),G,r,byrow = T)
+      Tau=sqrt(diag(Sig.hat.allgrp[1:r,]))
+      Tau.mat=matrix(rep(Tau,G),G,r,byrow = T)
+      #q_g_star
+      #X=(X-mu.hat.mat)/Tau.mat
+      Xstar=X/Tau.mat
+      for (yy in 1:y){
+        Sig.est[((yy-1)*r+1):((yy-1)*r+r),]=eigenMapMatMult(t(Xstar-cbind(rep(Mu.est[((yy-1)*r+1)],G),rep(Mu.est[((yy-1)*r+r)],G))),((Xstar-cbind(rep(Mu.est[((yy-1)*r+1)],G),rep(Mu.est[((yy-1)*r+r)],G)))*ng[(yy*G+1):(yy*G+G)]))/N.vec[yy]
+      }
+      
+      
+      for (j in 1:J){
+        rgk=rgkest(j=j,Xijk=Xijk,LiA=LiA,y=y,Nvec=N.vec,G=G,N=N,m=m)
+        Pstar <- Qstar <- array(double(G*(m-1)*(y)),dim=c(G,m-1,y))
+        P<- array(double(G*m*(y)),dim=c(G,m,y))
+        estj=M_step(j=j,ng=ng,rgk=rgk,grd=grd,gra=gra,grgamma=grgamma,grgamma00=grgamma00,grbeta=grbeta,grbeta00=grbeta00,max.tol=max.col,X=X,y.allgroup=y.allgroup,y=y,G=G,m=m,eta=0,lam=lam)
+        
+        gra[j,] <- estj[m:(m+r-1)]*Tau  # re-scale a and gamma
+        grd[j,] <- estj[1:(m-1)]
+        grgamma[,,j] <- matrix(estj[(m+r):(m+r+r*(y-1)-1)],y-1,r)*matrix(rep(Tau,(y-1)),y-1,r,byrow = T)
+        grbeta[j,] <- estj[(m+r+r*(y-1)):(m+r+r*(y-1)+(m-1)*(y-1)-1)]
+      }
+      df.d <- abs(dold-grd)
+      df.a <- abs(aold-gra)
+      df.beta <- abs(betaold-grbeta)
+      df.gamma <- abs(gammaold-grgamma)
+      iter <- iter+1
+    }
+    # AIC BIC
+    Mu.est.mat=rbind(Mu.est[1:2],Mu.est[3:4],Mu.est[5:6])
+    Sig.est.slice=array(0,c(2,2,3))
+    Sig.est.slice[,,1]=Sig.est[1:2,];Sig.est.slice[,,2]=Sig.est[3:4,];Sig.est.slice[,,3]=Sig.est[5:6,]
+    LiA=E_step1(resp=resp2,Nvec=N.vec,X=X,y=y,G=G,yallgroup=y.allgroup,Mulist=Mu.est.mat,Siglist=Sig.est.slice,gra=gra, grd=grd, grbeta=grbeta, grgamma=grgamma,r=r,J=J,m=m,N1=N1,N2=N2,N3=N3,N=N)
+    ng=ngest(LiA=LiA,y=y,Nvec=N.vec,G=G)
+    lh=numeric(J)#likelihood function for each item (overall likelihood by sum over j)
+    for (j in 1:J){
+      rgk=rgkest(j=j,Xijk=Xijk,LiA=LiA,y=y,Nvec=N.vec,G=G,N=N,m=m)
+      sumoverk1=sumoverk(G=G,rgky=rgk[(G+1):(2*G),],aj=gra[j,],dj=grd[j,],betjy=0,gamjy=c(0,0),X=X)#G,rgky,aj,dj,gamjy,X
+      sumoverk2=sumoverk(G=G,rgky=rgk[(2*G+1):(3*G),],aj=gra[j,],dj=grd[j,],betjy=grbeta[j,1],gamjy=grgamma[1,,j],X=X)
+      sumoverk3=sumoverk(G=G,rgky=rgk[(3*G+1):(4*G),],aj=gra[j,],dj=grd[j,],betjy=grbeta[j,2],gamjy=grgamma[2,,j],X=X)
+      temp=sumoverk1+sumoverk2+sumoverk3#-eta*norm(as.matrix(x2), type = "1")##sum over g
+      lh[j]=temp
+    }
+    l0norm=0
+    if (NonUniform==T){
+      for(i in 1:J){
+        for(j in 1:2){
+          for(k in 1:2){
+            l0norm=l0norm+(grgamma[j,k,i]!=0)
+          }
+        }
+      }
+    }else{
+      for(i in 1:J){
+        for(j in 1:2){
+          l0norm=l0norm+(grbeta[i,j]!=0)
+        }
+      }
+    }
+    
+    BIC=-2*sum(lh)+l0norm*log(N)
+    Mu.gp1=Mu.est[1:2];Mu.gp2=Mu.est[3:4];Mu.gp3=Mu.est[5:6]
+    Sig.gp1=Sig.est[1:2,];Sig.gp2=Sig.est[3:4,];Sig.gp3=Sig.est[5:6,]
+    return(list(est=cbind(gra,grd),Gamma=grgamma,Beta=grbeta,iter=iter,bic=BIC, mean1=Mu.gp1,mean2=Mu.gp2,mean3=Mu.gp3,Corr1=Sig.gp1,Corr2=Sig.gp2,Corr3=Sig.gp3))
   }
-  AIC=-2*sum(lh)+l0norm*2
-  BIC=-2*sum(lh)+l0norm*log(N)
-  Mu.gp1=Mu.est[1:2];Mu.gp2=Mu.est[3:4];Mu.gp3=Mu.est[5:6]
-  Sig.gp1=Sig.est[1:2,];Sig.gp2=Sig.est[3:4,];Sig.gp3=Sig.est[5:6,]
-  return(list(est=cbind(gra,grd),Gamma=grgamma,iter=iter,aic=AIC,bic=BIC, mean1=Mu.gp1,mean2=Mu.gp2,mean3=Mu.gp3,Corr1=Sig.gp1,Corr2=Sig.gp2,Corr3=Sig.gp3))
-}
-
