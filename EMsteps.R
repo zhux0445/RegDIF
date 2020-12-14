@@ -240,7 +240,7 @@ M_step=function(j,ng,rgk,grd,gra,grgamma,grbeta,max.tol,X,y.allgroup,y,G,m,eta){
   #end of M step loop
 }
 
-M_step_Adaptive_beta=function(j,ng,rgk,grd,gra,grgamma,grgamma00,grbeta,grbeta00,max.tol,X,y.allgroup,y,G,m,eta,lam){
+M_step_Adaptive=function(j,ng,rgk,grd,gra,grgamma,grgamma00,grbeta,grbeta00,max.tol,X,y.allgroup,y,G,m,eta,lam){
   d <- grd[j,] 
   a <- gra[j,]
   gam=grgamma[,,j]

@@ -9,10 +9,10 @@ library(Rcpp)
 library(RcppParallel)
 library(RcppArmadillo)
 library(doParallel)
-setwd('/Users/zhux0445/Documents/GitHub/RegDIF_SimData')
+setwd('/Users/hyzhu27/Documents/GitHub/RegDIF_SimData')
 setwd('/Users/ruoyizhu/Documents/GitHub/RegDIF_SimData')
 params=read.csv("Para1.csv",row.names = 1)
-responses=read.csv("RESP3lowcor.csv",row.names = 1)
+responses=read.csv("RESP1lowcor.csv",row.names = 1)
 
 soft=function(s, tau) {
   val=sign(s)*max(c(abs(s) - tau,0))
@@ -20,7 +20,7 @@ soft=function(s, tau) {
 
 J=20
 
-N1=N2=N3=1000 
+N1=N2=N3=500 
 Group=c(rep('G1', N1), rep('G2', N2), rep('G3', N3))
 Group01=c(rep('G1', N1), rep('G2', N2))
 Group02=c(rep('G1', N1), rep('G3', N3))
@@ -227,10 +227,10 @@ for (rep in 1:reps){
   print(Betas.2[,,rep])
   print(biass.2[rep,])
   print(RMSEs.2[rep,])
-  write.csv(eta.2[rep],file = paste("eta1LowCor_",rep))
-  write.csv(ADmat.2[,,rep],file = paste("ADmat1LowCor_",rep))
-  write.csv(Betas.2[,,rep],file = paste("Beta1LowCor_",rep))
-  write.csv(theta.dist[,,kk],file = paste("theta1LowCor_",rep))
+  write.csv(eta.2[rep],file = paste("eta1AdaptLowCor_",rep))
+  write.csv(ADmat.2[,,rep],file = paste("ADmat1AdaptLowCor_",rep))
+  write.csv(Betas.2[,,rep],file = paste("Beta1AdaptLowCor_",rep))
+  write.csv(theta.dist[,,kk],file = paste("theta1AdaptLowCor_",rep))
 }
 
 # sim3 Lowcor
