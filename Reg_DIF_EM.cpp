@@ -213,7 +213,7 @@ arma::mat M_step(int j, arma::rowvec ng, arma::mat rgk, arma::mat X, int y, int 
     }
     arma::cube PQdif=zeros<cube>(G,m,y); 
     for (int yy=0; yy<y; yy++){
-      PQdif.slice(yy)=-diff(join_horiz(zeros<colvec>(G),Pstar.slice(yy)%Qstar.slice(yy),zeros<colvec>(G)),1,1).t();
+      PQdif.slice(yy)=-diff(join_horiz(zeros<colvec>(G),Pstar.slice(yy)%Qstar.slice(yy),zeros<colvec>(G)),1,1);
     }
     
     int len=0;
