@@ -243,7 +243,7 @@ arma::mat M_step(int j, arma::rowvec ng, arma::mat rgk, arma::mat X, int y, int 
     arma::vec Gamsco=zeros<vec>(len2);
     arma::mat Gamscoall=gam;
     for (int yy=1; yy<y; yy++){
-      Gamscoall.row(yy-1)=(sum(rgk.rows((yy+1)*G,(yy+2)*G-1)/P.slice(yy)%PQdif.slice(yy),1))*X;
+      Gamscoall.row(yy-1)=(sum(rgk.rows((yy+1)*G,(yy+2)*G-1)/P.slice(yy)%PQdif.slice(yy),1)).t()*X;
     }
     
     int len3=0;
