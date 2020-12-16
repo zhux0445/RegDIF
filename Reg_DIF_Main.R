@@ -1081,7 +1081,7 @@ Reg_EMM_DIF <- function(resp,m,r,y,N.vec,eta,eps =1e-3,max.tol=1e-7,gra00=NULL,g
         rgk=rgkest(j=j,Xijk=Xijk,LiA=LiA,y=y,Nvec=N.vec,G=G,N=N,m=m)
         Pstar <- Qstar <- array(double(G*(m-1)*(y)),dim=c(G,m-1,y))
         P<- array(double(G*m*(y)),dim=c(G,m,y))
-        estj=M_step_Adaptive(j=j,ng=ng,rgk=rgk,grd=grd,gra=gra,grgamma=grgamma,grgamma00=grgamma00,grbeta=grbeta,grbeta00=grbeta00,max.tol=max.col,X=X,y.allgroup=y.allgroup,y=y,G=G,m=m,eta=0,lam=lam)
+        estj=M_step_Adaptive(j=j,ng=ng,rgk=rgk,grd=grd,gra=gra,grgamma=grgamma,grgamma00=grgamma00,grbeta=grbeta,grbeta00=grbeta00,max.tol=max.tol,X=X,y.allgroup=y.allgroup,y=y,G=G,m=m,eta=0,lam=lam)
         
         gra[j,] <- estj[m:(m+r-1)]*Tau  # re-scale a and gamma
         grd[j,] <- estj[1:(m-1)]
