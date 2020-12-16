@@ -254,7 +254,7 @@ arma::mat M_step(int j, arma::rowvec ng, arma::mat rgk, arma::mat X, int y, int 
     }
     arma::rowvec Betscoall=bet;
     for (int yy=1; yy<y; yy++){
-      Betscoall(yy-1) <- sum(diff(rgk.rows((yy+1)*G,(yy+2)*G-1)/P.slice(yy),1,1)%Pstar.slice(yy)%Qstar.slice(yy),1);
+      Betscoall.subvec(yy-1,yy-1) = sum(diff(rgk.rows((yy+1)*G,(yy+2)*G-1)/P.slice(yy),1,1)%Pstar.slice(yy)%Qstar.slice(yy),0);
     }
        
   
