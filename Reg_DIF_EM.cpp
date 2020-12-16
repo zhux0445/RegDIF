@@ -189,12 +189,12 @@ arma::mat E_step1 (arma::mat resp, arma::vec Nvec, arma::mat X, int y, int G, ar
 
 
 // [[Rcpp::export]]
-arma::vec M_step(int j, double ng, arma::mat X, int y, int G, arma::mat yallgroup, double maxtol, arma::mat gra, arma::mat grd, arma::mat grbeta, arma::cube grgamma,int r, int J, int m, int eta)
+arma::mat M_step(int j, arma::rowvec ng, arma::mat rgk, arma::mat X, int y, int G, arma::mat yallgroup, double maxtol, arma::mat gra, arma::mat grd, arma::mat grbeta, arma::cube grgamma,int r, int J, int m, int eta)
 {
-  arma::vec d=grd.row(j);
-  arma::vec a=gra.row(j);
-  arma::vec gam=grgamma.slice(j);
-  arma::vec bet=grbeta.row(j);
+  arma::rowvec d=grd.row(j-1);
+  arma::rowvec a=gra.row(j-1);
+  arma::mat gam=grgamma.slice(j-1);
+  arma::rowvec bet=grbeta.row(j-1);
   arma::cube Pstar=zeros<cube>(G,(m-1),y);
   arma::cube Qstar=zeros<cube>(G,(m-1),y);
   arma::cube P=zeros<cube>(G,m,y); 
@@ -203,7 +203,7 @@ arma::vec M_step(int j, double ng, arma::mat X, int y, int G, arma::mat yallgrou
     for(int yy=0; yy<y; yy++){
       for(int g = 0; g < G; g++){
         (Pstar.slice(yy)).row(g)=1/(1+exp(-(d+a*X.row(g)+ yallgroup.row(yy)*bet+yallgroup.row(yy)*gam*X.row(g))));
-        (P.slice(yy)).row(g)=-diff(join_horiz(1,(Pstar.slice(yy)).row(g),0),1,1);
+        (P.slice(yy)).row(g)=-diff(join_vert(ones<colvec>(1),(Pstar.slice(yy)).row(g),zeros<colvec>(1)),1,1);
       }
     }
     Qstar=ones<cube>(G,(m-1),y)-Pstar;
