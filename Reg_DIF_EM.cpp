@@ -207,7 +207,7 @@ arma::mat M_step(int j, arma::rowvec ng, arma::mat rgk, arma::mat X, int y, int 
       }
     }
     Qstar=ones<cube>(G,(m-1),y)-Pstar;
-    arma::vec Dsco=zeros<vec>(m-1);
+    arma::rowvec Dsco=zeros<rowvec>(m-1);
     for (int yy=0; yy<y; yy++){
       Dsco += sum(diff(rgk.rows((yy+1)*G,(yy+2)*G-1)/P.slice(yy),1,1)%Pstar.slice(yy)%Qstar.slice(yy));
     }
@@ -222,15 +222,15 @@ arma::mat M_step(int j, arma::rowvec ng, arma::mat rgk, arma::mat X, int y, int 
         len++;
       }
     }
-    arma::vec Asco=zeros<vec>(len);
-    arma::vec a01=a;
+    arma::rowvec Asco=zeros<rowvec>(len);
+    arma::rowvec a01=a;
     for (int kk=0; kk<r; kk++){
       if (a(kk)!=0){
         a01(kk)=1;
       }
     }
     for (int yy=0; yy<y; yy++){
-      Asco += sum(rgk.rows((yy+1)*G,(yy+2)*G-1)/P.slice(yy)%PQdif.slice(yy),1)*(X*a01);
+      Asco += sum(rgk.rows((yy+1)*G,(yy+2)*G-1)/P.slice(yy)%PQdif.slice(yy),1).t()*(X*a01.t());
     }
     int len2=0;
     for (int kk=0; kk<r; kk++){
