@@ -202,8 +202,8 @@ arma::mat M_step(int j, arma::rowvec ng, arma::mat rgk, arma::mat X, int y, int 
   for(miter=0; miter<500; miter++){
     for(int yy=0; yy<y; yy++){
       for(int g = 0; g < G; g++){
-        (Pstar.slice(yy)).row(g)=1/(1+exp(-(d+a*X.row(g)+ yallgroup.row(yy)*bet+yallgroup.row(yy)*gam*X.row(g))));
-        (P.slice(yy)).row(g)=-diff(join_vert(ones<colvec>(1),(Pstar.slice(yy)).row(g),zeros<colvec>(1)),1,1);
+        (Pstar.slice(yy)).row(g)=1/(1+exp(-(d+a*(X.row(g)).t()+ yallgroup.row(yy)*bet.t()+yallgroup.row(yy)*gam*X.row(g).t())));
+        (P.slice(yy)).row(g)=-diff(join_horiz(ones<colvec>(1),(Pstar.slice(yy)).row(g),zeros<colvec>(1)),1,1);
       }
     }
     Qstar=ones<cube>(G,(m-1),y)-Pstar;
