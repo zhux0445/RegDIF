@@ -11,8 +11,8 @@ library(RcppArmadillo)
 library(doParallel)
 setwd('/Users/hyzhu27/Documents/GitHub/RegDIF_SimData')
 setwd('/Users/ruoyizhu/Documents/GitHub/RegDIF_SimData')
-params=read.csv("Para1.csv",row.names = 1)
-responses=read.csv("RESP1lowcor.csv",row.names = 1)
+params=read.csv("Para2.csv",row.names = 1)
+responses=read.csv("RESP2lowcor.csv",row.names = 1)
 
 soft=function(s, tau) {
   val=sign(s)*max(c(abs(s) - tau,0))
@@ -78,6 +78,22 @@ mu300=c(0.1100240, -0.1232052)
 Sig100=matrix(c(1,0.2753316,0.2753316,1),2,2)
 Sig200=matrix(c(1.3259608,0.3145355,0.3145355,1.1363796),2,2)
 Sig300=matrix(c(1.2270710,0.2503095,0.2503095,1.0718629),2,2)
+
+StartVals=read.csv("StartingValues2LowCor.csv",row.names = 1)
+gra00=as.matrix(StartVals[,1:2])
+rownames(gra00) <- c()
+grd00=matrix(StartVals[,3],20,1)
+grbeta00=as.matrix(StartVals[,4:5])
+rownames(grbeta00) <- c()
+colnames(grbeta00) <- c()
+
+# 6 dif per dim
+mu100=c(0,0)
+mu200=c(0,0)
+mu300=c(0,0)
+Sig100=matrix(c(1,0.2892655,0.2892655,1),2,2)
+Sig200=matrix(c(1.0518386,0.2419183,0.2419183,1.0355795),2,2)
+Sig300=matrix(c(0.9386327,0.2428997,0.2428997,0.9842235),2,2)
 
 #sim1 lower EM
 for (rep in 2:reps){
@@ -276,7 +292,7 @@ for (rep in 2:reps){
 }
 
 # sim3 Lowcor EMM
-for (rep in 1:reps){
+for (rep in 31:reps){
   resp=responses[((rep-1)*N+1):((rep-1)*N+N1+N2+N3),]
   if (min(resp)==0){
     resp2=as.matrix(resp)
@@ -315,10 +331,10 @@ for (rep in 1:reps){
   print(ADmat.2[,,rep])
   print(eta.2[rep])
   print(Betas.2[,,rep])
-  write.csv(eta.2[rep],file = paste("eta3EMMLowCor_",rep))
-  write.csv(ADmat.2[,,rep],file = paste("ADmat3EMMLowCor_",rep))
-  write.csv(Betas.2[,,rep],file = paste("Beta3EMMLowCor_",rep))
-  write.csv(theta.dist[,,kk],file = paste("theta3EMMLowCor_",rep))
+  write.csv(eta.2[rep],file = paste("eta3EMM_",rep))
+  write.csv(ADmat.2[,,rep],file = paste("ADmat3EMM_",rep))
+  write.csv(Betas.2[,,rep],file = paste("Beta3EMM_",rep))
+  write.csv(theta.dist[,,kk],file = paste("theta3EMM_",rep))
 }
 
 #sim3 lower adaptive
