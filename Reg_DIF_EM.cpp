@@ -20,6 +20,14 @@ void inplace_tri_mat_mult(arma::rowvec &x, arma::mat const &trimat){
   }
 }
 
+
+//[[Rcpp::export]]
+double soft(double s, double tau){
+  arma::vec v1=zeros<arma::vec>(2);
+  v1(1)=abs(s)-tau;
+  double val=sign(s)* v1.max();
+}
+
 //[[Rcpp::export]]
 double dmvnrm2(arma::rowvec x, arma::rowvec mean, arma::mat sigma, bool logd =false){
   int xdim = x.n_elem;
@@ -189,7 +197,7 @@ arma::mat E_step1 (arma::mat resp, arma::vec Nvec, arma::mat X, int y, int G, ar
 
 
 // [[Rcpp::export]]
-arma::mat M_step(int j, arma::rowvec ng, arma::mat rgk, arma::mat X, int y, int G, arma::mat yallgroup, double maxtol, arma::mat gra, arma::mat grd, arma::mat grbeta, arma::cube grgamma,int r, int J, int m, int eta)
+Rcpp::List M_step(int j, arma::rowvec ng, arma::mat rgk, arma::mat X, int y, int G, arma::mat yallgroup, double maxtol, arma::mat gra, arma::mat grd, arma::mat grbeta, arma::cube grgamma,int r, int J, int m, int eta)
 {
   arma::rowvec d=grd.row(j-1);
   arma::rowvec a=gra.row(j-1);
@@ -299,19 +307,54 @@ arma::mat M_step(int j, arma::rowvec ng, arma::mat rgk, arma::mat X, int y, int 
     }
    
     arma::rowvec scoall01=ones<arma::rowvec>(2+2*(y-1));
+    arma::mat sco01mat = zeros<arma::mat>(2+len2+len3,2+2*(y-1));
+    arma::mat scoall01mat(2+2*(y-1),2+2*(y-1),fill::eye);
     arma::rowvec gam01=gam*a01.t();
     gam01.elem(find(gam01!=0)).ones();
     scoall01.subvec(2,y)= gam01;
     arma::rowvec bet01=bet;
     bet01.elem(find(bet01!=0)).ones();
     scoall01.subvec(y+1,2*y-1)= bet01;
-    arma::mat FI2= scoall01*FI*scoall01.t();
-      
- 
-   
-   
+    for (int kk=0; kk<(2+len2+len3); kk++){
+      int ind1=find(scoall01!=0)(kk);
+      sco01mat.row(kk)=scoall01mat.row(ind1);
+    }
+    arma::mat FI2= zeros<arma::mat>(2+len2+len3,2+len2+len3);
+    for (int kk1=0; kk1<(2+len2+len3); kk1++){
+      for (int kk2=0; kk2<(2+len2+len3); kk2++){
+        FI2(kk1,kk2)= sco01mat.row(kk1)*FI*sco01mat.row(kk2).t();
+      }
+    }
+    
+    arma::rowvec add=solve(FI2,minusgrad);
+    d=+add.subvec(0,0);
+    a.elem(find(a!=0))=+add.subvec(1,1);
+    
+    arma::rowvec bet=grbeta.row(j-1);
+    
+    if (len2>0){
+      arma::mat gam0=gam;
+      gam0.elem(find(gam!=0))=gam.elem(find(gam!=0))+add.subvec(2,2+len2-1);
+      for (int mm=2; mm<2+len2; mm++){
+        add(mm)=soft(gam0.elem(find(gam!=0))(mm-2),-eta/FI2(mm,mm))-gam.elem(find(gam!=0))(mm-2);
+      }
+      gam.elem(find(gam!=0))=gam.elem(find(gam!=0))+add.subvec(2,2+len2-1);
+    }
+    if (len3>0){
+      arma::mat bet0=bet;
+      bet0.elem(find(bet!=0))=bet.elem(find(bet!=0))+add.subvec(2,2+len3-1);
+      for (int mm=2; mm<2+len3; mm++){
+        add(mm)=soft(bet0.elem(find(bet!=0))(mm-2),-eta/FI2(mm,mm))-bet.elem(find(bet!=0))(mm-2);
+      }
+      bet.elem(find(bet!=0))=bet.elem(find(bet!=0))+add.subvec(2,2+len3-1);
+    }
+    
     if(sum(add)<maxtol){
       break;
-    }
+    } 
   }
+  return Rcpp::List::create(Rcpp::Named("a") = a,
+                            Rcpp::Named("d") = d,
+                            Rcpp::Named("gam") = gam,
+                            Rcpp::Named("bet") = bet);
 }
