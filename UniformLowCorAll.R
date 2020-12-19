@@ -447,7 +447,7 @@ for (rep in 1:reps){
   r=2
   m=2
   y=3
-  eta.vec=seq(11,35,2)
+  eta.vec=seq(1,37,3)
   bics=rep(0,length(eta.vec))
   ADmat=array(double(J*3*length(eta.vec)),dim = c(J,3,length(eta.vec)))
   #Gammas=array(double(2*J*m*length(eta.vec)),dim = c(2,2,J,length(eta.vec)))
