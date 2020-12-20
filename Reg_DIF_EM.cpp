@@ -22,11 +22,13 @@ void inplace_tri_mat_mult(arma::rowvec &x, arma::mat const &trimat){
 
 
 //[[Rcpp::export]]
-double soft(double s, double tau){
+double soft2(double s, double tau){
   arma::vec v1=zeros<arma::vec>(2);
   v1(1)=abs(s)-tau;
   double val=sign(s)* v1.max();
+  return(val);
 }
+
 
 //[[Rcpp::export]]
 double dmvnrm2(arma::rowvec x, arma::rowvec mean, arma::mat sigma, bool logd =false){
@@ -275,7 +277,7 @@ Rcpp::List M_step(int j, arma::rowvec ng, arma::mat rgk, arma::mat X, int y, int
         Betscoall(mm)=0;
       }
     }
-    arma::rowvec minusgrad = join_horiz(Dsco,Asco,(Gamscoall*a01.t()).t(),Betscoall);
+    arma::rowvec minusgrad = -join_horiz(Dsco,Asco,(Gamscoall*a01.t()).t(),Betscoall);
     arma::rowvec minusgrad2 = minusgrad.elem(find(minusgrad!=0)).t();
     
     arma::mat FI =zeros<arma::mat>( minusgrad.n_elem, minusgrad.n_elem);
@@ -329,27 +331,30 @@ Rcpp::List M_step(int j, arma::rowvec ng, arma::mat rgk, arma::mat X, int y, int
       }
     }
     
-    arma::rowvec add=solve(FI2,minusgrad);
-    d=+add.subvec(0,0);
-    a.elem(find(a!=0))=+add.subvec(1,1);
-    
-    arma::rowvec bet=grbeta.row(j-1);
+    arma::rowvec add=solve(FI2,minusgrad2.t()).t();
+    d=d+add.subvec(0,0);
+    a.elem(find(a!=0))=a.elem(find(a!=0))+add.subvec(1,1);
+
     
     if (len2>0){
       arma::mat gam0=gam;
       gam0.elem(find(gam!=0))=gam.elem(find(gam!=0))+add.subvec(2,2+len2-1);
       for (int mm=2; mm<2+len2; mm++){
-        add(mm)=soft(gam0.elem(find(gam!=0))(mm-2),-eta/FI2(mm,mm))-gam.elem(find(gam!=0))(mm-2);
+        arma::mat gam000=gam0.elem(find(gam!=0));
+        arma::mat gam00=gam.elem(find(gam!=0));
+        add(mm)=soft2(gam000(mm-2),-eta/FI2(mm,mm))-gam00(mm-2);
       }
       gam.elem(find(gam!=0))=gam.elem(find(gam!=0))+add.subvec(2,2+len2-1);
     }
     if (len3>0){
-      arma::mat bet0=bet;
-      bet0.elem(find(bet!=0))=bet.elem(find(bet!=0))+add.subvec(2,2+len3-1);
+      arma::rowvec bet0=bet;
+      bet0.elem(find(bet!=0))=bet.elem(find(bet!=0))+add.subvec(2,2+len3-1).t();
       for (int mm=2; mm<2+len3; mm++){
-        add(mm)=soft(bet0.elem(find(bet!=0))(mm-2),-eta/FI2(mm,mm))-bet.elem(find(bet!=0))(mm-2);
+        arma::mat bet000=bet0.elem(find(bet!=0));
+        arma::mat bet00=bet.elem(find(bet!=0));
+        add(mm)=soft2(bet000(mm-2,0),-eta/FI2(mm,mm))-bet00(mm-2,0);
       }
-      bet.elem(find(bet!=0))=bet.elem(find(bet!=0))+add.subvec(2,2+len3-1);
+      bet.elem(find(bet!=0))=bet.elem(find(bet!=0))+add.subvec(2,2+len3-1).t();
     }
     
     if(sum(add)<maxtol){
