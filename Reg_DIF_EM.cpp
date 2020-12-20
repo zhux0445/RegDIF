@@ -338,13 +338,13 @@ Rcpp::List M_step(int j, arma::rowvec ng, arma::mat rgk, arma::mat X, int y, int
     
     if (len2>0){
       arma::mat gam0=gam;
-      gam0.elem(find(gam!=0))=gam.elem(find(gam!=0))+add.subvec(2,2+len2-1);
+      gam0.elem(find(gam!=0))=gam.elem(find(gam!=0))+add.subvec(2,2+len2-1).t();
       for (int mm=2; mm<2+len2; mm++){
         arma::mat gam000=gam0.elem(find(gam!=0));
         arma::mat gam00=gam.elem(find(gam!=0));
         add(mm)=soft2(gam000(mm-2),-eta/FI2(mm,mm))-gam00(mm-2);
       }
-      gam.elem(find(gam!=0))=gam.elem(find(gam!=0))+add.subvec(2,2+len2-1);
+      gam.elem(find(gam!=0))=gam.elem(find(gam!=0))+add.subvec(2,2+len2-1).t();
     }
     if (len3>0){
       arma::rowvec bet0=bet;
