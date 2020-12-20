@@ -275,35 +275,36 @@ Rcpp::List M_step(int j, arma::rowvec ng, arma::mat rgk, arma::mat X, int y, int
         Betscoall(mm)=0;
       }
     }
-    arma::rowvec minusgrad = join_horiz(Dsco,Asco,Gamscoall.elem(find(Gamscoall!=0)),Betscoall(find(Betscoall!=0)));
+    arma::rowvec minusgrad = join_horiz(Dsco,Asco,(Gamscoall*a01.t()).t(),Betscoall);
+    arma::rowvec minusgrad2 = minusgrad.elem(find(minusgrad!=0)).t();
     
     arma::mat FI =zeros<arma::mat>( minusgrad.n_elem, minusgrad.n_elem);
     
     for (int yy=0; yy<y; yy++){
-     ( FI.row(0)).subvec(0,0) = ( FI.row(0)).subvec(0,0)+ (-sum(ng.subvec(((yy+1)*G),((yy+2)*G-1)).t()%square(Pstar.slice(yy)%Qstar.slice(yy))%(1/(P.slice(yy)).col(1)+1/(P.slice(yy)).col(2))));
+      ( FI.row(0)).subvec(0,0) = ( FI.row(0)).subvec(0,0)+ (-sum(ng.subvec(((yy+1)*G),((yy+2)*G-1)).t()%square(Pstar.slice(yy)%Qstar.slice(yy))%(1/(P.slice(yy)).col(0)+1/(P.slice(yy)).col(1))));
     }
     
     for (int yy=0; yy<y; yy++){
-    ( FI.row(1)).subvec(1,1) = ( FI.row(1)).subvec(1,1)+ (-sum(ng.subvec(((yy+1)*G),((yy+2)*G-1)).t()%(X*a01.t())%(X*a01.t())%sum(square(PQdif.slice(yy))/P.slice(yy),1)));
-    ( FI.row(1)).subvec(0,0) = ( FI.row(1)).subvec(0,0)+ sum(ng.subvec(((yy+1)*G),((yy+2)*G-1)).t()%(X*a01.t())%Pstar.slice(yy)%Qstar.slice(yy)%((PQdif.slice(yy)).col(1)/(P.slice(yy)).col(1)-(PQdif.slice(yy)).col(2)/(P.slice(yy)).col(2)));
-    FI(0,1)=FI(1,0);
+      ( FI.row(1)).subvec(1,1) = ( FI.row(1)).subvec(1,1)+ (-sum(ng.subvec(((yy+1)*G),((yy+2)*G-1)).t()%(X*a01.t())%(X*a01.t())%sum(square(PQdif.slice(yy))/P.slice(yy),1)));
+      ( FI.row(1)).subvec(0,0) = ( FI.row(1)).subvec(0,0)+ sum(ng.subvec(((yy+1)*G),((yy+2)*G-1)).t()%(X*a01.t())%Pstar.slice(yy)%Qstar.slice(yy)%((PQdif.slice(yy)).col(0)/(P.slice(yy)).col(0)-(PQdif.slice(yy)).col(1)/(P.slice(yy)).col(1)));
+      FI(0,1)=FI(1,0);
     }
     
     for (int kk=2; kk<(y+1); kk++){
       ( FI.row(kk)).subvec(kk,kk) = (-sum(ng.subvec((kk*G),((kk+1)*G-1)).t()%(X*a01.t())%(X*a01.t())%sum(square(PQdif.slice(kk-1))/P.slice(kk-1),1)));
       FI(kk,1)=FI(kk,kk);
       FI(1,kk)=FI(kk,kk);
-      ( FI.row(kk)).subvec(0,0)=sum(ng.subvec((kk*G),((kk+1)*G-1)).t()%(X*a01.t())%Pstar.slice(kk-1)%Qstar.slice(kk-1)%((PQdif.slice(kk-1)).col(1)/(P.slice(kk-1)).col(1)-(PQdif.slice(kk-1)).col(2)/(P.slice(kk-1)).col(2)));
+      ( FI.row(kk)).subvec(0,0)=sum(ng.subvec((kk*G),((kk+1)*G-1)).t()%(X*a01.t())%Pstar.slice(kk-1)%Qstar.slice(kk-1)%((PQdif.slice(kk-1)).col(0)/(P.slice(kk-1)).col(0)-(PQdif.slice(kk-1)).col(1)/(P.slice(kk-1)).col(1)));
       FI(0,kk)=FI(kk,0);
     }
-
-    for (int kk=(2+len2); kk<(4+len2); kk++){
-      ( FI.row(kk)).subvec(kk,kk) = (-sum(ng.subvec(((kk-2)*G),((kk-1)*G-1)).t()%square(Pstar.slice(kk-3)%Qstar.slice(kk-3))%(1/(P.slice(kk-3)).col(1)+1/(P.slice(kk-3)).col(2))));
+    
+    for (int kk=(y+1); kk<(2*y); kk++){
+      ( FI.row(kk)).subvec(kk,kk) = (-sum(ng.subvec(((kk-2)*G),((kk-1)*G-1)).t()%square(Pstar.slice(kk-3)%Qstar.slice(kk-3))%(1/(P.slice(kk-3)).col(0)+1/(P.slice(kk-3)).col(1))));
       FI(kk,0)=FI(kk,kk);
       FI(0,kk)=FI(kk,kk);
-      ( FI.row(kk)).subvec(1,1)=sum(ng.subvec(((kk-2)*G),((kk-1)*G-1)).t()%(X*a01.t())%Pstar.slice(kk-3)%Qstar.slice(kk-3)%((PQdif.slice(kk-3)).col(1)/(P.slice(kk-3)).col(1)-(PQdif.slice(kk-3)).col(2)/(P.slice(kk-3)).col(2)));
+      ( FI.row(kk)).subvec(1,1)=sum(ng.subvec(((kk-2)*G),((kk-1)*G-1)).t()%(X*a01.t())%Pstar.slice(kk-3)%Qstar.slice(kk-3)%((PQdif.slice(kk-3)).col(0)/(P.slice(kk-3)).col(0)-(PQdif.slice(kk-3)).col(1)/(P.slice(kk-3)).col(1)));
       FI(1,kk)=FI(kk,1);
-    
+      
     }
    
     arma::rowvec scoall01=ones<arma::rowvec>(2+2*(y-1));
