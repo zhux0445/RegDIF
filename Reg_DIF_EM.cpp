@@ -306,24 +306,26 @@ Rcpp::List M_step(int j, arma::rowvec ng, arma::mat rgk, arma::mat X, int y, int
       FI(1,kk)=FI(kk,1);
       
     }
-   
+    
     arma::rowvec scoall01=ones<arma::rowvec>(2+2*(y-1));
     arma::mat sco01mat = zeros<arma::mat>(2+len2+len3,2+2*(y-1));
     arma::mat scoall01mat(2+2*(y-1),2+2*(y-1),fill::eye);
-    arma::rowvec gam01=gam*a01.t();
+    arma::rowvec gam01=(gam*a01.t()).t();
     gam01.elem(find(gam01!=0)).ones();
     scoall01.subvec(2,y)= gam01;
     arma::rowvec bet01=bet;
     bet01.elem(find(bet01!=0)).ones();
     scoall01.subvec(y+1,2*y-1)= bet01;
     for (int kk=0; kk<(2+len2+len3); kk++){
-      int ind1=find(scoall01!=0)(kk);
+      uvec indices1=find(scoall01!=0);
+      int ind1=indices1(kk);
       sco01mat.row(kk)=scoall01mat.row(ind1);
     }
+    
     arma::mat FI2= zeros<arma::mat>(2+len2+len3,2+len2+len3);
     for (int kk1=0; kk1<(2+len2+len3); kk1++){
       for (int kk2=0; kk2<(2+len2+len3); kk2++){
-        FI2(kk1,kk2)= sco01mat.row(kk1)*FI*sco01mat.row(kk2).t();
+        (FI2.cols(kk2,kk2)).rows(kk1,kk1)= sco01mat.row(kk1)*FI*(sco01mat.row(kk2).t());
       }
     }
     
