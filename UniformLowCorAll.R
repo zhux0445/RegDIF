@@ -12,7 +12,7 @@ library(doParallel)
 setwd('/Users/hyzhu27/Documents/GitHub/RegDIF_SimData')
 setwd('/Users/ruoyizhu/Documents/GitHub/RegDIF_SimData')
 params=read.csv("Para2.csv",row.names = 1)
-responses=read.csv("RESP2lowcor.csv",row.names = 1)
+responses=read.csv("RESP4lowcor.csv",row.names = 1)
 
 soft=function(s, tau) {
   val=sign(s)*max(c(abs(s) - tau,0))
@@ -20,7 +20,7 @@ soft=function(s, tau) {
 
 J=20
 
-N1=N2=N3=500 
+N1=N2=N3=1000 
 Group=c(rep('G1', N1), rep('G2', N2), rep('G3', N3))
 Group01=c(rep('G1', N1), rep('G2', N2))
 Group02=c(rep('G1', N1), rep('G3', N3))
@@ -382,4 +382,52 @@ for (rep in 1:reps){
   write.csv(ADmat.2[,,rep],file = paste("ADmat3AdaptLowCor_",rep))
   write.csv(Betas.2[,,rep],file = paste("Beta3AdaptLowCor_",rep))
   write.csv(theta.dist[,,kk],file = paste("theta3AdaptLowCor_",rep))
+}
+
+
+#sim4 lower adaptive
+for (rep in 1:reps){
+  resp=responses[((rep-1)*N+1):((rep-1)*N+N1+N2+N3),]
+  if (min(resp)==0){
+    resp2=as.matrix(resp)
+    resp=resp+1
+  } else {
+    resp2=as.matrix(resp)-1
+  }
+  r=2
+  m=2
+  y=3
+  eta.vec=seq(2,24,2)
+  bics=rep(0,length(eta.vec))
+  ADmat=array(double(J*3*length(eta.vec)),dim = c(J,3,length(eta.vec)))
+  #Gammas=array(double(2*J*m*length(eta.vec)),dim = c(2,2,J,length(eta.vec)))
+  Betas=array(double(J*2*length(eta.vec)),dim = c(J,2,length(eta.vec)))
+  theta.dist=array(double(2*9*length(eta.vec)),dim=c(9,2,length(eta.vec)))
+  for (k in 1:length(eta.vec))
+  {
+    eta=eta.vec[k]
+    ptm <- proc.time()
+    sim=Reg_Adaptive_DIF(resp=resp,m=2,r=2,y=3,N.vec=c(1000,1000,1000),eta=eta,lam=1,eps =1e-3,max.tol=1e-7,gra00=gra00,grd00=grd00,grbeta00=grbeta00,grgamma00=grgamma00,Mu.list=c(mu100,mu200,mu300),Sig.list=rbind(Sig100,Sig200,Sig300),NonUniform=F)
+    
+    print(proc.time() - ptm)
+    bics[k]=sim$bic
+    #Gammas[,,,k]=sim$Gamma
+    ADmat[,,k]=sim$est
+    Betas[,,k]=sim$Beta
+    theta.dist[,,k]=rbind(sim$mean1,sim$mean2,sim$mean3,sim$Corr1,sim$Corr2,sim$Corr3)
+  }
+  
+  kk=which.min(bics)
+  
+  eta.2[rep]=eta.vec[kk]
+  #Gammas.13[,,,i]=Gammas[,,,kk]
+  ADmat.2[,,rep]=ADmat[,,kk]
+  Betas.2[,,rep]=Betas[,,kk]
+  print(ADmat.2[,,rep])
+  print(eta.2[rep])
+  print(Betas.2[,,rep])
+  write.csv(eta.2[rep],file = paste("eta4AdaptLowCor_",rep))
+  write.csv(ADmat.2[,,rep],file = paste("ADmat4AdaptLowCor_",rep))
+  write.csv(Betas.2[,,rep],file = paste("Beta4AdaptLowCor_",rep))
+  write.csv(theta.dist[,,kk],file = paste("theta4AdaptLowCor_",rep))
 }
