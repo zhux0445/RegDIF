@@ -597,6 +597,12 @@ NonUnif_Reg_Adaptive_DIF <- function(resp,m,r,y,N.vec,eta,lam,eps =1e-3,max.tol=
 
 Reg_DIF <- function(resp,m,r,y,N.vec,eta,eps =1e-3,max.tol=1e-7,gra00=NULL,grd00=NULL,grbeta00=NULL,grgamma00=NULL,Mu.list=NULL,Sig.list= NULL,NonUniform=F)
 {
+  if (min(resp)==0){
+    resp2=as.matrix(resp)
+    resp=resp+1
+  } else {
+    resp2=as.matrix(resp)-1
+  }
   N <- nrow(resp)
   J <- ncol(resp)
   # Gauss-Hermite quadrature nodes
@@ -803,6 +809,12 @@ Reg_DIF <- function(resp,m,r,y,N.vec,eta,eps =1e-3,max.tol=1e-7,gra00=NULL,grd00
 
 Reg_EMM_DIF <- function(resp,m,r,y,N.vec,eta,eps =1e-3,max.tol=1e-7,gra00=NULL,grd00=NULL,grbeta00=NULL,grgamma00=NULL,Mu.list=NULL,Sig.list= NULL,NonUniform=F)
 {
+  if (min(resp)==0){
+    resp2=as.matrix(resp)
+    resp=resp+1
+  } else {
+    resp2=as.matrix(resp)-1
+  }
   N <- nrow(resp)
   J <- ncol(resp)
   # Gauss-Hermite quadrature nodes
