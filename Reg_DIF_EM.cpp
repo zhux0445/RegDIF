@@ -386,6 +386,10 @@ Rcpp::List M_step_Adapt(int j, arma::rowvec ng, arma::mat rgk, arma::mat X, int 
   arma::cube Pstar=zeros<cube>(G,(m-1),y);
   arma::cube Qstar=zeros<cube>(G,(m-1),y);
   arma::cube P=zeros<cube>(G,m,y); 
+  arma::rowvec d1=d;
+  arma::rowvec a1=a;
+  arma::mat gam1=gam;
+  arma::rowvec bet1=bet;
   int miter=0;
   for(miter=0; miter<500; miter++){
     for(int yy=0; yy<y; yy++){
@@ -510,9 +514,8 @@ Rcpp::List M_step_Adapt(int j, arma::rowvec ng, arma::mat rgk, arma::mat X, int 
     }
     
     arma::rowvec add=solve(FI2,minusgrad2.t()).t();
-    d=d+add.subvec(0,0);
-    a.elem(find(a!=0))=a.elem(find(a!=0))+add.subvec(1,1);
-    
+    d1=d+add.subvec(0,0);
+    a1.elem(find(a!=0))=a.elem(find(a!=0))+add.subvec(1,1);
     
     if (len2>0){
       arma::mat gam0=gam;
@@ -522,7 +525,7 @@ Rcpp::List M_step_Adapt(int j, arma::rowvec ng, arma::mat rgk, arma::mat X, int 
         arma::mat gam00=gam.elem(find(gam!=0));
         add(mm)=soft2(gam000(mm-2,0),-eta/FI2(mm,mm))-gam00(mm-2,0);
       }
-      gam.elem(find(gam!=0))=gam.elem(find(gam!=0))+add.subvec(2,2+len2-1).t();
+      gam1.elem(find(gam!=0))=gam.elem(find(gam!=0))+add.subvec(2,2+len2-1).t();
     }
     if (len3>0){
       arma::rowvec bet0=bet;
@@ -533,16 +536,21 @@ Rcpp::List M_step_Adapt(int j, arma::rowvec ng, arma::mat rgk, arma::mat X, int 
         arma::mat betmle0=betmle.elem(find(bet!=0));
         add(mm)=soft2(bet000(mm-2,0),-(eta/pow(abs(betmle0(mm-2,0)),lam))/FI2(mm,mm))-bet00(mm-2,0);
       }
-      bet.elem(find(bet!=0))=bet.elem(find(bet!=0))+add.subvec(2,2+len3-1).t();
+      bet1.elem(find(bet!=0))=bet.elem(find(bet!=0))+add.subvec(2,2+len3-1).t();
     }
     
     if(sum(add)<maxtol){
       break;
-    } 
+    } else {
+      d=d1;
+      a=a1;
+      gam=gam1;
+      bet=bet1;
+    }
   }
-  return Rcpp::List::create(Rcpp::Named("a") = a,
-                            Rcpp::Named("d") = d,
-                            Rcpp::Named("gam") = gam,
-                            Rcpp::Named("bet") = bet);
+  return Rcpp::List::create(Rcpp::Named("a") = a1,
+                            Rcpp::Named("d") = d1,
+                            Rcpp::Named("gam") = gam1,
+                            Rcpp::Named("bet") = bet1);
 }
 
