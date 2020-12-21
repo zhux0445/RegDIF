@@ -322,6 +322,10 @@ NonUnif_Reg_EMM_DIF <- function(resp,m,r,y,N.vec,eta,eps =1e-3,max.tol=1e-7,gra0
         }
       }
     }
+    gra=gra00
+    grd=grd00
+    grbeta=grbeta00
+    grgamma=grgamma00*sparsity #array(0,dim=c((y-1),r,J))
     for (j in 1:J){
       rgk=rgkest(j=j,Xijk=Xijk,LiA=LiA,y=y,Nvec=N.vec,G=G,N=N,m=m)
       Pstar <- Qstar <- array(double(G*(m-1)*(y)),dim=c(G,m-1,y))
@@ -351,7 +355,7 @@ NonUnif_Reg_EMM_DIF <- function(resp,m,r,y,N.vec,eta,eps =1e-3,max.tol=1e-7,gra0
   lh=numeric(J)#likelihood function for each item (overall likelihood by sum over j)
   for (j in 1:J){
     rgk=rgkest(j=j,Xijk=Xijk,LiA=LiA,y=y,Nvec=N.vec,G=G,N=N,m=m)
-    sumoverk1=sumoverk(G=G,rgky=rgk[(G+1):(2*G),],aj=gra[j,],dj=grd[j,],gamjy=c(0,0),betjy=c(0,0),X=X)#G,rgky,aj,dj,gamjy,X
+    sumoverk1=sumoverk(G=G,rgky=rgk[(G+1):(2*G),],aj=gra[j,],dj=grd[j,],gamjy=c(0,0),betjy=0,X=X)#G,rgky,aj,dj,gamjy,X
     sumoverk2=sumoverk(G=G,rgky=rgk[(2*G+1):(3*G),],aj=gra[j,],dj=grd[j,],gamjy=grgamma[1,,j],betjy=grbeta[j,1],X=X)
     sumoverk3=sumoverk(G=G,rgky=rgk[(3*G+1):(4*G),],aj=gra[j,],dj=grd[j,],gamjy=grgamma[2,,j],betjy=grbeta[j,2],X=X)
     temp=sumoverk1+sumoverk2+sumoverk3#-eta*norm(as.matrix(x2), type = "1")##sum over g
