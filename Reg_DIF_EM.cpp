@@ -520,7 +520,8 @@ Rcpp::List M_step_Adapt(int j, arma::rowvec ng, arma::mat rgk, arma::mat X, int 
       for (int mm=2; mm<2+len2; mm++){
         arma::mat gam000=gam0.elem(find(gam!=0));
         arma::mat gam00=gam.elem(find(gam!=0));
-        add(mm)=soft2(gam000(mm-2,0),-eta/FI2(mm,mm))-gam00(mm-2,0);
+        arma::mat gammle0=gammle.elem(find(gam!=0));
+        add(mm)=soft2(gam000(mm-2,0),-(eta/pow(abs(gammle0(mm-2,0)),lam))/FI2(mm,mm))-gam00(mm-2,0);
       }
       gam.elem(find(gam!=0))=gam.elem(find(gam!=0))+add.subvec(2,2+len2-1).t();
     }
