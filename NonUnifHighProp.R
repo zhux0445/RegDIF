@@ -12,7 +12,7 @@ sourceCpp("/Users/zhux0445/Documents/GitHub/RegDIF/matrix.cpp")
 setwd('/Users/zhux0445/Documents/GitHub/RegDIF_SimData')
 setwd('/Users/ruoyizhu/Documents/GitHub/RegDIF_SimData')
 params=read.csv("Para4.csv",row.names = 1)
-responses=read.csv("RESP6lowcor.csv",row.names = 1)
+responses=read.csv("RESP8lowcor.csv",row.names = 1)
 
 soft=function(s, tau) {
   val=sign(s)*max(c(abs(s) - tau,0))
@@ -21,7 +21,7 @@ soft=function(s, tau) {
 # Dataset #4 (2 Non-uniform DIF items per scale)
 J=20
 
-N1=N2=N3=500 
+N1=N2=N3=1000 
 Group=c(rep('G1', N1), rep('G2', N2), rep('G3', N3))
 Group01=c(rep('G1', N1), rep('G2', N2))
 Group02=c(rep('G1', N1), rep('G3', N3))
@@ -138,7 +138,7 @@ for (rep in 2:reps){
 }
 
 #sim6 lowcor EM
-for (rep in 5:reps){
+for (rep in 2:reps){
   resp=responses[((rep-1)*N+1):((rep-1)*N+N1+N2+N3),]
   if (min(resp)==0){
     resp2=as.matrix(resp)
@@ -159,7 +159,7 @@ for (rep in 5:reps){
   {
     eta=eta.vec[k]
     ptm <- proc.time()
-    sim=Reg_DIF(resp=resp,m=2,r=2,y=3,N.vec=c(500,500,500),eta=eta,eps =1e-3,max.tol=1e-7,gra00=gra00,grd00=grd00,grbeta00=matrix(0,J,2),grgamma00=grgamma00,Mu.list=c(mu100,mu200,mu300),Sig.list=rbind(Sig100,Sig200,Sig300),NonUniform=T)
+    sim=Reg_DIF(resp=resp,m=2,r=2,y=3,N.vec=c(1000,1000,1000),eta=eta,eps =1e-3,max.tol=1e-7,gra00=gra00,grd00=grd00,grbeta00=matrix(0,J,2),grgamma00=grgamma00,Mu.list=c(mu100,mu200,mu300),Sig.list=rbind(Sig100,Sig200,Sig300),NonUniform=T)
     print(proc.time() - ptm)
     bics[k]=sim$bic
     #Gammas[,,,k]=sim$Gamma
@@ -179,8 +179,8 @@ for (rep in 5:reps){
   print(Gammas.5[,,,rep])
   #print(biass.5[rep,])
   #print(RMSEs.5[rep,])
-  write.csv(eta.5[rep],file = paste("eta6LowCor_",rep))
-  write.csv(ADmat.5[,,rep],file = paste("ADmat6LowCor_",rep))
-  write.csv(rbind(t(rbind(Gammas.5[c(1,2),1,3:11,rep])),t(rbind(Gammas.5[c(1,2),2,12:20,rep]))),file = paste("Gamma6LowCor_",rep))
-  write.csv(theta.dist[,,kk],file = paste("theta6LowCor_",rep))
+  write.csv(eta.5[rep],file = paste("eta8LowCor_",rep))
+  write.csv(ADmat.5[,,rep],file = paste("ADmat8LowCor_",rep))
+  write.csv(rbind(t(rbind(Gammas.5[c(1,2),1,3:11,rep])),t(rbind(Gammas.5[c(1,2),2,12:20,rep]))),file = paste("Gamma8LowCor_",rep))
+  write.csv(theta.dist[,,kk],file = paste("theta8LowCor_",rep))
 }
