@@ -326,6 +326,7 @@ Amat1=Amat2=cbind(A11,A21)
 
 gra00=Amat1
 grd00=matrix(c(0.1815997,  0.2354828,  0.5585105,  3.5826869, -0.1031907,  2.1672437,  3.1935803,  0.2964340,  1.5510633,  0.7371429,  1.1500392,  2.4024150,  4.0687241,  0.8382791,  2.3306916,  2.7713551,2.8106932,  1.0783690,  0.1018597,  2.2761272,  0.5398323),J,1)
+grgamma00=array(0,dim=c(r,r,J))
 grgamma00[1,1,1:10]=c(0.3680776, -0.1459668,  0.4013647,  0.7255812,  0.7677556,  0.3720315,  0.3290386,  1.7985989,  0.5161178,  0.1114731)
 grgamma00[2,1,1:10]=c( 0.03458868, -0.48083793,  0.10340428,  1.29530066,  0.30145681,  1.14761525,  0.86473662,  1.76403916,  0.37589465,  0.26740820)
 grgamma00[1,2,11:21]=c( 0.85237225,  0.95222932,  0.83949648,  0.08927024,  0.25678010, -0.12443061,  0.50140125,  1.27521006,  0.57021110,  0.52155279,  0.45802679)
@@ -367,17 +368,25 @@ Gammas[,,,kk]
 ADmat[,,kk]
 theta.dist[,,kk]
 
-
+r=2
+m=2
+y=3
+eta.vec=seq(1,25,1)
+bics=rep(0,length(eta.vec))
+ADmat=array(double(J*3*length(eta.vec)),dim = c(J,3,length(eta.vec)))
+#Gammas=array(double(2*J*m*length(eta.vec)),dim = c(2,2,J,length(eta.vec)))
+Gammas=array(double(2*J*m*length(eta.vec)),dim = c(2,2,J,length(eta.vec)))
+theta.dist=array(double(2*9*length(eta.vec)),dim=c(9,2,length(eta.vec)))
 for (k in 1:length(eta.vec))
 {
   eta=eta.vec[k]
   ptm <- proc.time()
-  sim=Reg_EMM_DIF(resp=Resp_ordered2,m=2,r=2,y=3,N.vec=c(N1,N2,N3),eta=eta,eps =1e-3,max.tol=1e-7,gra00=gra00,grd00=grd00,grbeta00=grbeta00,grgamma00=array(0,dim=c((y-1),r,J)),Mu.list=c(mu100,mu200,mu300),Sig.list=rbind(Sig100,Sig200,Sig300),NonUniform=F)
+  sim=Reg_EMM_DIF(resp=Resp_ordered2,m=2,r=2,y=3,N.vec=c(N1,N2,N3),eta=eta,eps =1e-3,max.tol=1e-7,gra00=gra00,grd00=grd00,grbeta00=matrix(0,J,y-1),grgamma00=grgamma00,Mu.list=c(mu100,mu200,mu300),Sig.list=rbind(Sig100,Sig200,Sig300),NonUniform=F)
   print(proc.time() - ptm)
   bics[k]=sim$bic
-  #Gammas[,,,k]=sim$Gamma
+  Gammas[,,,k]=sim$Gamma
   ADmat[,,k]=sim$est
-  Betas[,,k]=sim$Beta
+  #Betas[,,k]=sim$Beta
   theta.dist[,,k]=rbind(sim$mean1,sim$mean2,sim$mean3,sim$Corr1,sim$Corr2,sim$Corr3)
 }
 
@@ -388,16 +397,26 @@ Gammas[,,,kk]
 ADmat[,,kk]
 theta.dist[,,kk]
 
+r=2
+m=2
+y=3
+eta.vec=seq(1,25,1)
+bics=rep(0,length(eta.vec))
+ADmat=array(double(J*3*length(eta.vec)),dim = c(J,3,length(eta.vec)))
+#Gammas=array(double(2*J*m*length(eta.vec)),dim = c(2,2,J,length(eta.vec)))
+Gammas=array(double(2*J*m*length(eta.vec)),dim = c(2,2,J,length(eta.vec)))
+theta.dist=array(double(2*9*length(eta.vec)),dim=c(9,2,length(eta.vec)))
 for (k in 1:length(eta.vec))
 {
   eta=eta.vec[k]
   ptm <- proc.time()
-  sim=Reg_Adaptive_DIF(resp=Resp_ordered2,m=2,r=2,y=3,N.vec=c(N1,N2,N3),eta=eta,lam=1,eps =1e-3,max.tol=1e-7,gra00=gra00,grd00=grd00,grbeta00=grbeta00,grgamma00=array(0,dim=c((y-1),r,J)),Mu.list=c(mu100,mu200,mu300),Sig.list=rbind(Sig100,Sig200,Sig300),NonUniform=F)
+  sim=Reg_Adaptive_DIF(resp=Resp_ordered2,m=2,r=2,y=3,N.vec=c(N1,N2,N3),eta=eta,lam=1,eps =1e-3,max.tol=1e-7,gra00=gra00,grd00=grd00,grbeta00=matrix(0,J,y-1),grgamma00=grgamma00,Mu.list=c(mu100,mu200,mu300),Sig.list=rbind(Sig100,Sig200,Sig300),NonUniform=F)
   print(proc.time() - ptm)
   bics[k]=sim$bic
-  #Gammas[,,,k]=sim$Gamma
+  Gammas[,,,k]=sim$Gamma
   ADmat[,,k]=sim$est
-  Betas[,,k]=sim$Beta
+  #Betas[,,k]=sim$Beta
+  print(Gammas[,,,k])
   theta.dist[,,k]=rbind(sim$mean1,sim$mean2,sim$mean3,sim$Corr1,sim$Corr2,sim$Corr3)
 }
 
