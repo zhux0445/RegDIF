@@ -97,108 +97,9 @@ SEXP eigenMapMatMult(const Eigen::Map<Eigen::MatrixXd> A, Eigen::Map<Eigen::Matr
   return Rcpp::wrap(C);
 }
 
-// [[Rcpp::export]]
-arma::mat E_step1 (arma::mat resp, arma::vec Nvec, arma::mat X, int y, int G, arma::mat yallgroup, arma::mat Mulist, arma::cube Siglist, arma::mat gra, arma::mat grd, arma::mat grbeta, arma::cube grgamma,int r, int J, int m, int N1, int N2, int N3,int N)
-{
-  arma::vec Aallgroups = zeros<arma::vec>(G*y);
-  for (int yy = 0; yy < y; yy++){
-    for (int ii = 0; ii < G; ii++){
-      Aallgroups(yy*G+ii)=dmvnrm2(X.row(ii), Mulist.row(yy), Siglist.slice(yy),FALSE);
-    }
-  }
-  
-  arma::mat axmat=gra*X.t(); 
-  arma::mat ygamallgroups=zeros<mat>(J*y,y-1);
-    for (int yy = 0; yy < y; yy++){
-      for (int j = 0; j < J; j++){
-        ygamallgroups.row(yy*J+j)=yallgroup.row(yy)*grgamma.slice(j);
-      }
-    }
-  arma::mat ygamatallgrp=zeros<mat>(J*y,X.n_rows);
-      for (int yy = 0; yy < y; yy++){
-        ygamatallgrp.rows((yy*J),(yy*J+J-1))=ygamallgroups.rows((yy*J),(yy*J+J-1))*X.t(); 
-      }
-  arma::mat grbetaallgrp=zeros<mat>(J*y,1); 
-      for (int yy = 0; yy < y; yy++){
-        grbetaallgrp.rows((yy*J),(yy*J+J-1))=(yallgroup.row(yy)*grbeta.t()).t(); 
-      }
-      
-  arma::cube pstar1=zeros<cube>(J,(m-1),G); 
-  arma::cube pstar2=zeros<cube>(J,(m-1),G); 
-  arma::cube pstar3=zeros<cube>(J,(m-1),G); 
-  arma::cube p1=zeros<cube>(J,m,G); 
-  arma::cube p2=zeros<cube>(J,m,G); 
-  arma::cube p3=zeros<cube>(J,m,G);
-        for (int g = 0; g < G; g++)
-        {
-          pstar1.slice(g) = 1/(1+exp(-(grd+axmat.col(g)+grbetaallgrp.rows(0,J-1)+ygamatallgrp(span(0,J-1),span(g,g)))));
-          p1.slice(g) = (-diff(join_horiz(ones<colvec>(J),(pstar1.slice(g)),zeros<colvec>(J)),1,1));
-        }
-        for (int g = 0; g < G; g++)
-        {
-          pstar2.slice(g) = 1/(1+exp(-(grd+axmat.col(g)+grbetaallgrp.rows(J,2*J-1)+ygamatallgrp(span(J,2*J-1),span(g,g)))));
-          p2.slice(g) = (-diff(join_horiz(ones<colvec>(J),(pstar2.slice(g)),zeros<colvec>(J)),1,1));
-        }
-        for (int g = 0; g < G; g++)
-        {
-          pstar3.slice(g) = 1/(1+exp(-(grd+axmat.col(g)+grbetaallgrp.rows(2*J,3*J-1)+ygamatallgrp(span(2*J,3*J-1),span(g,g)))));
-          p3.slice(g) = (-diff(join_horiz(ones<colvec>(J),(pstar3.slice(g)),zeros<colvec>(J)),1,1));
-        }
-        arma::cube pij = zeros<cube>(J,G,N/3); 
-        arma::mat LiA = zeros<mat>(N,G); 
-          
-          for (int j = 0; j < J; j++)
-          {
-            for (int g = 0; g < G; g++)
-            {
-              for (int n = 0; n < N1; n++){
-                pij(j,g,n)=p1(j,resp(n,j),g);
-              }
-            }
-          }
-          for (int g = 0; g < G; g++)
-          {
-            for (int n = 0; n < N1; n++){
-          (LiA.rows(0,N1-1))(n,g)=prod((pij.slice(n)).col(g))*Aallgroups(g);
-            }
-          }
-          
-          for (int j = 0; j < J; j++)
-          {
-            for (int g = 0; g < G; g++)
-            {
-              for (int n = 0; n < N2; n++){
-                pij(j,g,n)=p2(j,resp(N1+n,j),g);
-              }
-            }
-          }
-          for (int g = 0; g < G; g++)
-          {
-            for (int n = 0; n < N2; n++){
-              (LiA.rows(N1,N1+N2-1))(n,g)=prod((pij.slice(n)).col(g))*Aallgroups(G+g);
-            }
-          }
-            
-            for (int j = 0; j < J; j++)
-            {
-              for (int g = 0; g < G; g++)
-              {
-                for (int n = 0; n < N3; n++){
-                  pij(j,g,n)=p3(j,resp(N1+N2+n,j),g);
-                }
-              }
-            }
-            for (int g = 0; g < G; g++)
-            {
-              for (int n = 0; n < N3; n++){
-                (LiA.rows(N1+N2,N-1))(n,g)=prod((pij.slice(n)).col(g))*Aallgroups(2*G+g);
-              }
-            }
-  return(LiA);
-}
 
 // [[Rcpp::export]]
-arma::mat E_step2 (arma::mat resp, arma::vec Nvec, arma::mat X, int y, int G, arma::mat yallgroup, arma::mat Mulist, arma::cube Siglist, arma::mat gra, arma::mat grd, arma::mat grbeta, arma::cube grgamma,int r, int J, int m, int N1, int N2, int N3,int N)
+arma::mat E_step1 (arma::mat resp, arma::vec Nvec, arma::mat X, int y, int G, arma::mat yallgroup, arma::mat Mulist, arma::cube Siglist, arma::mat gra, arma::mat grd, arma::mat grbeta, arma::cube grgamma,int r, int J, int m, int N1, int N2, int N3,int N)
 {
   arma::vec Aallgroups = zeros<arma::vec>(G*y);
   for (int yy = 0; yy < y; yy++){
@@ -240,14 +141,14 @@ arma::mat E_step2 (arma::mat resp, arma::vec Nvec, arma::mat X, int y, int G, ar
       for (int g = 0; g < G; g++)
       {
         for (int n = 0; n < Ny; n++){
-          pij(j,g,n)=p1(j,resp(n,j),g);
+          pij(j,g,n)=p1(j,resp(sum(Nvec.subvec(0,yy))-Ny+n,j),g);
         }
       }
     }
     for (int g = 0; g < G; g++)
     {
       for (int n = 0; n < Ny; n++){
-        (LiA.rows(sum(Nvec.subvec(0,yy))-Ny,sum(Nvec.subvec(0,yy))-1))(n,g)=prod((pij.slice(n)).col(g))*Aallgroups(g);
+        (LiA.rows(sum(Nvec.subvec(0,yy))-Ny,sum(Nvec.subvec(0,yy))-1))(n,g)=prod((pij.slice(n)).col(g))*Aallgroups(yy*G+g);
       }
     }
   }
