@@ -197,6 +197,64 @@ arma::mat E_step1 (arma::mat resp, arma::vec Nvec, arma::mat X, int y, int G, ar
   return(LiA);
 }
 
+// [[Rcpp::export]]
+arma::mat E_step2 (arma::mat resp, arma::vec Nvec, arma::mat X, int y, int G, arma::mat yallgroup, arma::mat Mulist, arma::cube Siglist, arma::mat gra, arma::mat grd, arma::mat grbeta, arma::cube grgamma,int r, int J, int m, int N1, int N2, int N3,int N)
+{
+  arma::vec Aallgroups = zeros<arma::vec>(G*y);
+  for (int yy = 0; yy < y; yy++){
+    for (int ii = 0; ii < G; ii++){
+      Aallgroups(yy*G+ii)=dmvnrm2(X.row(ii), Mulist.row(yy), Siglist.slice(yy),FALSE);
+    }
+  }
+  
+  arma::mat axmat=gra*X.t(); 
+  arma::mat ygamallgroups=zeros<mat>(J*y,y-1);
+  for (int yy = 0; yy < y; yy++){
+    for (int j = 0; j < J; j++){
+      ygamallgroups.row(yy*J+j)=yallgroup.row(yy)*grgamma.slice(j);
+    }
+  }
+  arma::mat ygamatallgrp=zeros<mat>(J*y,X.n_rows);
+  for (int yy = 0; yy < y; yy++){
+    ygamatallgrp.rows((yy*J),(yy*J+J-1))=ygamallgroups.rows((yy*J),(yy*J+J-1))*X.t(); 
+  }
+  arma::mat grbetaallgrp=zeros<mat>(J*y,1); 
+  for (int yy = 0; yy < y; yy++){
+    grbetaallgrp.rows((yy*J),(yy*J+J-1))=(yallgroup.row(yy)*grbeta.t()).t(); 
+  }
+  
+  arma::mat LiA = zeros<mat>(N,G); 
+  for (int yy=0; yy<y; yy++)
+  {
+    int Ny=Nvec(yy);
+    arma::cube pstar1=zeros<cube>(J,(m-1),G);
+    arma::cube p1=zeros<cube>(J,m,G);
+    for (int g = 0; g < G; g++)
+    {
+      pstar1.slice(g) = 1/(1+exp(-(grd+axmat.col(g)+grbetaallgrp.rows(yy*J,(yy+1)*J-1)+ygamatallgrp(span(yy*J,(yy+1)*J-1),span(g,g)))));
+      p1.slice(g) = (-diff(join_horiz(ones<colvec>(J),(pstar1.slice(g)),zeros<colvec>(J)),1,1));
+    }
+    arma::cube pij = zeros<cube>(J,G,Ny); 
+    for (int j = 0; j < J; j++)
+    {
+      for (int g = 0; g < G; g++)
+      {
+        for (int n = 0; n < Ny; n++){
+          pij(j,g,n)=p1(j,resp(n,j),g);
+        }
+      }
+    }
+    for (int g = 0; g < G; g++)
+    {
+      for (int n = 0; n < Ny; n++){
+        (LiA.rows(sum(Nvec.subvec(0,yy))-Ny,sum(Nvec.subvec(0,yy))-1))(n,g)=prod((pij.slice(n)).col(g))*Aallgroups(g);
+      }
+    }
+  }
+  return(LiA);
+}
+
+
 
 // [[Rcpp::export]]
 Rcpp::List M_step(int j, arma::rowvec ng, arma::mat rgk, arma::mat X, int y, int G, arma::mat yallgroup, double maxtol, arma::mat gra, arma::mat grd, arma::mat grbeta, arma::cube grgamma,int r, int J, int m, int eta)
