@@ -208,8 +208,6 @@ bics=rep(0,length(eta.vec))
 ADmat=array(double(J*3*length(eta.vec)),dim = c(J,3,length(eta.vec)))
 #Gammas=array(double(2*J*m*length(eta.vec)),dim = c(2,2,J,length(eta.vec)))
 Betas=array(double(J*2*length(eta.vec)),dim = c(J,2,length(eta.vec)))
-biass=matrix(0,length(eta.vec),3)
-RMSEs=matrix(0,length(eta.vec),3)
 theta.dist=array(double(2*9*length(eta.vec)),dim=c(9,2,length(eta.vec)))
 for (k in 1:length(eta.vec))
 {
@@ -226,21 +224,12 @@ for (k in 1:length(eta.vec))
 
 kk=which.min(bics)
 
-eta.2[rep]=eta.vec[kk]
-#Gammas.13[,,,i]=Gammas[,,,kk]
-ADmat.2[,,rep]=ADmat[,,kk]
-Betas.2[,,rep]=Betas[,,kk]
-biass.2[rep,]=biass[kk,]
-RMSEs.2[rep,]=RMSEs[kk,]
-print(ADmat.2[,,rep])
-print(eta.2[rep])
-print(Betas.2[,,rep])
-print(biass.2[rep,])
-print(RMSEs.2[rep,])
-write.csv(eta.2[rep],file = paste("eta2EM_",rep))
-write.csv(ADmat.2[,,rep],file = paste("ADmat2EM_",rep))
-write.csv(Betas.2[,,rep],file = paste("Beta2EM_",rep))
-write.csv(theta.dist[,,kk],file = paste("theta2EM_",rep))
+eta.vec[kk]
+
+ADmat[,,kk]
+Betas[,,kk]
+theta.dist[,,kk]
+
 
 
 for (k in 1:length(eta.vec))
@@ -320,9 +309,7 @@ eta.vec=seq(1,25,1)
 bics=rep(0,length(eta.vec))
 ADmat=array(double(J*3*length(eta.vec)),dim = c(J,3,length(eta.vec)))
 #Gammas=array(double(2*J*m*length(eta.vec)),dim = c(2,2,J,length(eta.vec)))
-Betas=array(double(J*2*length(eta.vec)),dim = c(J,2,length(eta.vec)))
-biass=matrix(0,length(eta.vec),3)
-RMSEs=matrix(0,length(eta.vec),3)
+Gammas=array(double(2*J*m*length(eta.vec)),dim = c(2,2,J,length(eta.vec)))
 theta.dist=array(double(2*9*length(eta.vec)),dim=c(9,2,length(eta.vec)))
 for (k in 1:length(eta.vec))
 {
@@ -333,27 +320,16 @@ for (k in 1:length(eta.vec))
   bics[k]=sim$bic
   #Gammas[,,,k]=sim$Gamma
   ADmat[,,k]=sim$est
-  Betas[,,k]=sim$Beta
+  Gammas[,,,k]=sim$Gamma
   theta.dist[,,k]=rbind(sim$mean1,sim$mean2,sim$mean3,sim$Corr1,sim$Corr2,sim$Corr3)
 }
 
 kk=which.min(bics)
 
-eta.2[rep]=eta.vec[kk]
-#Gammas.13[,,,i]=Gammas[,,,kk]
-ADmat.2[,,rep]=ADmat[,,kk]
-Betas.2[,,rep]=Betas[,,kk]
-biass.2[rep,]=biass[kk,]
-RMSEs.2[rep,]=RMSEs[kk,]
-print(ADmat.2[,,rep])
-print(eta.2[rep])
-print(Betas.2[,,rep])
-print(biass.2[rep,])
-print(RMSEs.2[rep,])
-write.csv(eta.2[rep],file = paste("eta2EM_",rep))
-write.csv(ADmat.2[,,rep],file = paste("ADmat2EM_",rep))
-write.csv(Betas.2[,,rep],file = paste("Beta2EM_",rep))
-write.csv(theta.dist[,,kk],file = paste("theta2EM_",rep))
+eta.vec[kk]
+Gammas[,,,kk]
+ADmat[,,kk]
+theta.dist[,,kk]
 
 
 for (k in 1:length(eta.vec))
@@ -369,6 +345,12 @@ for (k in 1:length(eta.vec))
   theta.dist[,,k]=rbind(sim$mean1,sim$mean2,sim$mean3,sim$Corr1,sim$Corr2,sim$Corr3)
 }
 
+kk=which.min(bics)
+
+eta.vec[kk]
+Gammas[,,,kk]
+ADmat[,,kk]
+theta.dist[,,kk]
 
 for (k in 1:length(eta.vec))
 {
@@ -382,3 +364,11 @@ for (k in 1:length(eta.vec))
   Betas[,,k]=sim$Beta
   theta.dist[,,k]=rbind(sim$mean1,sim$mean2,sim$mean3,sim$Corr1,sim$Corr2,sim$Corr3)
 }
+
+
+kk=which.min(bics)
+
+eta.vec[kk]
+Gammas[,,,kk]
+ADmat[,,kk]
+theta.dist[,,kk]

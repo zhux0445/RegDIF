@@ -1,48 +1,3 @@
-E_step0=function( resp, N.vec, X, y, G, y.allgroup, Mu.list, Sig.list, gra, grd, grbeta, grgamma){
-  A.allgroups=numeric(nrow(X)*y) #A1, A2, A3
-  for (yy in 1:y){
-    A.allgroups[((yy-1)*nrow(X)+1):((yy-1)*nrow(X)+nrow(X))]=dmvnorm(X,Mu.list[((yy-1)*r+1):((yy-1)*r+r)],Sig.list[((yy-1)*r+1):((yy-1)*r+r),])
-  }
-  #calculation of n_g 
-  axmat=gra%*%t(X) #a%*%X
-  ygam.allgroups=matrix(0,J*y,(y-1)) #ygam1,ygam2,ygam3
-  for (yy in 1:y){
-    for (j in 1:J){
-      ygam.allgroups[((yy-1)*J+j),]=y.allgroup[yy,]%*%grgamma[,,j]
-    }
-  }
-  ygamat.allgrp=matrix(0,(J*y),nrow(X)) #ygamat1,ygamat2,ygamat3
-  for (yy in 1:y){
-    ygamat.allgrp[((yy-1)*J+1):((yy-1)*J+J),]=ygam.allgroups[((yy-1)*J+1):((yy-1)*J+J),]%*%t(X) 
-  }
-  grbeta.allgrp= matrix(0,(J*y),1) #grbeta1,grbeta2,grbeta3 "ncol=1" is the number of parameter beta, if we use multiple covariates later, change this value
-  for (yy in 1:y){
-    grbeta.allgrp[((yy-1)*J+1):((yy-1)*J+J),]=t(y.allgroup[yy,]%*%t(grbeta))
-  }
-  pstar.allgrp=array(double(J*(m-1)*G*y),dim = c(J,(m-1),G,y)) # pstar1,pstar2,pstar3
-  p.allgrp=array(double(J*m*G*y),dim = c(J,m,G,y)) # p1,p2,p3
-  for (yy in 1:y){
-    for (g in 1:G)
-    {
-      pstar.allgrp[,,g,yy] = 1/(1+exp(-(grd+axmat[,g]+ygamat.allgrp[((yy-1)*J+1):((yy-1)*J+J),g]+grbeta.allgrp[((yy-1)*J+1):((yy-1)*J+J),])))
-      p.allgrp[,,g,yy] = t(-diff(rbind(rep(1,J),t(pstar.allgrp[,,g,yy]),rep(0,J))))
-    }
-  }
-  
-  LiA=matrix(double(N*G),N,G)
-  for (yy in 1:y){
-    pij=array(double(J*G*N.vec[yy]),dim=c(J,G,N.vec[yy]))
-    for (j in 1:J)
-    {
-      for (g in 1:G)
-      {
-        pij[j,g,]=p.allgrp[j,(resp[(sum(N.vec[1:yy])-N.vec[yy]+1):(sum(N.vec[1:yy])),j]),g,yy]
-      }
-    }
-    LiA[(sum(N.vec[1:yy])-N.vec[yy]+1):(sum(N.vec[1:yy])),]=t(apply(pij, c(2,3), prod)* A.allgroups[((yy-1)*nrow(X)+1):((yy-1)*nrow(X)+nrow(X))])
-  }
-  return(LiA)
-}
 # 4
 
 Reg_DIF <- function(resp,m,r,y,N.vec,eta,eps =1e-3,max.tol=1e-7,gra00=NULL,grd00=NULL,grbeta00=NULL,grgamma00=NULL,Mu.list=NULL,Sig.list= NULL,NonUniform=F)
@@ -94,9 +49,9 @@ Reg_DIF <- function(resp,m,r,y,N.vec,eta,eps =1e-3,max.tol=1e-7,gra00=NULL,grd00
     Mu.est.mat=rbind(Mu.est[1:2],Mu.est[3:4],Mu.est[5:6])
     Sig.est.slice=array(0,c(2,2,3))
     Sig.est.slice[,,1]=Sig.est[1:2,];Sig.est.slice[,,2]=Sig.est[3:4,];Sig.est.slice[,,3]=Sig.est[5:6,]
-    #LiA=E_step1(resp=resp2,Nvec=N.vec,X=X,y=y,G=G,yallgroup=y.allgroup,Mulist=Mu.est.mat,Siglist=Sig.est.slice,gra=gra, grd=grd, grbeta=grbeta, grgamma=grgamma,r=r,J=J,m=m,N1=N1,N2=N2,N3=N3,N=N)
+    LiA=E_step1(resp=resp2,Nvec=N.vec,X=X,y=y,G=G,yallgroup=y.allgroup,Mulist=Mu.est.mat,Siglist=Sig.est.slice,gra=gra, grd=grd, grbeta=grbeta, grgamma=grgamma,r=r,J=J,m=m,N1=N1,N2=N2,N3=N3,N=N)
     
-    LiA=E_step0(resp=resp,N.vec=N.vec,X=X,y=y,G=G,y.allgroup=y.allgroup,Mu.list=c(Mu.est[1:2],Mu.est[3:4],Mu.est[5:6]),Sig.list=rbind(Sig.est[1:2,],Sig.est[3:4,],Sig.est[5:6,]),gra=gra, grd=grd, grbeta=grbeta, grgamma=grgamma)
+    #LiA=E_step0(resp=resp,N.vec=N.vec,X=X,y=y,G=G,y.allgroup=y.allgroup,Mu.list=c(Mu.est[1:2],Mu.est[3:4],Mu.est[5:6]),Sig.list=rbind(Sig.est[1:2,],Sig.est[3:4,],Sig.est[5:6,]),gra=gra, grd=grd, grbeta=grbeta, grgamma=grgamma)
     ng=ngest(LiA=LiA,y=y,Nvec=N.vec,G=G)
     #update mu hat and Sigma hat
     Mu.est=numeric(r*y)
@@ -180,7 +135,7 @@ Reg_DIF <- function(resp,m,r,y,N.vec,eta,eps =1e-3,max.tol=1e-7,gra00=NULL,grd00
     Mu.est.mat=rbind(Mu.est[1:2],Mu.est[3:4],Mu.est[5:6])
     Sig.est.slice=array(0,c(2,2,3))
     Sig.est.slice[,,1]=Sig.est[1:2,];Sig.est.slice[,,2]=Sig.est[3:4,];Sig.est.slice[,,3]=Sig.est[5:6,]
-    LiA=E_step0(resp=resp,N.vec=N.vec,X=X,y=y,G=G,y.allgroup=y.allgroup,Mu.list=c(Mu.est[1:2],Mu.est[3:4],Mu.est[5:6]),Sig.list=rbind(Sig.est[1:2,],Sig.est[3:4,],Sig.est[5:6,]),gra=gra, grd=grd, grbeta=grbeta, grgamma=grgamma)
+    LiA=E_step1(resp=resp2,Nvec=N.vec,X=X,y=y,G=G,yallgroup=y.allgroup,Mulist=Mu.est.mat,Siglist=Sig.est.slice,gra=gra, grd=grd, grbeta=grbeta, grgamma=grgamma,r=r,J=J,m=m,N1=N1,N2=N2,N3=N3,N=N)
     ng=ngest(LiA=LiA,y=y,Nvec=N.vec,G=G)
     #update mu hat and Sigma hat
     Mu.est=numeric(r*y)
@@ -225,12 +180,13 @@ Reg_DIF <- function(resp,m,r,y,N.vec,eta,eps =1e-3,max.tol=1e-7,gra00=NULL,grd00
     df.beta <- abs(betaold-grbeta)
     df.gamma <- abs(gammaold-grgamma)
     iter <- iter+1
+    print(c(iter,max(df.a), max(df.d), max(df.beta), max(df.gamma)))
   }
   # AIC BIC
   Mu.est.mat=rbind(Mu.est[1:2],Mu.est[3:4],Mu.est[5:6])
   Sig.est.slice=array(0,c(2,2,3))
   Sig.est.slice[,,1]=Sig.est[1:2,];Sig.est.slice[,,2]=Sig.est[3:4,];Sig.est.slice[,,3]=Sig.est[5:6,]
-  LiA=E_step0(resp=resp,N.vec=N.vec,X=X,y=y,G=G,y.allgroup=y.allgroup,Mu.list=c(Mu.est[1:2],Mu.est[3:4],Mu.est[5:6]),Sig.list=rbind(Sig.est[1:2,],Sig.est[3:4,],Sig.est[5:6,]),gra=gra, grd=grd, grbeta=grbeta, grgamma=grgamma)
+  LiA=E_step1(resp=resp2,Nvec=N.vec,X=X,y=y,G=G,yallgroup=y.allgroup,Mulist=Mu.est.mat,Siglist=Sig.est.slice,gra=gra, grd=grd, grbeta=grbeta, grgamma=grgamma,r=r,J=J,m=m,N1=N1,N2=N2,N3=N3,N=N)
   ng=ngest(LiA=LiA,y=y,Nvec=N.vec,G=G)
   lh=numeric(J)#likelihood function for each item (overall likelihood by sum over j)
   for (j in 1:J){
@@ -316,7 +272,7 @@ Reg_EMM_DIF <- function(resp,m,r,y,N.vec,eta,eps =1e-3,max.tol=1e-7,gra00=NULL,g
     Sig.est.slice=array(0,c(2,2,3))
     Sig.est.slice[,,1]=Sig.est[1:2,];Sig.est.slice[,,2]=Sig.est[3:4,];Sig.est.slice[,,3]=Sig.est[5:6,]
     #LiA=E_step1(resp=resp2,Nvec=N.vec,X=X,y=y,G=G,yallgroup=y.allgroup,Mulist=Mu.est.mat,Siglist=Sig.est.slice,gra=gra, grd=grd, grbeta=grbeta, grgamma=grgamma,r=r,J=J,m=m,N1=N1,N2=N2,N3=N3,N=N)
-    LiA=E_step0(resp=resp,N.vec=N.vec,X=X,y=y,G=G,y.allgroup=y.allgroup,Mu.list=c(Mu.est[1:2],Mu.est[3:4],Mu.est[5:6]),Sig.list=rbind(Sig.est[1:2,],Sig.est[3:4,],Sig.est[5:6,]),gra=gra, grd=grd, grbeta=grbeta, grgamma=grgamma)
+    LiA=E_step1(resp=resp2,Nvec=N.vec,X=X,y=y,G=G,yallgroup=y.allgroup,Mulist=Mu.est.mat,Siglist=Sig.est.slice,gra=gra, grd=grd, grbeta=grbeta, grgamma=grgamma,r=r,J=J,m=m,N1=N1,N2=N2,N3=N3,N=N)
     ng=ngest(LiA=LiA,y=y,Nvec=N.vec,G=G)
     #update mu hat and Sigma hat
     Mu.est=numeric(r*y)
@@ -372,6 +328,7 @@ Reg_EMM_DIF <- function(resp,m,r,y,N.vec,eta,eps =1e-3,max.tol=1e-7,gra00=NULL,g
     df.beta <- abs(betaold-grbeta)
     df.gamma <- abs(gammaold-grgamma)
     iter <- iter+1
+    print(c(iter,max(df.a), max(df.d), max(df.beta), max(df.gamma)))
   }
   # AIC BIC
   Mu.est.mat=rbind(Mu.est[1:2],Mu.est[3:4],Mu.est[5:6])
@@ -464,7 +421,7 @@ Reg_Adaptive_DIF <- function(resp,m,r,y,N.vec,eta,lam,eps =1e-3,max.tol=1e-7,gra
     Sig.est.slice=array(0,c(2,2,3))
     Sig.est.slice[,,1]=Sig.est[1:2,];Sig.est.slice[,,2]=Sig.est[3:4,];Sig.est.slice[,,3]=Sig.est[5:6,]
     #LiA=E_step1(resp=resp2,Nvec=N.vec,X=X,y=y,G=G,yallgroup=y.allgroup,Mulist=Mu.est.mat,Siglist=Sig.est.slice,gra=gra, grd=grd, grbeta=grbeta, grgamma=grgamma,r=r,J=J,m=m,N1=N1,N2=N2,N3=N3,N=N)
-    LiA=E_step0(resp=resp,N.vec=N.vec,X=X,y=y,G=G,y.allgroup=y.allgroup,Mu.list=c(Mu.est[1:2],Mu.est[3:4],Mu.est[5:6]),Sig.list=rbind(Sig.est[1:2,],Sig.est[3:4,],Sig.est[5:6,]),gra=gra, grd=grd, grbeta=grbeta, grgamma=grgamma)
+    LiA=E_step1(resp=resp2,Nvec=N.vec,X=X,y=y,G=G,yallgroup=y.allgroup,Mulist=Mu.est.mat,Siglist=Sig.est.slice,gra=gra, grd=grd, grbeta=grbeta, grgamma=grgamma,r=r,J=J,m=m,N1=N1,N2=N2,N3=N3,N=N)
     ng=ngest(LiA=LiA,y=y,Nvec=N.vec,G=G)
     #update mu hat and Sigma hat
     Mu.est=numeric(r*y)
@@ -506,6 +463,7 @@ Reg_Adaptive_DIF <- function(resp,m,r,y,N.vec,eta,lam,eps =1e-3,max.tol=1e-7,gra
     df.beta <- abs(betaold-grbeta)
     df.gamma <- abs(gammaold-grgamma)
     iter <- iter+1
+    print(c(iter,max(df.a), max(df.d), max(df.beta), max(df.gamma)))
   }
   # Re-estimation
   if (NonUniform==T){
@@ -548,7 +506,7 @@ Reg_Adaptive_DIF <- function(resp,m,r,y,N.vec,eta,lam,eps =1e-3,max.tol=1e-7,gra
     Sig.est.slice=array(0,c(2,2,3))
     Sig.est.slice[,,1]=Sig.est[1:2,];Sig.est.slice[,,2]=Sig.est[3:4,];Sig.est.slice[,,3]=Sig.est[5:6,]
     #LiA=E_step1(resp=resp2,Nvec=N.vec,X=X,y=y,G=G,yallgroup=y.allgroup,Mulist=Mu.est.mat,Siglist=Sig.est.slice,gra=gra, grd=grd, grbeta=grbeta, grgamma=grgamma,r=r,J=J,m=m,N1=N1,N2=N2,N3=N3,N=N)
-    LiA=E_step0(resp=resp,N.vec=N.vec,X=X,y=y,G=G,y.allgroup=y.allgroup,Mu.list=c(Mu.est[1:2],Mu.est[3:4],Mu.est[5:6]),Sig.list=rbind(Sig.est[1:2,],Sig.est[3:4,],Sig.est[5:6,]),gra=gra, grd=grd, grbeta=grbeta, grgamma=grgamma)
+    LiA=E_step1(resp=resp2,Nvec=N.vec,X=X,y=y,G=G,yallgroup=y.allgroup,Mulist=Mu.est.mat,Siglist=Sig.est.slice,gra=gra, grd=grd, grbeta=grbeta, grgamma=grgamma,r=r,J=J,m=m,N1=N1,N2=N2,N3=N3,N=N)
     ng=ngest(LiA=LiA,y=y,Nvec=N.vec,G=G)
     #update mu hat and Sigma hat
     Mu.est=numeric(r*y)
@@ -593,13 +551,14 @@ Reg_Adaptive_DIF <- function(resp,m,r,y,N.vec,eta,lam,eps =1e-3,max.tol=1e-7,gra
     df.beta <- abs(betaold-grbeta)
     df.gamma <- abs(gammaold-grgamma)
     iter <- iter+1
+    print(c(iter,max(df.a), max(df.d), max(df.beta), max(df.gamma)))
   }
   # AIC BIC
   Mu.est.mat=rbind(Mu.est[1:2],Mu.est[3:4],Mu.est[5:6])
   Sig.est.slice=array(0,c(2,2,3))
   Sig.est.slice[,,1]=Sig.est[1:2,];Sig.est.slice[,,2]=Sig.est[3:4,];Sig.est.slice[,,3]=Sig.est[5:6,]
   #LiA=E_step1(resp=resp2,Nvec=N.vec,X=X,y=y,G=G,yallgroup=y.allgroup,Mulist=Mu.est.mat,Siglist=Sig.est.slice,gra=gra, grd=grd, grbeta=grbeta, grgamma=grgamma,r=r,J=J,m=m,N1=N1,N2=N2,N3=N3,N=N)
-  LiA=E_step0(resp=resp,N.vec=N.vec,X=X,y=y,G=G,y.allgroup=y.allgroup,Mu.list=c(Mu.est[1:2],Mu.est[3:4],Mu.est[5:6]),Sig.list=rbind(Sig.est[1:2,],Sig.est[3:4,],Sig.est[5:6,]),gra=gra, grd=grd, grbeta=grbeta, grgamma=grgamma)
+  LiA=E_step1(resp=resp2,Nvec=N.vec,X=X,y=y,G=G,yallgroup=y.allgroup,Mulist=Mu.est.mat,Siglist=Sig.est.slice,gra=gra, grd=grd, grbeta=grbeta, grgamma=grgamma,r=r,J=J,m=m,N1=N1,N2=N2,N3=N3,N=N)
   ng=ngest(LiA=LiA,y=y,Nvec=N.vec,G=G)
   lh=numeric(J)#likelihood function for each item (overall likelihood by sum over j)
   for (j in 1:J){
