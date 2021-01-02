@@ -70,9 +70,8 @@ arma::rowvec ngest (arma::mat LiA, int y, arma::uvec Nvec, int G){
   return(join_horiz(ng,ngallgrp));
 }
 
-
 // [[Rcpp::export]]
-arma::mat rgkest (int j, arma::cube Xijk, arma::mat LiA, int y, arma::vec Nvec, int G, int N, int m){
+arma::mat rgkest0 (int j, arma::cube Xijk, arma::mat LiA, int y, arma::vec Nvec, int G, int N, int m){
   arma::mat Pi = sum(LiA,1);
   arma::cube rLiA = zeros<cube>(N,G,m);
   arma::mat Pirep = repelem(Pi, 1, G);
@@ -87,6 +86,27 @@ arma::mat rgkest (int j, arma::cube Xijk, arma::mat LiA, int y, arma::vec Nvec, 
   arma::mat rgky2 = sum( rLiA.rows(N/y,2*N/y-1),0);
   arma::mat rgky3 = sum( rLiA.rows(2*N/y,3*N/y-1),0);
   return(join_cols(rgk,rgky1,rgky2,rgky3));
+}
+
+
+// [[Rcpp::export]]
+arma::mat rgkest (int j, arma::cube Xijk, arma::mat LiA, int y, arma::vec Nvec, int G, int N, int m){
+  arma::mat Pi = sum(LiA,1);
+  arma::cube rLiA = zeros<cube>(N,G,m);
+  arma::mat Pirep = repelem(Pi, 1, G);
+  
+  for (int k=0; k<m; k++){
+    arma::mat Xjkmat = ((Xijk.slice(k)).col(j-1));
+    arma::mat Xijkrep = repelem(Xjkmat, 1, G);
+    rLiA.slice(k)= Xijkrep%LiA/Pirep;
+  }
+  arma::mat rgk = sum( rLiA,0);
+  arma::mat rgky = zeros<mat>(G*y,m);
+  for (int yy=0; yy<y; yy++){
+    int Ny=Nvec(yy);
+    rgky.rows((yy+1)*G,(yy+2)*G-1) = sum( rLiA.rows(sum(Nvec.subvec(0,yy))-Ny,sum(Nvec.subvec(0,yy))-1),0);
+  }
+  return(join_cols(rgk,rgky));
 }
 
 
