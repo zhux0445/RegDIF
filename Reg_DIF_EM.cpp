@@ -101,12 +101,12 @@ arma::mat rgkest (int j, arma::cube Xijk, arma::mat LiA, int y, arma::vec Nvec, 
     rLiA.slice(k)= Xijkrep%LiA/Pirep;
   }
   arma::mat rgk = sum( rLiA,0);
-  arma::mat rgky = zeros<mat>(G*y,m);
   for (int yy=0; yy<y; yy++){
     int Ny=Nvec(yy);
-    rgky.rows((yy+1)*G,(yy+2)*G-1) = sum( rLiA.rows(sum(Nvec.subvec(0,yy))-Ny,sum(Nvec.subvec(0,yy))-1),0);
+    arma::mat rgky=sum( rLiA.rows(sum(Nvec.subvec(0,yy))-Ny,sum(Nvec.subvec(0,yy))-1),0);
+    rgk=join_cols(rgk,rgky);
   }
-  return(join_cols(rgk,rgky));
+  return(rgk);
 }
 
 
