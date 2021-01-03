@@ -180,7 +180,7 @@ Reg_DIF <- function(resp,m,r,y,N.vec,eta,eps =1e-3,max.tol=1e-7,gra00=NULL,grd00
     df.beta <- abs(betaold-grbeta)
     df.gamma <- abs(gammaold-grgamma)
     iter <- iter+1
-    print(c(iter,max(df.a), max(df.d), max(df.beta), max(df.gamma)))
+    print(c(2, iter,max(df.a), max(df.d), max(df.beta), max(df.gamma)))
   }
   # AIC BIC
   Mu.est.mat=rbind(Mu.est[1:2],Mu.est[3:4],Mu.est[5:6])
@@ -551,7 +551,7 @@ Reg_Adaptive_DIF <- function(resp,m,r,y,N.vec,eta,lam,eps =1e-3,max.tol=1e-7,gra
     df.beta <- abs(betaold-grbeta)
     df.gamma <- abs(gammaold-grgamma)
     iter <- iter+1
-    print(c(iter,max(df.a), max(df.d), max(df.beta), max(df.gamma)))
+    print(c(2,iter,max(df.a), max(df.d), max(df.beta), max(df.gamma)))
   }
   # AIC BIC
   Mu.est.mat=rbind(Mu.est[1:2],Mu.est[3:4],Mu.est[5:6])
