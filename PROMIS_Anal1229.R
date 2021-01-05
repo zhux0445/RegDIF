@@ -291,6 +291,23 @@ for (k in 1:length(eta.vec))
 }
 
 
+resp01=Resp_ordered2[1:(N1+N2),]
+resp02=rbind(Resp_ordered2[1:N1,],Resp_ordered2[(N1+N2+1):(N1+N2+N3),])
+
+#omnibus
+md.noncons0 <- multipleGroup(Resp_ordered2, s, group = Group,SE=TRUE,invariance=c('free_means', 'free_var','slopes',colnames(Resp_ordered2)[c(3,15)]))
+mirt.p1=DIF(md.noncons0, which.par = c('d'), p.adjust = 'fdr',scheme = 'add',items2test=c(1,2,4:14,16:21))[,"adj_pvals"]
+which(mirt.p1<0.05)
+#ref vs focal1
+md.noncons01 <- multipleGroup(resp01, s, group = Group01,SE=TRUE,invariance=c('free_means', 'free_var','slopes',colnames(resp01)[c(3,15)]))
+mirt.p2=DIF(md.noncons01, which.par = c('d'), p.adjust = 'fdr',scheme = 'add',items2test=c(1,2,4:14,16:21))[,"adj_pvals"]
+which(mirt.p2<0.05)
+#ref vs focal2
+md.noncons02 <- multipleGroup(resp02, s, group = Group02,SE=TRUE,invariance=c('free_means', 'free_var','slopes',colnames(resp02)[c(3,15)]))
+mirt.p3=DIF(md.noncons02, which.par = c('d'), p.adjust = 'fdr',scheme = 'add',items2test=c(1,2,4:14,16:21))[,"adj_pvals"]
+which(mirt.p3<0.05)
+
+
 ###########################
 ####    Non-Uniform    ####
 ###########################
@@ -439,3 +456,41 @@ eta.vec[kk]
 Gammas[,,,kk]
 ADmat[,,kk]
 theta.dist[,,kk]
+
+#omnibus
+md.noncons0 <- multipleGroup(Resp_ordered2, s, group = Group,SE=TRUE,invariance=c('free_means', 'free_var','intercepts',colnames(Resp_ordered2)[c(3,14)]))
+mirt.p121=DIF(md.noncons0, which.par = c('a1'), p.adjust = 'fdr',scheme = 'add',items2test=c(1,2,4:10))[,"adj_pvals"]
+mirt.p122=DIF(md.noncons0, which.par = c('a2'), p.adjust = 'fdr',scheme = 'add',items2test=c(11:13,15:21))[,"adj_pvals"]
+which(mirt.p121<0.05)
+which(mirt.p122<0.05)
+#ref vs focal1
+md.noncons01 <- multipleGroup(resp01, s, group = Group01,SE=TRUE,invariance=c('free_means', 'free_var','intercepts',colnames(resp01)[c(3,14)]))
+mirt.p221=DIF(md.noncons01, which.par = c('a1'), p.adjust = 'fdr',scheme = 'add',items2test=c(1,2,4:10))[,"adj_pvals"]
+mirt.p222=DIF(md.noncons01, which.par = c('a2'), p.adjust = 'fdr',scheme = 'add',items2test=c(11:13,15:21))[,"adj_pvals"]
+
+#ref vs focal2
+md.noncons02 <- multipleGroup(resp02, s, group = Group02,SE=TRUE,invariance=c('free_means', 'free_var','intercepts',colnames(resp02)[c(3,14)]))
+mirt.p321=DIF(md.noncons02, which.par = c('a1'), p.adjust = 'fdr',scheme = 'add',items2test=c(1,2,4:10))[,"adj_pvals"]
+mirt.p322=DIF(md.noncons02, which.par = c('a2'), p.adjust = 'fdr',scheme = 'add',items2test=c(11:13,15:21))[,"adj_pvals"]
+
+# Non-uniform, detecting DIF on slope and intercept together
+
+md.noncons0 <- multipleGroup(Resp_ordered2, s, group = Group,SE=TRUE,invariance=c('free_means', 'free_var',colnames(Resp_ordered2)[c(3,14,15)]))
+mirt.p.nonunifomn11=DIF(md.noncons0, which.par = c('a1',"d"), p.adjust = 'fdr',scheme = 'add',items2test=c(1,2,4:10))[,"adj_pvals"]
+mirt.p.nonunifomn12=DIF(md.noncons0, which.par = c('a2',"d"), p.adjust = 'fdr',scheme = 'add',items2test=c(11:13,16:21))[,"adj_pvals"]
+which(mirt.p.nonunifomn11<0.05)
+which(mirt.p.nonunifomn12<0.05)
+
+
+md.noncons01 <- multipleGroup(resp01, s, group = Group01,SE=TRUE,invariance=c('free_means', 'free_var',colnames(resp01)[c(3,14,15)]))
+mirt.p.nonunifomn21=DIF(md.noncons01, which.par = c('a1',"d"), p.adjust = 'fdr',scheme = 'add',items2test=c(1,2,4:10))[,"adj_pvals"]
+mirt.p.nonunifomn22=DIF(md.noncons01, which.par = c('a2',"d"), p.adjust = 'fdr',scheme = 'add',items2test=c(11:13,16:21))[,"adj_pvals"]
+which(mirt.p.nonunifomn21<0.05)
+which(mirt.p.nonunifomn22<0.05)
+
+
+md.noncons02 <- multipleGroup(resp02, s, group = Group02,SE=TRUE,invariance=c('free_means', 'free_var',colnames(resp02)[c(3,14,15)]))
+mirt.p.nonunifomn31=DIF(md.noncons02, which.par = c('a1',"d"), p.adjust = 'fdr',scheme = 'add',items2test=c(1,2,4:10))[,"adj_pvals"]
+mirt.p.nonunifomn32=DIF(md.noncons02, which.par = c('a2',"d"), p.adjust = 'fdr',scheme = 'add',items2test=c(11:13,16:21))[,"adj_pvals"]
+which(mirt.p.nonunifomn31<0.05)
+which(mirt.p.nonunifomn32<0.05)
