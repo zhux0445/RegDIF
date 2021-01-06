@@ -475,6 +475,29 @@ mirt.p322=DIF(md.noncons02, which.par = c('a2'), p.adjust = 'fdr',scheme = 'add'
 
 # Non-uniform, detecting DIF on slope and intercept together
 
+A11=c(3.582412,  4.897306,  4.046299,  5.573532,  4.643118,  4.941166,  4.827226,  6.170960,  4.101816,  3.455815,rep(0,11))
+A12=A11
+A21=c(rep(0,10),2.755623, 3.782136,  4.265506,  5.024365,  4.606470,  5.240768,  4.300063,  4.034435,  4.261485,  3.720346 , 3.859823)
+A22=A21
+Amat1=Amat2=cbind(A11,A21)
+
+gra00=Amat1
+grd00=matrix(c(-0.72503760, -1.13242139, -0.19884309,  3.07215542, -0.92452088,  1.29122592,  2.05154828, -0.71657034,  0.83760641, 0.08595672,  0.82551450,  1.75064882,  3.41788655, -0.38853637,  1.20907273,  1.31298779,  1.65547608,  0.41578266,-0.81472150,  1.39949301, -0.54760480 ),J,1)
+grbeta00=matrix(c(0.33748014,  0.66017949,  0.00000000, -0.08288579,  0.10989710,  0.25077822,  0.55898655, -0.04965342,  0.07457357,  0.20500330, -0.41312812, -0.30345663, -0.28338443,  0.00000000,  0.00000000,  0.03291266, -0.09290575, -0.37856325, -0.06434342, -0.11751681,  0.15202987,0.36515029,  0.72467851,  0.00000000, -0.89994896, -0.12548885, -0.29677131,  0.02725056, -0.41289662, -0.09132578, -0.05955134, -0.71171825, -0.53117992, -0.82859474,  0.00000000,  0.00000000,  0.43981425,  0.12128013, -0.63785820, -0.20808113, -0.04304181,  0.22238222  ),J,2)
+grgamma00=array(0,dim=c(r,r,J))
+grgamma00[1,1,1:10]=c(-0.10467429, -0.54742946,  0.00000000, -0.51335528, -0.03293997, -0.30689847,  0.16432805,  0.16840894, -0.24886953, -0.33507792 )
+grgamma00[2,1,1:10]=c(-0.24458799, -0.45849844,  0.00000000, -1.04140842, -0.48804613, -0.28116084,  0.06456093,  0.15658214, -0.47307000, -0.38930216 )
+grgamma00[1,2,11:21]=c(0.2419424,  0.3971464,  0.3014336,  0.0000000,  0.0000000, -0.3666998,  0.1351847,  0.6400867,  0.1555225,  0.1654751,  0.4360196 )
+grgamma00[2,2,11:21]=c(0.49945589,  0.05496515, -0.01099853,  0.00000000,  0.00000000,  1.06623093,  0.83777891,  0.06393114, -0.27677535,  0.12122196, -0.25206509)
+mu100=c(0,0)
+mu200=c(-0.205, -0.100 )
+mu300=c(-0.403, -0.363)
+Sig100=matrix(c(1,0.908,0.908,1),2,2)
+Sig200=matrix(c(1.431,1.276,1.276, 1.338),2,2)
+Sig300=matrix(c(1.353,1.209,1.209, 1.270),2,2)
+
+
+
 md.noncons0 <- multipleGroup(Resp_ordered2, s, group = Group,SE=TRUE,invariance=c('free_means', 'free_var',colnames(Resp_ordered2)[c(3,14,15)]))
 mirt.p.nonunifomn11=DIF(md.noncons0, which.par = c('a1',"d"), p.adjust = 'fdr',scheme = 'add',items2test=c(1,2,4:10))[,"adj_pvals"]
 mirt.p.nonunifomn12=DIF(md.noncons0, which.par = c('a2',"d"), p.adjust = 'fdr',scheme = 'add',items2test=c(11:13,16:21))[,"adj_pvals"]
@@ -494,3 +517,14 @@ mirt.p.nonunifomn31=DIF(md.noncons02, which.par = c('a1',"d"), p.adjust = 'fdr',
 mirt.p.nonunifomn32=DIF(md.noncons02, which.par = c('a2',"d"), p.adjust = 'fdr',scheme = 'add',items2test=c(11:13,16:21))[,"adj_pvals"]
 which(mirt.p.nonunifomn31<0.05)
 which(mirt.p.nonunifomn32<0.05)
+
+
+md.noncons0 <- multipleGroup(Resp_ordered2, s, group = Group,SE=TRUE,invariance=c('free_means', 'free_var',colnames(Resp_ordered2)[c(3,14,15)]))
+mirt.p.nonunifomn11=DIF(md.noncons0, which.par = c('a1',"d"), p.adjust = 'fdr',scheme = 'add',items2test=c(1,2,4:10))[,"adj_pvals"]
+mirt.p.nonunifomn12=DIF(md.noncons0, which.par = c('a2',"d"), p.adjust = 'fdr',scheme = 'add',items2test=c(11:13,16:21))[,"adj_pvals"]
+which(mirt.p.nonunifomn11<0.05)
+which(mirt.p.nonunifomn12<0.05)
+
+
+
+
