@@ -483,7 +483,8 @@ Amat1=Amat2=cbind(A11,A21)
 
 gra00=Amat1
 grd00=matrix(c(-0.72503760, -1.13242139, -0.19884309,  3.07215542, -0.92452088,  1.29122592,  2.05154828, -0.71657034,  0.83760641, 0.08595672,  0.82551450,  1.75064882,  3.41788655, -0.38853637,  1.20907273,  1.31298779,  1.65547608,  0.41578266,-0.81472150,  1.39949301, -0.54760480 ),J,1)
-grbeta00=matrix(c(0.33748014,  0.66017949,  0.00000000, -0.08288579,  0.10989710,  0.25077822,  0.55898655, -0.04965342,  0.07457357,  0.20500330, -0.41312812, -0.30345663, -0.28338443,  0.00000000,  0.00000000,  0.03291266, -0.09290575, -0.37856325, -0.06434342, -0.11751681,  0.15202987,0.36515029,  0.72467851,  0.00000000, -0.89994896, -0.12548885, -0.29677131,  0.02725056, -0.41289662, -0.09132578, -0.05955134, -0.71171825, -0.53117992, -0.82859474,  0.00000000,  0.00000000,  0.43981425,  0.12128013, -0.63785820, -0.20808113, -0.04304181,  0.22238222  ),J,2)
+grbeta00=matrix(c(0.389456235,  0.703416608,  0.000000000, -0.004182299,  0.179321698,  0.308776477,  0.648173866,  0.048928343,  0.117106935,  0.242344423, -0.385677547, -0.273535927, -0.243301643,  0.000000000,  0.000000000,  0.039341519, -0.068642605, -0.331448640, -0.034399645, -0.095108479,  0.190652347 ,
+                  0.31753721,  0.66470675,  0.00000000, -0.96492807, -0.18493270, -0.36197975, -0.05581432, -0.50898135, -0.14136163, -0.10151430, -0.70278375, -0.51679355, -0.80764879,  0.00000000,  0.00000000,  0.46175046,  0.13978584, -0.62280392, -0.19234330, -0.02652792,  0.23710494 ),J,2)
 grgamma00=array(0,dim=c(r,r,J))
 grgamma00[1,1,1:10]=c(-0.10467429, -0.54742946,  0.00000000, -0.51335528, -0.03293997, -0.30689847,  0.16432805,  0.16840894, -0.24886953, -0.33507792 )
 grgamma00[2,1,1:10]=c(-0.24458799, -0.45849844,  0.00000000, -1.04140842, -0.48804613, -0.28116084,  0.06456093,  0.15658214, -0.47307000, -0.38930216 )
@@ -495,6 +496,29 @@ mu300=c(-0.403, -0.363)
 Sig100=matrix(c(1,0.908,0.908,1),2,2)
 Sig200=matrix(c(1.431,1.276,1.276, 1.338),2,2)
 Sig300=matrix(c(1.353,1.209,1.209, 1.270),2,2)
+
+# MLE starting
+A11=c(3.634907, 4.992039, 4.630295, 5.599892, 4.711008, 4.937231, 4.814234, 6.251269, 4.179597, 3.507835,rep(0,11))
+A12=A11
+A21=c(rep(0,10),2.824056, 3.882304, 4.376031, 5.511566, 5.058487, 5.366692, 4.395146, 4.134524, 4.342413, 3.803447, 3.932690)
+A22=A21
+Amat1=Amat2=cbind(A11,A21)
+gra00=Amat1
+grd00=matrix(c(-0.4750333, -0.7916704,  0.1496987,  3.4375856, -0.5996930,  1.6099763,  2.3523107, -0.2897046,  1.1277416,  0.3270818,  1.0539445,  2.0689716,  3.7758214,  0.2167536,  1.7699579,  1.7490501,  2.0096169, 0.7539716, -0.4581537,  1.7063543, -0.2264807),J,1)
+grbeta00=matrix(c(0.37708014,  0.67926219,  0.00000000, -0.02686206,  0.16646162,  0.31766490,  0.68246917,  0.03908021,  0.10391127,  0.22423717, -0.25437151, -0.07301593, -0.02185872,  0.00000000,  0.00000000,  0.22111351, 0.14757849, -0.10662067,  0.15226572,  0.08065750,  0.38994695,
+                  0.453414471,  0.835563019,  0.000000000, -0.790104756, -0.026915119, -0.122072935,  0.242941310, -0.193300890, -0.008169891,  0.010286826, -0.499135421, -0.323308846, -0.573780548,  0.000000000, 0.000000000,  0.803305338,  0.480149846, -0.418514736, -0.025956033,  0.183569050,  0.393182414),J,2)
+grgamma00=array(0,dim=c(r,r,J))
+grgamma00[1,1,1:10]=c(0.43812673, 0.09342586, 0.00000000, 0.30745173, 0.68035986, 0.48236747, 1.02994263, 1.28540983, 0.32438288, 0.14675285)
+grgamma00[2,1,1:10]=c(0.3539540,  0.2972423,  0.0000000, -0.1293746,  0.2435920,  0.7165696,  1.1007792,  1.3214419,  0.1877887,  0.1670918)
+grgamma00[1,2,11:21]=c( 0.52114224, 0.80691648, 0.77351535, 0.00000000, 0.00000000, 0.06232816, 0.61091599, 1.10306328, 0.61083483, 0.54394300, 0.88031991)
+grgamma00[2,2,11:21]=c(0.8160085, 0.4210458, 0.4435574, 0.0000000, 0.0000000, 1.5290259, 1.3766523, 0.4693661, 0.1331963, 0.5198093, 0.1290018)
+mu100=c(0,0)
+mu200=c(-0.2417564, -0.2014376)
+mu300=c(-0.4105293, -0.4342871)
+Sig100=matrix(c(1,0.9102690,0.9102690,1),2,2)
+Sig200=matrix(c(0.9948743,0.9242992,0.9242992, 1.0197370),2,2)
+Sig300=matrix(c(0.8968484,0.8498229,0.8498229, 0.9565552),2,2)
+
 
 
 
@@ -527,4 +551,97 @@ which(mirt.p.nonunifomn12<0.05)
 
 
 
+r=2
+m=2
+y=3
+eta.vec=seq(5,20,1)
+bics=rep(0,length(eta.vec))
+ADmat=array(double(J*3*length(eta.vec)),dim = c(J,3,length(eta.vec)))
+Gammas=array(double(2*J*m*length(eta.vec)),dim = c(2,2,J,length(eta.vec)))
+Betas=array(double(J*2*length(eta.vec)),dim = c(J,2,length(eta.vec)))
+theta.dist=array(double(2*9*length(eta.vec)),dim=c(9,2,length(eta.vec)))
+for (k in 1:length(eta.vec))
+{
+  eta=eta.vec[k]
+  ptm <- proc.time()
+  sim=Reg_DIF(resp=Resp_ordered2,m=2,r=2,y=3,N.vec=c(N1,N2,N3),eta=eta,eps =1e-3,max.tol=1e-7,gra00=gra00,grd00=grd00,grbeta00=grbeta00,grgamma00=grgamma00,Mu.list=c(mu100,mu200,mu300),Sig.list=rbind(Sig100,Sig200,Sig300),NonUniform=T)
+  print(proc.time() - ptm)
+  bics[k]=sim$bic
+  Gammas[,,,k]=sim$Gamma
+  ADmat[,,k]=sim$est
+  Betas[,,k]=sim$Beta
+  theta.dist[,,k]=rbind(sim$mean1,sim$mean2,sim$mean3,sim$Corr1,sim$Corr2,sim$Corr3)
+  print(Betas[,,k])
+  print(Gammas[,,,k])
+}
 
+kk=which.min(bics)
+
+eta.vec[kk]
+ADmat[,,kk]
+Betas[,,kk]
+Gammas[,,,kk]
+theta.dist[,,kk]
+
+
+r=2
+m=2
+y=3
+eta.vec=seq(5,20,1)
+bics=rep(0,length(eta.vec))
+ADmat=array(double(J*3*length(eta.vec)),dim = c(J,3,length(eta.vec)))
+Gammas=array(double(2*J*m*length(eta.vec)),dim = c(2,2,J,length(eta.vec)))
+Betas=array(double(J*2*length(eta.vec)),dim = c(J,2,length(eta.vec)))
+theta.dist=array(double(2*9*length(eta.vec)),dim=c(9,2,length(eta.vec)))
+for (k in 1:length(eta.vec))
+{
+  eta=eta.vec[k]
+  ptm <- proc.time()
+  sim=Reg_EMM_DIF(resp=Resp_ordered2,m=2,r=2,y=3,N.vec=c(N1,N2,N3),eta=eta,eps =1e-3,max.tol=1e-7,gra00=gra00,grd00=grd00,grbeta00=grbeta00,grgamma00=grgamma00,Mu.list=c(mu100,mu200,mu300),Sig.list=rbind(Sig100,Sig200,Sig300),NonUniform=F)
+  print(proc.time() - ptm)
+  bics[k]=sim$bic
+  Gammas[,,,k]=sim$Gamma
+  ADmat[,,k]=sim$est
+  Betas[,,k]=sim$Beta
+  theta.dist[,,k]=rbind(sim$mean1,sim$mean2,sim$mean3,sim$Corr1,sim$Corr2,sim$Corr3)
+  print(Betas[,,k])
+  print(Gammas[,,,k])
+}
+kk=which.min(bics)
+
+eta.vec[kk]
+ADmat[,,kk]
+Betas[,,kk]
+Gammas[,,,kk]
+theta.dist[,,kk]
+
+r=2
+m=2
+y=3
+eta.vec=seq(5,20,1)
+bics=rep(0,length(eta.vec))
+ADmat=array(double(J*3*length(eta.vec)),dim = c(J,3,length(eta.vec)))
+Gammas=array(double(2*J*m*length(eta.vec)),dim = c(2,2,J,length(eta.vec)))
+Betas=array(double(J*2*length(eta.vec)),dim = c(J,2,length(eta.vec)))
+theta.dist=array(double(2*9*length(eta.vec)),dim=c(9,2,length(eta.vec)))
+for (k in 1:length(eta.vec))
+{
+  eta=eta.vec[k]
+  ptm <- proc.time()
+  sim=Reg_Adaptive_DIF(resp=Resp_ordered2,m=2,r=2,y=3,N.vec=c(N1,N2,N3),eta=eta,lam=1,eps =1e-3,max.tol=1e-7,gra00=gra00,grd00=grd00,grbeta00=grbeta00,grgamma00=grgamma00,Mu.list=c(mu100,mu200,mu300),Sig.list=rbind(Sig100,Sig200,Sig300),NonUniform=F)
+  print(proc.time() - ptm)
+  bics[k]=sim$bic
+  Gammas[,,,k]=sim$Gamma
+  ADmat[,,k]=sim$est
+  Betas[,,k]=sim$Beta
+  theta.dist[,,k]=rbind(sim$mean1,sim$mean2,sim$mean3,sim$Corr1,sim$Corr2,sim$Corr3)
+  print(Betas[,,k])
+  print(Gammas[,,,k])
+}
+kk=which.min(bics)
+
+eta.vec[kk]
+ADmat[,,kk]
+Betas[,,kk]
+Gammas[,,,kk]
+theta.dist[,,kk]

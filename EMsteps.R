@@ -200,7 +200,7 @@ M_step=function(j,ng,rgk,grd,gra,grgamma,grbeta,max.tol,X,y.allgroup,y,G,m,eta){
         #  }
         #}
         for (dd in 1:length(Dsco)){
-          FI[kk,dd]=FI[dd,kk]=sum(ng[(grp*G+1):(grp*G+G)]*X[,dim.number]*Pstar[,dd,grp]*Qstar[,dd,grp]*(PQdif[,dd,grp]/P[,dd,grp]-PQdif[,dd+1,grp]/P[,dd+1,grp]))
+          FI[kk,dd]=FI[dd,kk]=sum(ng[(grp*G+1):(grp*G+G)]*X[,dim.number]*Pstar[,dd,grp]*Qstar[,dd,grp]*(PQdif[,dd,grp]/P[,dd,grp]-PQdif[,dd+1,grp]/P[,dd+1,grp])) #GRM
         }
       }
     }
@@ -210,6 +210,21 @@ M_step=function(j,ng,rgk,grd,gra,grgamma,grbeta,max.tol,X,y.allgroup,y,G,m,eta){
         grp.number=which(bet!=0)[kk-(length(Dsco)+length(Asco)+length(Gamsco))]
         FI[kk,kk] =  FI[kk,m-1] =  FI[m-1,kk]= (-sum(ng[((grp.number+1)*G+1):((grp.number+2)*G)]*(Pstar[,1,grp.number+1]*Qstar[,1,grp.number+1])^2*(1/P[,1,grp.number+1]+1/P[,m,grp.number+1])))
         FI[kk,m] =  FI[m,kk]= sum(ng[((grp.number+1)*G+1):((grp.number+2)*G)]*(X%*%ifelse(a==0,0,1))*Pstar[,1,grp.number+1]*Qstar[,1,grp.number+1]*(PQdif[,1,grp.number+1]/P[,1,grp.number+1]-PQdif[,2,grp.number+1]/P[,2,grp.number+1]))
+        if (length(Gamsco)>0){
+          for (kk2 in (length(Dsco)+length(Asco)+1):(length(Dsco)+length(Asco)+length(Gamsco))){
+            grp.number2=which(gam!=0)[kk2-(length(Dsco)+length(Asco))]%%(y-1)
+            if (grp.number2==0){
+              grp=y
+              dim.number=which(gam!=0)[kk2-(length(Dsco)+length(Asco))]/(y-1)
+            } else {
+              grp=grp.number2+1
+              dim.number=which(gam!=0)[kk2-(length(Dsco)+length(Asco))]%/%(y-1)+1
+            }
+            if (grp==(grp.number+1)){
+              FI[kk,kk2] =  FI[kk2,kk]= sum(ng[((grp.number+1)*G+1):((grp.number+2)*G)]*(X%*%ifelse(a==0,0,1))*Pstar[,1,grp.number+1]*Qstar[,1,grp.number+1]*(PQdif[,1,grp.number+1]/P[,1,grp.number+1]-PQdif[,2,grp.number+1]/P[,2,grp.number+1])) #2pl only, not for GRM
+            }
+          }
+        }
       }
     }
     
@@ -228,13 +243,14 @@ M_step=function(j,ng,rgk,grd,gra,grgamma,grbeta,max.tol,X,y.allgroup,y,G,m,eta){
     }
     if (length(Betsco)>0){
       bet0=bet
-      bet0[which(bet!=0)]=bet[which(bet!=0)]+add[(length(Dsco)+length(Asco)+1):(length(Dsco)+length(Asco)+length(Betsco))]
-      for (mm in (length(Dsco)+length(Asco)+1):(length(Dsco)+length(Asco)+length(Betsco))){
-        add[mm]=soft(  (bet0[which(bet!=0)])[mm-(length(Dsco)+length(Asco))],-eta/FI[mm,mm])- (bet[which(bet!=0)])[mm-(length(Dsco)+length(Asco))]
+      bet0[which(bet!=0)]=bet[which(bet!=0)]+add[(length(Dsco)+length(Asco)+length(Gamsco)+1):(length(Dsco)+length(Asco)+length(Gamsco)+length(Betsco))]
+      for (mm in (length(Dsco)+length(Asco)+length(Gamsco)+1):(length(Dsco)+length(Asco)+length(Gamsco)+length(Betsco))){
+        add[mm]=soft(  (bet0[which(bet!=0)])[mm-(length(Dsco)+length(Asco)+length(Gamsco))],-eta/FI[mm,mm])- (bet[which(bet!=0)])[mm-(length(Dsco)+length(Asco)+length(Gamsco))]
       }
-      bet[which(bet!=0)]=bet[which(bet!=0)]+add[(length(Dsco)+length(Asco)+1):(length(Dsco)+length(Asco)+length(Betsco))]
+      bet[which(bet!=0)]=bet[which(bet!=0)]+add[(length(Dsco)+length(Asco)+length(Gamsco)+1):(length(Dsco)+length(Asco)+length(Gamsco)+length(Betsco))]
       
     }
+    #print(c(miter,add))
   }
   return(c(d=d,a=a,gam=gam,bet=bet))
   #end of M step loop
@@ -375,6 +391,21 @@ M_step_Adaptive=function(j,ng,rgk,grd,gra,grgamma,grgamma00,grbeta,grbeta00,max.
         grp.number=which(bet!=0)[kk-(length(Dsco)+length(Asco)+length(Gamsco))]
         FI[kk,kk] =  FI[kk,m-1] =  FI[m-1,kk]= (-sum(ng[((grp.number+1)*G+1):((grp.number+2)*G)]*(Pstar[,1,grp.number+1]*Qstar[,1,grp.number+1])^2*(1/P[,1,grp.number+1]+1/P[,m,grp.number+1])))
         FI[kk,m] =  FI[m,kk]= sum(ng[((grp.number+1)*G+1):((grp.number+2)*G)]*(X%*%ifelse(a==0,0,1))*Pstar[,1,grp.number+1]*Qstar[,1,grp.number+1]*(PQdif[,1,grp.number+1]/P[,1,grp.number+1]-PQdif[,2,grp.number+1]/P[,2,grp.number+1]))
+        if (length(Gamsco)>0){
+          for (kk2 in (length(Dsco)+length(Asco)+1):(length(Dsco)+length(Asco)+length(Gamsco))){
+            grp.number2=which(gam!=0)[kk2-(length(Dsco)+length(Asco))]%%(y-1)
+            if (grp.number2==0){
+              grp=y
+              dim.number=which(gam!=0)[kk2-(length(Dsco)+length(Asco))]/(y-1)
+            } else {
+              grp=grp.number2+1
+              dim.number=which(gam!=0)[kk2-(length(Dsco)+length(Asco))]%/%(y-1)+1
+            }
+            if (grp==(grp.number+1)){
+              FI[kk,kk2] =  FI[kk2,kk]= sum(ng[((grp.number+1)*G+1):((grp.number+2)*G)]*(X%*%ifelse(a==0,0,1))*Pstar[,1,grp.number+1]*Qstar[,1,grp.number+1]*(PQdif[,1,grp.number+1]/P[,1,grp.number+1]-PQdif[,2,grp.number+1]/P[,2,grp.number+1])) #2pl only, not for GRM
+            }
+          }
+        }
       }
     }
     
@@ -393,11 +424,11 @@ M_step_Adaptive=function(j,ng,rgk,grd,gra,grgamma,grgamma00,grbeta,grbeta00,max.
     }
     if (length(Betsco)>0){
       bet0=bet
-      bet0[which(bet!=0)]=bet[which(bet!=0)]+add[(length(Dsco)+length(Asco)+1):(length(Dsco)+length(Asco)+length(Betsco))]
-      for (mm in (length(Dsco)+length(Asco)+1):(length(Dsco)+length(Asco)+length(Betsco))){
-        add[mm]=soft(  (bet0[which(bet!=0)])[mm-(length(Dsco)+length(Asco))],-(eta/(abs((betmle[which(bet!=0)])[mm-(length(Dsco)+length(Asco))])^(lam)))/FI[mm,mm])- (bet[which(bet!=0)])[mm-(length(Dsco)+length(Asco))]
+      bet0[which(bet!=0)]=bet[which(bet!=0)]+add[(length(Dsco)+length(Asco)+length(Gamsco)+1):(length(Dsco)+length(Asco)+length(Gamsco)+length(Betsco))]
+      for (mm in (length(Dsco)+length(Asco)+length(Gamsco)+1):(length(Dsco)+length(Asco)+length(Gamsco)+length(Betsco))){
+        add[mm]=soft(  (bet0[which(bet!=0)])[mm-(length(Dsco)+length(Asco)+length(Gamsco))],-(eta/(abs((betmle[which(bet!=0)])[mm-(length(Dsco)+length(Asco)+length(Gamsco))])^(lam)))/FI[mm,mm])- (bet[which(bet!=0)])[mm-(length(Dsco)+length(Asco)+length(Gamsco))]
       }
-      bet[which(bet!=0)]=bet[which(bet!=0)]+add[(length(Dsco)+length(Asco)+1):(length(Dsco)+length(Asco)+length(Betsco))]
+      bet[which(bet!=0)]=bet[which(bet!=0)]+add[(length(Dsco)+length(Asco)+length(Gamsco)+1):(length(Dsco)+length(Asco)+length(Gamsco)+length(Betsco))]
       
     }
   }
