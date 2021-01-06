@@ -96,32 +96,26 @@ Reg_DIF <- function(resp,m,r,y,N.vec,eta,eps =1e-3,max.tol=1e-7,gra00=NULL,grd00
     print(c(iter,max(df.a), max(df.d), max(df.beta), max(df.gamma)))
   }
   # Re-estimation
-  if (NonUniform==T){
-    sparsity=grgamma
-    for (j in 1:J){
-      for (rr in 1:2){
-        for (nn in 1:2){
-          sparsity[nn,rr,j]=ifelse(grgamma[nn,rr,j]==0,0,1)
-        }
+  sparsity1=grgamma
+  for (j in 1:J){
+    for (rr in 1:2){
+      for (nn in 1:2){
+        sparsity1[nn,rr,j]=ifelse(grgamma[nn,rr,j]==0,0,1)
       }
     }
-  } else {
-    sparsity=grbeta
-    for (j in 1:J){
-      for (rr in 1:2){
-        sparsity[j,rr]=ifelse(grbeta[j,rr]==0,0,1)
-      }
-    } 
   }
+  sparsity2=grbeta
+  for (j in 1:J){
+    for (rr in 1:2){
+      sparsity2[j,rr]=ifelse(grbeta[j,rr]==0,0,1)
+    }
+  } 
+  
   gra=gra00
   grd=grd00
-  if (NonUniform==T){
-    grbeta=grbeta00
-    grgamma=grgamma00*sparsity
-  } else {
-    grbeta=grbeta00*sparsity
-    grgamma=grgamma00
-  }
+  grgamma=grgamma00*sparsity1
+  grbeta=grbeta00*sparsity2
+
   df.a <- df.d  <- df.gamma <- df.beta <- df.Sig <- 1
   iter <- 0
   while(max(df.a)>eps | max(df.d)>eps | max(df.beta)>eps| max(df.gamma)>eps) # max(df.Mu)>eps | max(df.Sig)>eps |
@@ -197,22 +191,20 @@ Reg_DIF <- function(resp,m,r,y,N.vec,eta,eps =1e-3,max.tol=1e-7,gra00=NULL,grd00
     temp=sumoverk1+sumoverk2+sumoverk3#-eta*norm(as.matrix(x2), type = "1")##sum over g
     lh[j]=temp
   }
-  l0norm=0
-  if (NonUniform==T){
-    for(i in 1:J){
-      for(j in 1:2){
-        for(k in 1:2){
-          l0norm=l0norm+(grgamma[j,k,i]!=0)
-        }
-      }
-    }
-  }else{
-    for(i in 1:J){
-      for(j in 1:2){
-        l0norm=l0norm+(grbeta[i,j]!=0)
+  l0norm1=l0norm2=0
+  for(i in 1:J){
+    for(j in 1:2){
+      for(k in 1:2){
+        l0norm1=l0norm1+(grgamma[j,k,i]!=0)
       }
     }
   }
+  for(i in 1:J){
+    for(j in 1:2){
+      l0norm2=l0norm2+(grbeta[i,j]!=0)
+    }
+  }
+  l0norm=l0norm1+l0norm2
   
   BIC=-2*sum(lh)+l0norm*log(N)
   Mu.gp1=Mu.est[1:2];Mu.gp2=Mu.est[3:4];Mu.gp3=Mu.est[5:6]
@@ -345,22 +337,20 @@ Reg_EMM_DIF <- function(resp,m,r,y,N.vec,eta,eps =1e-3,max.tol=1e-7,gra00=NULL,g
     temp=sumoverk1+sumoverk2+sumoverk3#-eta*norm(as.matrix(x2), type = "1")##sum over g
     lh[j]=temp
   }
-  l0norm=0
-  if (NonUniform==T){
-    for(i in 1:J){
-      for(j in 1:2){
-        for(k in 1:2){
-          l0norm=l0norm+(grgamma[j,k,i]!=0)
-        }
-      }
-    }
-  }else{
-    for(i in 1:J){
-      for(j in 1:2){
-        l0norm=l0norm+(grbeta[i,j]!=0)
+  l0norm1=l0norm2=0
+  for(i in 1:J){
+    for(j in 1:2){
+      for(k in 1:2){
+        l0norm1=l0norm1+(grgamma[j,k,i]!=0)
       }
     }
   }
+  for(i in 1:J){
+    for(j in 1:2){
+      l0norm2=l0norm2+(grbeta[i,j]!=0)
+    }
+  }
+  l0norm=l0norm1+l0norm2
   
   BIC=-2*sum(lh)+l0norm*log(N)
   Mu.gp1=Mu.est[1:2];Mu.gp2=Mu.est[3:4];Mu.gp3=Mu.est[5:6]
@@ -466,32 +456,25 @@ Reg_Adaptive_DIF <- function(resp,m,r,y,N.vec,eta,lam,eps =1e-3,max.tol=1e-7,gra
     print(c(iter,max(df.a), max(df.d), max(df.beta), max(df.gamma)))
   }
   # Re-estimation
-  if (NonUniform==T){
-    sparsity=grgamma
-    for (j in 1:J){
-      for (rr in 1:2){
-        for (nn in 1:2){
-          sparsity[nn,rr,j]=ifelse(grgamma[nn,rr,j]==0,0,1)
-        }
+  sparsity1=grgamma
+  for (j in 1:J){
+    for (rr in 1:2){
+      for (nn in 1:2){
+        sparsity1[nn,rr,j]=ifelse(grgamma[nn,rr,j]==0,0,1)
       }
     }
-  } else {
-    sparsity=grbeta
-    for (j in 1:J){
-      for (rr in 1:2){
-        sparsity[j,rr]=ifelse(grbeta[j,rr]==0,0,1)
-      }
-    } 
   }
+  sparsity2=grbeta
+  for (j in 1:J){
+    for (rr in 1:2){
+      sparsity2[j,rr]=ifelse(grbeta[j,rr]==0,0,1)
+    }
+  } 
+  
   gra=gra00
   grd=grd00
-  if (NonUniform==T){
-    grbeta=grbeta00
-    grgamma=grgamma00*sparsity
-  } else {
-    grbeta=grbeta00*sparsity
-    grgamma=grgamma00
-  }
+  grgamma=grgamma00*sparsity1
+  grbeta=grbeta00*sparsity2
   df.a <- df.d  <- df.gamma <- df.beta <- df.Sig <- 1
   iter <- 0
   while(max(df.a)>eps | max(df.d)>eps | max(df.beta)>eps| max(df.gamma)>eps) # max(df.Mu)>eps | max(df.Sig)>eps |
@@ -569,22 +552,20 @@ Reg_Adaptive_DIF <- function(resp,m,r,y,N.vec,eta,lam,eps =1e-3,max.tol=1e-7,gra
     temp=sumoverk1+sumoverk2+sumoverk3#-eta*norm(as.matrix(x2), type = "1")##sum over g
     lh[j]=temp
   }
-  l0norm=0
-  if (NonUniform==T){
-    for(i in 1:J){
-      for(j in 1:2){
-        for(k in 1:2){
-          l0norm=l0norm+(grgamma[j,k,i]!=0)
-        }
-      }
-    }
-  }else{
-    for(i in 1:J){
-      for(j in 1:2){
-        l0norm=l0norm+(grbeta[i,j]!=0)
+  l0norm1=l0norm2=0
+  for(i in 1:J){
+    for(j in 1:2){
+      for(k in 1:2){
+        l0norm1=l0norm1+(grgamma[j,k,i]!=0)
       }
     }
   }
+  for(i in 1:J){
+    for(j in 1:2){
+      l0norm2=l0norm2+(grbeta[i,j]!=0)
+    }
+  }
+  l0norm=l0norm1+l0norm2
   
   BIC=-2*sum(lh)+l0norm*log(N)
   Mu.gp1=Mu.est[1:2];Mu.gp2=Mu.est[3:4];Mu.gp3=Mu.est[5:6]
