@@ -70,7 +70,7 @@ for (rep in 1:50){
   rmse.mirt3[rep,3]=sqrt(colMeans((coef(md.refit02,simplify=T)$G1$items[,3]-Dmat1)^2))
   difrec.mirt.fn3[rep,3]=mean(abs((coef(md.refit02,simplify=T)$G3$items[,3]-coef(md.refit02,simplify=T)$G1$items[,3])[which(mirt.p.mat3[rep,]<0.05)+2]-1))
   ADmat[((rep-1)*20+1):(rep*20),]=cbind(coef(md.refit0,simplify=T)$G1$items[,1:3],coef(md.refit0,simplify=T)$G2$items[,1:3],coef(md.refit0,simplify=T)$G3$items[,1:3],coef(md.refit01,simplify=T)$G1$items[,1:3],coef(md.refit01,simplify=T)$G2$items[,1:3],coef(md.refit02,simplify=T)$G1$items[,1:3],coef(md.refit02,simplify=T)$G3$items[,1:3])
-  Traitdistmat[((rep-1)*21+1):(rep*21),]=rbind(coef(md.refit0,simplify=T)$G1$)
+  Traitdistmat[((rep-1)*21+1):(rep*21),]=rbind(coef(md.refit0,simplify=T)$G1$means,coef(md.refit0,simplify=T)$G2$means,coef(md.refit0,simplify=T)$G3$means,coef(md.refit0,simplify=T)$G1$cov,coef(md.refit0,simplify=T)$G2$cov,coef(md.refit0,simplify=T)$G3$cov,coef(md.refit01,simplify=T)$G1$means,coef(md.refit01,simplify=T)$G2$means,coef(md.refit01,simplify=T)$G1$cov,coef(md.refit01,simplify=T)$G2$cov,coef(md.refit02,simplify=T)$G1$means,coef(md.refit02,simplify=T)$G3$means,coef(md.refit02,simplify=T)$G1$cov,coef(md.refit02,simplify=T)$G3$cov)
   }
 sum(mirt.p.mat1[,c(2,3,10,11)]<0.05)/(50*4)
 sum(mirt.p.mat1[,-c(2,3,10,11)]<0.05)/(50*14)
