@@ -578,37 +578,70 @@ for (k in 1:length(eta.vec))
 kk=which.min(bics)
 
 eta.vec[kk]
-
 ADmat[,,kk]
 Betas[,,kk]
+Gammas[,,,kk]
 theta.dist[,,kk]
 
 
-
+r=2
+m=2
+y=3
+eta.vec=seq(5,20,1)
+bics=rep(0,length(eta.vec))
+ADmat=array(double(J*3*length(eta.vec)),dim = c(J,3,length(eta.vec)))
+Gammas=array(double(2*J*m*length(eta.vec)),dim = c(2,2,J,length(eta.vec)))
+Betas=array(double(J*2*length(eta.vec)),dim = c(J,2,length(eta.vec)))
+theta.dist=array(double(2*9*length(eta.vec)),dim=c(9,2,length(eta.vec)))
 for (k in 1:length(eta.vec))
 {
   eta=eta.vec[k]
   ptm <- proc.time()
-  sim=Reg_EMM_DIF(resp=Resp_ordered2,m=2,r=2,y=3,N.vec=c(N1,N2,N3),eta=eta,eps =1e-3,max.tol=1e-7,gra00=gra00,grd00=grd00,grbeta00=grbeta00,grgamma00=array(0,dim=c((y-1),r,J)),Mu.list=c(mu100,mu200,mu300),Sig.list=rbind(Sig100,Sig200,Sig300),NonUniform=F)
+  sim=Reg_EMM_DIF(resp=Resp_ordered2,m=2,r=2,y=3,N.vec=c(N1,N2,N3),eta=eta,eps =1e-3,max.tol=1e-7,gra00=gra00,grd00=grd00,grbeta00=grbeta00,grgamma00=grgamma00,Mu.list=c(mu100,mu200,mu300),Sig.list=rbind(Sig100,Sig200,Sig300),NonUniform=F)
   print(proc.time() - ptm)
   bics[k]=sim$bic
-  #Gammas[,,,k]=sim$Gamma
+  Gammas[,,,k]=sim$Gamma
   ADmat[,,k]=sim$est
   Betas[,,k]=sim$Beta
   theta.dist[,,k]=rbind(sim$mean1,sim$mean2,sim$mean3,sim$Corr1,sim$Corr2,sim$Corr3)
+  print(Betas[,,k])
+  print(Gammas[,,,k])
 }
+kk=which.min(bics)
 
+eta.vec[kk]
+ADmat[,,kk]
+Betas[,,kk]
+Gammas[,,,kk]
+theta.dist[,,kk]
 
+r=2
+m=2
+y=3
+eta.vec=seq(5,20,1)
+bics=rep(0,length(eta.vec))
+ADmat=array(double(J*3*length(eta.vec)),dim = c(J,3,length(eta.vec)))
+Gammas=array(double(2*J*m*length(eta.vec)),dim = c(2,2,J,length(eta.vec)))
+Betas=array(double(J*2*length(eta.vec)),dim = c(J,2,length(eta.vec)))
+theta.dist=array(double(2*9*length(eta.vec)),dim=c(9,2,length(eta.vec)))
 for (k in 1:length(eta.vec))
 {
   eta=eta.vec[k]
   ptm <- proc.time()
-  sim=Reg_Adaptive_DIF(resp=Resp_ordered2,m=2,r=2,y=3,N.vec=c(N1,N2,N3),eta=eta,lam=1,eps =1e-3,max.tol=1e-7,gra00=gra00,grd00=grd00,grbeta00=grbeta00,grgamma00=array(0,dim=c((y-1),r,J)),Mu.list=c(mu100,mu200,mu300),Sig.list=rbind(Sig100,Sig200,Sig300),NonUniform=F)
+  sim=Reg_Adaptive_DIF(resp=Resp_ordered2,m=2,r=2,y=3,N.vec=c(N1,N2,N3),eta=eta,lam=1,eps =1e-3,max.tol=1e-7,gra00=gra00,grd00=grd00,grbeta00=grbeta00,grgamma00=grgamma00,Mu.list=c(mu100,mu200,mu300),Sig.list=rbind(Sig100,Sig200,Sig300),NonUniform=F)
   print(proc.time() - ptm)
   bics[k]=sim$bic
-  #Gammas[,,,k]=sim$Gamma
+  Gammas[,,,k]=sim$Gamma
   ADmat[,,k]=sim$est
   Betas[,,k]=sim$Beta
   theta.dist[,,k]=rbind(sim$mean1,sim$mean2,sim$mean3,sim$Corr1,sim$Corr2,sim$Corr3)
+  print(Betas[,,k])
+  print(Gammas[,,,k])
 }
+kk=which.min(bics)
 
+eta.vec[kk]
+ADmat[,,kk]
+Betas[,,kk]
+Gammas[,,,kk]
+theta.dist[,,kk]
