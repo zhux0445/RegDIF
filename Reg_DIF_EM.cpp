@@ -119,7 +119,7 @@ SEXP eigenMapMatMult(const Eigen::Map<Eigen::MatrixXd> A, Eigen::Map<Eigen::Matr
 
 
 // [[Rcpp::export]]
-arma::mat E_step1 (arma::mat resp, arma::vec Nvec, arma::mat X, int y, int G, arma::mat yallgroup, arma::mat Mulist, arma::cube Siglist, arma::mat gra, arma::mat grd, arma::mat grbeta, arma::cube grgamma,int r, int J, int m, int N1, int N2, int N3,int N)
+arma::mat E_step1 (arma::mat resp, arma::vec Nvec, arma::mat X, int y, int G, arma::mat yallgroup, arma::mat Mulist, arma::cube Siglist, arma::mat gra, arma::mat grd, arma::mat grbeta, arma::cube grgamma,int r, int J, int m, int N)
 {
   arma::vec Aallgroups = zeros<arma::vec>(G*y);
   for (int yy = 0; yy < y; yy++){
@@ -129,7 +129,7 @@ arma::mat E_step1 (arma::mat resp, arma::vec Nvec, arma::mat X, int y, int G, ar
   }
   
   arma::mat axmat=gra*X.t(); 
-  arma::mat ygamallgroups=zeros<mat>(J*y,y-1);
+  arma::mat ygamallgroups=zeros<mat>(J*y,r);
   for (int yy = 0; yy < y; yy++){
     for (int j = 0; j < J; j++){
       ygamallgroups.row(yy*J+j)=yallgroup.row(yy)*grgamma.slice(j);

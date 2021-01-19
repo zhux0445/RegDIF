@@ -13,7 +13,7 @@ E_step1=function( resp, N.vec, X, y, G, y.allgroup, Mu.list, Sig.list, gra, grd,
   }
   #calculation of n_g 
   axmat=gra%*%t(X) #a%*%X
-  ygam.allgroups=matrix(0,J*y,(y-1)) #ygam1,ygam2,ygam3
+  ygam.allgroups=matrix(0,J*y,r) #ygam1,ygam2,ygam3
   for (yy in 1:y){
     for (j in 1:J){
       ygam.allgroups[((yy-1)*J+j),]=y.allgroup[yy,]%*%grgamma[,,j]
@@ -120,7 +120,7 @@ M_step=function(j,ng,rgk,grd,gra,grgamma,grbeta,max.tol,X,y.allgroup,y,G,m,eta){
     }
     Gamsco =numeric(sum(ifelse(gam==0,0,1)))
     if (sum(ifelse(gam==0,0,1))>0){
-      Gamsco.all=gam
+      Gamsco.all=matrix(gam,y-1,r)
       for (yy in 2:y){
         Gamsco.all[yy-1,]=(apply(rgk[(yy*G+1):(yy*G+G),]/P[,,yy]*PQdif[,,yy],1,sum))%*%X
       }
