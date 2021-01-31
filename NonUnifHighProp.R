@@ -148,7 +148,7 @@ for (rep in 1:reps){
   }
   r=2
   m=2
-  eta.vec=seq(3,21,2)
+  eta.vec=seq(2,18,2)
   bics=rep(0,length(eta.vec))
   ADmat=array(double(J*3*length(eta.vec)),dim = c(J,3,length(eta.vec)))
   Gammas=array(double(2*J*m*length(eta.vec)),dim = c(2,2,J,length(eta.vec)))
@@ -159,7 +159,7 @@ for (rep in 1:reps){
   {
     eta=eta.vec[k]
     ptm <- proc.time()
-    sim=Reg_DIF(resp=resp,m=2,r=2,y=3,N.vec=c(1000,1000,1000),eta=eta,eps =1e-3,max.tol=1e-7,gra00=gra00,grd00=grd00,grbeta00=matrix(0,J,2),grgamma00=grgamma00,Mu.list=c(mu100,mu200,mu300),Sig.list=rbind(Sig100,Sig200,Sig300),NonUniform=T)
+    sim=Reg_DIF(resp=resp,m=2,r=2,y=3,N.vec=c(500,500,500),eta=eta,eps =1e-3,max.tol=1e-7,gra00=gra00,grd00=grd00,grbeta00=matrix(0,J,2),grgamma00=grgamma00,Mu.list=c(mu100,mu200,mu300),Sig.list=rbind(Sig100,Sig200,Sig300),NonUniform=T)
     print(proc.time() - ptm)
     bics[k]=sim$bic
     #Gammas[,,,k]=sim$Gamma
@@ -179,8 +179,58 @@ for (rep in 1:reps){
   print(Gammas.5[,,,rep])
   #print(biass.5[rep,])
   #print(RMSEs.5[rep,])
-  write.csv(eta.5[rep],file = paste("eta8_",rep))
-  write.csv(ADmat.5[,,rep],file = paste("ADmat8_",rep))
-  write.csv(rbind(t(rbind(Gammas.5[c(1,2),1,3:11,rep])),t(rbind(Gammas.5[c(1,2),2,12:20,rep]))),file = paste("Gamma8_",rep))
-  write.csv(theta.dist[,,kk],file = paste("theta8_",rep))
+  write.csv(eta.5[rep],file = paste("eta6LowCor_",rep))
+  write.csv(ADmat.5[,,rep],file = paste("ADmat6LowCor_",rep))
+  write.csv(rbind(t(rbind(Gammas.5[c(1,2),1,3:11,rep])),t(rbind(Gammas.5[c(1,2),2,12:20,rep]))),file = paste("Gamma6LowCor_",rep))
+  write.csv(theta.dist[,,kk],file = paste("theta6LowCor_",rep))
 }
+
+
+#sim8 EMM
+for (rep in 1:reps){
+  resp=responses[((rep-1)*N+1):((rep-1)*N+N1+N2+N3),]
+  if (min(resp)==0){
+    resp2=as.matrix(resp)
+    resp=resp+1
+  } else {
+    resp2=as.matrix(resp)-1
+  }
+  r=2
+  m=2
+  eta.vec=seq(5,70,5)
+  bics=rep(0,length(eta.vec))
+  ADmat=array(double(J*3*length(eta.vec)),dim = c(J,3,length(eta.vec)))
+  Gammas=array(double(2*J*m*length(eta.vec)),dim = c(2,2,J,length(eta.vec)))
+  #Betas=array(double(J*2*length(eta.vec)),dim = c(J,2,length(eta.vec)))
+  
+  theta.dist=array(double(2*9*length(eta.vec)),dim=c(9,2,length(eta.vec)))
+  for (k in 1:length(eta.vec))
+  {
+    eta=eta.vec[k]
+    ptm <- proc.time()
+    sim=Reg_EMM_DIF(resp=resp,m=2,r=2,y=3,N.vec=c(1000,1000,1000),eta=eta,eps =1e-3,max.tol=1e-7,gra00=gra00,grd00=grd00,grbeta00=matrix(0,J,2),grgamma00=grgamma00,Mu.list=c(mu100,mu200,mu300),Sig.list=rbind(Sig100,Sig200,Sig300),NonUniform=T)
+    print(proc.time() - ptm)
+    bics[k]=sim$bic
+    #Gammas[,,,k]=sim$Gamma
+    ADmat[,,k]=sim$est
+    Gammas[,,,k]=sim$Gamma
+    theta.dist[,,k]=rbind(sim$mean1,sim$mean2,sim$mean3,sim$Corr1,sim$Corr2,sim$Corr3)
+  }
+  
+  kk=which.min(bics)
+  eta.5[rep]=eta.vec[kk]
+  Gammas.5[,,,rep]=Gammas[,,,kk]
+  ADmat.5[,,rep]=ADmat[,,kk]
+  #biass.5[rep,]=biass[kk,]
+  #RMSEs.5[rep,]=RMSEs[kk,]
+  print(ADmat.5[,,rep])
+  print(eta.5[rep])
+  print(Gammas.5[,,,rep])
+  #print(biass.5[rep,])
+  #print(RMSEs.5[rep,])
+  write.csv(eta.5[rep],file = paste("eta8EMM_",rep))
+  write.csv(ADmat.5[,,rep],file = paste("ADmat8EMM_",rep))
+  write.csv(rbind(t(rbind(Gammas.5[c(1,2),1,3:11,rep])),t(rbind(Gammas.5[c(1,2),2,12:20,rep]))),file = paste("Gamma8EMM_",rep))
+  write.csv(theta.dist[,,kk],file = paste("theta8EMM_",rep))
+}
+

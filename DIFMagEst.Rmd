@@ -12,3 +12,5 @@ $$P_{j}(\boldsymbol\theta_i)  = \frac{1}{1+e^{-[{\boldsymbol{a}_j^T}{\boldsymbol
 $$P_{j}(\boldsymbol\theta_i)  = \frac{1}{1+e^{-[{\boldsymbol{a}_{jy}^T}{\boldsymbol\theta_i}+d_{jy}]}} $$
 
 $y=1$ for reference group. For $y>1$, $\boldsymbol\gamma_{jy}=\boldsymbol a_{jy}-\boldsymbol a_{j1}$ and $\boldsymbol\beta_{jy}=\boldsymbol d_{jy}-\boldsymbol d_{j1}$.
+
+We found regularization methods have higher mean absolute bias of DIF magnitude estimates than LRT. 

@@ -10,7 +10,7 @@ library(dmutate)
 setwd('/Users/zhux0445/Documents/GitHub/RegDIF_SimData')
 setwd('/Users/ruoyizhu/Documents/GitHub/RegDIF_SimData')
 params=read.csv("Para2.csv",row.names = 1)
-responses=read.csv("RESP4.csv",row.names = 1)
+responses=read.csv("RESP4lowcor.csv",row.names = 1)
 soft=function(s, tau) {
   val=sign(s)*max(c(abs(s) - tau,0))
   return(val) }
@@ -1521,7 +1521,7 @@ Betas.12=array(double(J*2*reps),dim = c(J,2,reps))
 ADmat.12=array(double(J*3*reps),dim = c(J,3,reps)) #a has 2 columns, d has 1 column
 biass.12=matrix(0,reps,3)
 RMSEs.12=matrix(0,reps,3)
-for (rep in 7:reps){
+for (rep in 15:reps){
 
   resp=responses[((rep-1)*N+1):((rep-1)*N+N1+N2+N3),]
   r=2
@@ -1529,7 +1529,7 @@ for (rep in 7:reps){
   lam=1
   #lam.vec=c(0.5,1,2)
   #eta.vec=seq(18,45,3)
-  eta.vec=seq(1,46,3)
+  eta.vec=seq(1,31,2)
   aics=rep(0,length(eta.vec))
   bics=rep(0,length(eta.vec))
   ADmat=array(double(J*3*length(eta.vec)),dim = c(J,3,length(eta.vec)))

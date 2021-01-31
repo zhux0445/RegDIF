@@ -8,12 +8,16 @@ library(dmutate)
 library(Rcpp)
 library(RcppParallel)
 library(RcppArmadillo)
+library(RcppEigen)
+library(ompr)
 sourceCpp("/Users/ruoyizhu/Documents/GitHub/mirt/matrix.cpp")
 sourceCpp("/Users/zhux0445/Documents/GitHub/RegDIF/matrix.cpp")
+sourceCpp("/Users/hyzhu27/Documents/GitHub/RegDIF/matrix.cpp")
+setwd('/Users/hyzhu27/Documents/GitHub/RegDIF_SimData')
 setwd('/Users/zhux0445/Documents/GitHub/RegDIF_SimData')
 setwd('/Users/ruoyizhu/Documents/GitHub/RegDIF_SimData')
 params=read.csv("Para3.csv",row.names = 1)
-responses=read.csv("RESP7lowcor.csv",row.names = 1)
+responses=read.csv("RESP5lowcor.csv",row.names = 1)
 
 soft=function(s, tau) {
   val=sign(s)*max(c(abs(s) - tau,0))
@@ -21,7 +25,7 @@ soft=function(s, tau) {
 # Dataset #4 (2 Non-uniform DIF items per scale)
 J=20 
 
-N1=N2=N3=1000 
+N1=N2=N3=500 
 Group=c(rep('G1', N1), rep('G2', N2), rep('G3', N3))
 Group01=c(rep('G1', N1), rep('G2', N2))
 Group02=c(rep('G1', N1), rep('G3', N3))
@@ -89,8 +93,11 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=T,gra00=gra00,
     aold <- gra
     dold <- grd
     gammaold=grgamma
+    dmvnrm_arma_fast(X,Mu.gp2,Sig.gp2,FALSE)
+    Sig.gp2=as.matrix(Sig.gp2)
+    dmvnrm2(X[1,], Mu.gp2[1:2],Sig.est[1:2,],FALSE)
     A1=dmvnorm(X,Mu.gp1,Sig.gp1)
-    A2=dmvnorm(X,Mu.gp2,Sig.gp2)
+    A2=dmvnorm(X[1,],Mu.gp2,Sig.gp2)
     A3=dmvnorm(X,Mu.gp3,Sig.gp3)
     
     #calculation of n_g 
@@ -1284,7 +1291,7 @@ ipest1 <- function(resp,m,r,eta,eps =1e-3,max.tol=1e-7,NonUniform=T,gra00=gra00,
 ###                                                ###
 ###                                                ###
 ######################################################
-
+ 
 reps=50
 eta.5=numeric(reps)
 Gammas.5=array(double(2*J*m*50),dim = c(2,2,J,50))
@@ -1299,6 +1306,8 @@ StartVals=read.csv("StartingValues5lowcor.csv",row.names = 1)
 StartVals=read.csv("StartingValues5.csv",row.names = 1)
 gra00=as.matrix(StartVals[,1:2])
 rownames(gra00) <- c()
+colnames(gra00) <- c()
+gra00=as.matrix(gra00)
 grd00=matrix(StartVals[,3],20,1)
 grgamma00=array(0,dim=c(r,r,J))
 grgamma00[c(1,2),1,3:11]=t(as.matrix(StartVals[3:11,4:5]))
@@ -1355,7 +1364,7 @@ Mu300=coef(md00,simplify=T)$G3$means
 
 
 
-for (rep in 1:50){
+for (rep in 29:reps){
   resp=responses[((rep-1)*N+1):((rep-1)*N+N1+N2+N3),]
   if(min(resp)==0)
   {
@@ -1364,14 +1373,14 @@ for (rep in 1:50){
   r=2
   m=2
   y=3
-  N.vec=c(1000,1000,1000)
+  N.vec=c(500,500,500)
   Mu.list=c(mu100,mu200,mu300)
   colnames(Mu.list) <- c()
   Mu.list=as.vector( Mu.list)
   Sig.list=rbind(Sig100,Sig200,Sig300)
   colnames(Sig.list) <- c()
   Sig.list=as.matrix(  Sig.list)
-  eta.vec=seq(15,35,2)
+  eta.vec=seq(1,25,2)
   bics=rep(0,length(eta.vec))
   aics=rep(0,length(eta.vec))
   ADmat=array(double(J*3*length(eta.vec)),dim = c(J,3,length(eta.vec)))
@@ -1405,14 +1414,14 @@ for (rep in 1:50){
   print(ADmat.52[,,rep])
   print(eta.52[rep])
   print(Gammas.52[,,,rep])
-  write.csv(eta.5[rep],file = paste("eta7AIClowcor_",rep))
-  write.csv(ADmat.5[,,rep],file = paste("ADmat7AIClowcor_",rep))
-  write.csv(rbind(t(rbind(Gammas.5[c(1,2),1,3:11,rep])),t(rbind(Gammas.5[c(1,2),2,12:20,rep]))),file = paste("Gamma7AIClowcor_",rep))
-  write.csv(theta.dist[,,kk],file = paste("theta7AIClowcor_",rep))
-  write.csv(eta.52[rep],file = paste("eta7BIClowcor_",rep))
-  write.csv(ADmat.52[,,rep],file = paste("ADmat7BIClowcor_",rep))
-  write.csv(rbind(t(rbind(Gammas.52[c(1,2),1,3:11,rep])),t(rbind(Gammas.52[c(1,2),2,12:20,rep]))),file = paste("Gamma7BIClowcor_",rep))
-  write.csv(theta.dist[,,kk2],file = paste("theta7BIClowcor_",rep))
+  write.csv(eta.5[rep],file = paste("eta5AIClowcor_",rep))
+  write.csv(ADmat.5[,,rep],file = paste("ADmat5AIClowcor_",rep))
+  write.csv(rbind(t(rbind(Gammas.5[c(1,2),1,3:11,rep])),t(rbind(Gammas.5[c(1,2),2,12:20,rep]))),file = paste("Gamma5AIClowcor_",rep))
+  write.csv(theta.dist[,,kk],file = paste("theta5AIClowcor_",rep))
+  write.csv(eta.52[rep],file = paste("eta5BIClowcor_",rep))
+  write.csv(ADmat.52[,,rep],file = paste("ADmat5BIClowcor_",rep))
+  write.csv(rbind(t(rbind(Gammas.52[c(1,2),1,3:11,rep])),t(rbind(Gammas.52[c(1,2),2,12:20,rep]))),file = paste("Gamma5BIClowcor_",rep))
+  write.csv(theta.dist[,,kk2],file = paste("theta5BIClowcor_",rep))
 }
 
 
