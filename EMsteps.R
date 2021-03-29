@@ -13,7 +13,7 @@ E_step1=function( resp, N.vec, X, y, G, y.allgroup, Mu.list, Sig.list, gra, grd,
   }
   #calculation of n_g 
   axmat=gra%*%t(X) #a%*%X
-  ygam.allgroups=matrix(0,J*y,(y-1)) #ygam1,ygam2,ygam3
+  ygam.allgroups=matrix(0,J*y,r) #ygam1,ygam2,ygam3
   for (yy in 1:y){
     for (j in 1:J){
       ygam.allgroups[((yy-1)*J+j),]=y.allgroup[yy,]%*%grgamma[,,j]
@@ -120,7 +120,7 @@ M_step=function(j,ng,rgk,grd,gra,grgamma,grbeta,max.tol,X,y.allgroup,y,G,m,eta){
     }
     Gamsco =numeric(sum(ifelse(gam==0,0,1)))
     if (sum(ifelse(gam==0,0,1))>0){
-      Gamsco.all=gam
+      Gamsco.all=matrix(gam,y-1,r)
       for (yy in 2:y){
         Gamsco.all[yy-1,]=(apply(rgk[(yy*G+1):(yy*G+G),]/P[,,yy]*PQdif[,,yy],1,sum))%*%X
       }
@@ -391,6 +391,21 @@ M_step_Adaptive=function(j,ng,rgk,grd,gra,grgamma,grgamma00,grbeta,grbeta00,max.
         grp.number=which(bet!=0)[kk-(length(Dsco)+length(Asco)+length(Gamsco))]
         FI[kk,kk] =  FI[kk,m-1] =  FI[m-1,kk]= (-sum(ng[((grp.number+1)*G+1):((grp.number+2)*G)]*(Pstar[,1,grp.number+1]*Qstar[,1,grp.number+1])^2*(1/P[,1,grp.number+1]+1/P[,m,grp.number+1])))
         FI[kk,m] =  FI[m,kk]= sum(ng[((grp.number+1)*G+1):((grp.number+2)*G)]*(X%*%ifelse(a==0,0,1))*Pstar[,1,grp.number+1]*Qstar[,1,grp.number+1]*(PQdif[,1,grp.number+1]/P[,1,grp.number+1]-PQdif[,2,grp.number+1]/P[,2,grp.number+1]))
+        if (length(Gamsco)>0){
+          for (kk2 in (length(Dsco)+length(Asco)+1):(length(Dsco)+length(Asco)+length(Gamsco))){
+            grp.number2=which(gam!=0)[kk2-(length(Dsco)+length(Asco))]%%(y-1)
+            if (grp.number2==0){
+              grp=y
+              dim.number=which(gam!=0)[kk2-(length(Dsco)+length(Asco))]/(y-1)
+            } else {
+              grp=grp.number2+1
+              dim.number=which(gam!=0)[kk2-(length(Dsco)+length(Asco))]%/%(y-1)+1
+            }
+            if (grp==(grp.number+1)){
+              FI[kk,kk2] =  FI[kk2,kk]= sum(ng[((grp.number+1)*G+1):((grp.number+2)*G)]*(X%*%ifelse(a==0,0,1))*Pstar[,1,grp.number+1]*Qstar[,1,grp.number+1]*(PQdif[,1,grp.number+1]/P[,1,grp.number+1]-PQdif[,2,grp.number+1]/P[,2,grp.number+1])) #2pl only, not for GRM
+            }
+          }
+        }
       }
     }
     

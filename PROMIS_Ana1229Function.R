@@ -1,6 +1,34 @@
+##### Function: Reg_DIF                      #####
+##################################################
+##### Inputs
+##### resp: response vector of length L, L > 1 
+##### m: number of response categories
+##### r: number of trait dimension 
+##### y: number of examinee groups y=3
+##### N.vec: number of examinees in each group, 
+##### vector of y, e.g. N.vec=c(500,500,500)
+##### Mu.list: prior mean vector for each group, 
+##### vector of r*y, e.g., the mean vector for 
+##### three groups are (0,0), (0.1,0.02), (-0.05,0.03), 
+##### then Mu.list=c(0,0,0.1,0.02,-0.05,0.03);Mu.list=c(mu100,mu200,mu300)
+##### Sig.list: prior covariance matrix for each group, 
+##### matrix of r*y by r, each r by r matrix is the 
+##### covariance matrix of each group e.g. Sig100=matrix(c(1,0.8452613,0.8452613,1),2,2)
+#####                                      Sig200=matrix(c(1.179328,1.065364,1.065364,1.179328),2,2);Sig300=matrix(c(0.9202015,0.8908855,0.8908855,0.9202015),2,2)
+#####                                      Sig.list=rbind(Sig100,Sig200,Sig300)
+##### gra00: starting values of a, should include the information of known loading structure
+##### grd00: starting values of d
+##### grbeta00: starting values of beta; grbeta00=matrix(0,J,2)
+##### grgamma00: starting values of gamma
+##################################################                          
+##### Outputs:
+##### theta_hat: estimate of theta, vector of length p
+##### std_error: standard error of the estimator, vector of length p 
+##### detfi: determinant of observed Fisher Information, scalar                        
+##################################################
 # 4
 
-Reg_DIF <- function(resp,m,r,y,N.vec,eta,eps =1e-3,max.tol=1e-7,gra00=NULL,grd00=NULL,grbeta00=NULL,grgamma00=NULL,Mu.list=NULL,Sig.list= NULL,NonUniform=F)
+Reg_DIF <- function(resp,m,r,y,N.vec,eta,eps =1e-3,max.tol=1e-7,gra00=NULL,grd00=NULL,grbeta00=NULL,grgamma00=NULL,Mu.list=NULL,Sig.list= NULL)
 {
   if (min(resp)==0){
     resp2=as.matrix(resp)
@@ -46,10 +74,12 @@ Reg_DIF <- function(resp,m,r,y,N.vec,eta,eps =1e-3,max.tol=1e-7,gra00=NULL,grd00
     betaold=grbeta
     
     # E STEP
-    Mu.est.mat=rbind(Mu.est[1:2],Mu.est[3:4],Mu.est[5:6])
-    Sig.est.slice=array(0,c(2,2,3))
-    Sig.est.slice[,,1]=Sig.est[1:2,];Sig.est.slice[,,2]=Sig.est[3:4,];Sig.est.slice[,,3]=Sig.est[5:6,]
-    LiA=E_step1(resp=resp2,Nvec=N.vec,X=X,y=y,G=G,yallgroup=y.allgroup,Mulist=Mu.est.mat,Siglist=Sig.est.slice,gra=gra, grd=grd, grbeta=grbeta, grgamma=grgamma,r=r,J=J,m=m,N1=N1,N2=N2,N3=N3,N=N)
+    Mu.est.mat=matrix(Mu.est,y,r,byrow = T)
+    Sig.est.slice=array(0,c(r,r,y))
+    for (yy in 1:y){
+      Sig.est.slice[,,yy]=Sig.est[((yy-1)*r+1):((yy-1)*r+r),]
+    }
+    LiA=E_step1(resp=resp2,Nvec=N.vec,X=X,y=y,G=G,yallgroup=y.allgroup,Mulist=Mu.est.mat,Siglist=Sig.est.slice,gra=gra, grd=grd, grbeta=grbeta, grgamma=grgamma,r=r,J=J,m=m,N=N)
     
     #LiA=E_step0(resp=resp,N.vec=N.vec,X=X,y=y,G=G,y.allgroup=y.allgroup,Mu.list=c(Mu.est[1:2],Mu.est[3:4],Mu.est[5:6]),Sig.list=rbind(Sig.est[1:2,],Sig.est[3:4,],Sig.est[5:6,]),gra=gra, grd=grd, grbeta=grbeta, grgamma=grgamma)
     ng=ngest(LiA=LiA,y=y,Nvec=N.vec,G=G)
@@ -214,7 +244,7 @@ Reg_DIF <- function(resp,m,r,y,N.vec,eta,eps =1e-3,max.tol=1e-7,gra00=NULL,grd00
 
 # 5
 
-Reg_EMM_DIF <- function(resp,m,r,y,N.vec,eta,eps =1e-3,max.tol=1e-7,gra00=NULL,grd00=NULL,grbeta00=NULL,grgamma00=NULL,Mu.list=NULL,Sig.list= NULL,NonUniform=F)
+Reg_EMM_DIF <- function(resp,m,r,y,N.vec,eta,eps =1e-3,max.tol=1e-7,gra00=NULL,grd00=NULL,grbeta00=NULL,grgamma00=NULL,Mu.list=NULL,Sig.list= NULL)
 {
   if (min(resp)==0){
     resp2=as.matrix(resp)
@@ -361,7 +391,7 @@ Reg_EMM_DIF <- function(resp,m,r,y,N.vec,eta,eps =1e-3,max.tol=1e-7,gra00=NULL,g
 
 # 6
 
-Reg_Adaptive_DIF <- function(resp,m,r,y,N.vec,eta,lam,eps =1e-3,max.tol=1e-7,gra00=NULL,grd00=NULL,grbeta00=NULL,grgamma00=NULL,Mu.list=NULL,Sig.list= NULL,NonUniform=F)
+Reg_Adaptive_DIF <- function(resp,m,r,y,N.vec,eta,lam,eps =1e-3,max.tol=1e-7,gra00=NULL,grd00=NULL,grbeta00=NULL,grgamma00=NULL,Mu.list=NULL,Sig.list= NULL)
 {
   if (min(resp)==0){
     resp2=as.matrix(resp)
