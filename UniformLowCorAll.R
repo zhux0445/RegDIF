@@ -10,8 +10,8 @@ library(RcppParallel)
 library(RcppArmadillo)
 setwd('/Users/hyzhu27/Documents/GitHub/RegDIF_SimData')
 setwd('/Users/ruoyizhu/Documents/GitHub/RegDIF_SimData')
-params=read.csv("Para2.csv",row.names = 1)
-responses=read.csv("RESP4.csv",row.names = 1)
+params=read.csv("Para1.csv",row.names = 1)
+responses=read.csv("RESP1.csv",row.names = 1)
 
 soft=function(s, tau) {
   val=sign(s)*max(c(abs(s) - tau,0))
@@ -19,7 +19,7 @@ soft=function(s, tau) {
 
 J=20
 
-N1=N2=N3=1000 
+N1=N2=N3=500 
 Group=c(rep('G1', N1), rep('G2', N2), rep('G3', N3))
 Group01=c(rep('G1', N1), rep('G2', N2))
 Group02=c(rep('G1', N1), rep('G3', N3))
@@ -62,11 +62,12 @@ biass.2=matrix(0,reps,3)
 RMSEs.2=matrix(0,reps,3)
 
 #write.csv(cbind(gra00,grd00,grbeta00),file = "StartingValues2.csv")
-StartVals=read.csv("StartingValues1LowCor.csv",row.names = 1)
+StartVals=read.csv("StartingValues1.csv",row.names = 1)
 gra00=as.matrix(StartVals[,1:2])
 rownames(gra00) <- c()
 grd00=matrix(StartVals[,3],20,1)
 grbeta00=as.matrix(StartVals[,4:5])
+grbeta00[1,]=c(-0.0481844253,0.02196438);grbeta00[2,]=c(0.1594530242,0.15120530)
 rownames(grbeta00) <- c()
 colnames(grbeta00) <- c()
 
@@ -111,7 +112,7 @@ Sig200=matrix(c(1.0518386,0.2419183,0.2419183,1.0355795),2,2)
 Sig300=matrix(c(0.9386327,0.2428997,0.2428997,0.9842235),2,2)
 
 #sim1 lower EM
-for (rep in 2:reps){
+for (rep in 1:reps){
   resp=responses[((rep-1)*N+1):((rep-1)*N+N1+N2+N3),]
   if (min(resp)==0){
     resp2=as.matrix(resp)
@@ -133,7 +134,7 @@ for (rep in 2:reps){
   {
     eta=eta.vec[k]
     ptm <- proc.time()
-    sim=Reg_DIF(resp=resp,m=2,r=2,y=3,N.vec=c(500,500,500),eta=eta,eps =1e-3,max.tol=1e-7,gra00=gra00,grd00=grd00,grbeta00=grbeta00,grgamma00=array(0,dim=c((y-1),r,J)),Mu.list=c(mu100,mu200,mu300),Sig.list=rbind(Sig100,Sig200,Sig300),NonUniform=F)
+    sim=Reg_DIF(resp=resp,m=2,r=2,y=3,N.vec=c(500,500,500),eta=eta,eps =1e-3,max.tol=1e-7,gra00=gra00,grd00=grd00,grbeta00=grbeta00,grgamma00=array(0,dim=c((y-1),r,J)),Mu.list=c(mu100,mu200,mu300),Sig.list=rbind(Sig100,Sig200,Sig300))
     print(proc.time() - ptm)
     bics[k]=sim$bic
     #Gammas[,,,k]=sim$Gamma
