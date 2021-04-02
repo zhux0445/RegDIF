@@ -10,6 +10,7 @@ library(RcppParallel)
 library(RcppArmadillo)
 setwd('/Users/hyzhu27/Documents/GitHub/RegDIF_SimData')
 setwd('/Users/ruoyizhu/Documents/GitHub/RegDIF_SimData')
+setwd('/Users/zhux0445/Documents/GitHub/RegDIF_SimData')
 params=read.csv("Para1.csv",row.names = 1)
 responses=read.csv("RESP1.csv",row.names = 1)
 
@@ -185,7 +186,7 @@ for (rep in 1:reps){
   {
     eta=eta.vec[k]
     ptm <- proc.time()
-    sim=Reg_EMM_DIF(resp=resp,m=2,r=2,y=3,N.vec=c(500,500,500),eta=eta,eps =1e-3,max.tol=1e-7,gra00=gra00,grd00=grd00,grbeta00=grbeta00,grgamma00=array(0,dim=c((y-1),r,J)),Mu.list=c(mu100,mu200,mu300),Sig.list=rbind(Sig100,Sig200,Sig300),NonUniform=F)
+    sim=Reg_EMM_DIF(resp=resp,m=2,r=2,y=3,N.vec=c(500,500,500),eta=eta,eps =1e-3,max.tol=1e-7,gra00=gra00,grd00=grd00,grbeta00=grbeta00,grgamma00=array(0,dim=c((y-1),r,J)),Mu.list=c(mu100,mu200,mu300),Sig.list=rbind(Sig100,Sig200,Sig300))
     print(proc.time() - ptm)
     bics[k]=sim$bic
     #Gammas[,,,k]=sim$Gamma
@@ -207,10 +208,10 @@ for (rep in 1:reps){
   print(Betas.2[,,rep])
   print(biass.2[rep,])
   print(RMSEs.2[rep,])
-  write.csv(eta.2[rep],file = paste("eta1EMMLowCor_",rep))
-  write.csv(ADmat.2[,,rep],file = paste("ADmat1EMMLowCor_",rep))
-  write.csv(Betas.2[,,rep],file = paste("Beta1EMMLowCor_",rep))
-  write.csv(theta.dist[,,kk],file = paste("theta1EMMLowCor_",rep))
+  write.csv(eta.2[rep],file = paste("NAeta1EMM_",rep))
+  write.csv(ADmat.2[,,rep],file = paste("NAADmat1EMMLowCor_",rep))
+  write.csv(Betas.2[,,rep],file = paste("NABeta1EMMLowCor_",rep))
+  write.csv(theta.dist[,,kk],file = paste("NAtheta1EMMLowCor_",rep))
 }
 
 #sim1 lower adaptive
