@@ -1,5 +1,6 @@
 sourceCpp("/Users/zhux0445/Documents/GitHub/RegDIF/Reg_DIF_EM.cpp")
 sourceCpp("/Users/ruoyizhu/Documents/GitHub/RegDIF/Reg_DIF_EM.cpp")
+sourceCpp("/Users/hyzhu27/Documents/GitHub/RegDIF/Reg_DIF_EM.cpp")
 soft=function(s, tau) {
   val=sign(s)*max(c(abs(s) - tau,0))
   return(val) }
