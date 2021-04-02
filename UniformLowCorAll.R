@@ -189,7 +189,7 @@ for (rep in 1:reps){
   {
     eta=eta.vec[k]
     ptm <- proc.time()
-    sim=Reg_EMM_DIF(resp=resp,m=2,r=2,y=3,N.vec=c(1000,1000,1000),eta=eta,eps =1e-3,max.tol=1e-7,gra00=gra00,grd00=grd00,grbeta00=grbeta00,grgamma00=array(0,dim=c((y-1),r,J)),Mu.list=c(mu100,mu200,mu300),Sig.list=rbind(Sig100,Sig200,Sig300))
+    sim=Reg_EMM_DIF(resp=resp,m=2,r=2,y=3,N.vec=c(500,500,500),eta=eta,eps =1e-3,max.tol=1e-7,gra00=gra00,grd00=grd00,grbeta00=grbeta00,grgamma00=array(0,dim=c((y-1),r,J)),Mu.list=c(mu100,mu200,mu300),Sig.list=rbind(Sig100,Sig200,Sig300))
     print(proc.time() - ptm)
     bics[k]=sim$bic
     #Gammas[,,,k]=sim$Gamma
@@ -211,10 +211,10 @@ for (rep in 1:reps){
   print(Betas.2[,,rep])
   print(biass.2[rep,])
   print(RMSEs.2[rep,])
-  write.csv(eta.2[rep],file = paste("NAeta3EMM_",rep))
-  write.csv(ADmat.2[,,rep],file = paste("NAADmat3EMMLowCor_",rep))
-  write.csv(Betas.2[,,rep],file = paste("NABeta3EMMLowCor_",rep))
-  write.csv(theta.dist[,,kk],file = paste("NAtheta3EMMLowCor_",rep))
+  write.csv(eta.2[rep],file = paste("NAeta1EMM_",rep))
+  write.csv(ADmat.2[,,rep],file = paste("NAADmat1EMM_",rep))
+  write.csv(Betas.2[,,rep],file = paste("NABeta1EMM_",rep))
+  write.csv(theta.dist[,,kk],file = paste("NAtheta1EMM_",rep))
 }
 
 #sim1 adaptive
