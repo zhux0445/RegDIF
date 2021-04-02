@@ -312,10 +312,10 @@ for (rep in 1:reps){
   print(Betas.2[,,rep])
   print(biass.2[rep,])
   print(RMSEs.2[rep,])
-  write.csv(eta.2[rep],file = paste("NAeta2LowCor_",rep))
-  write.csv(ADmat.2[,,rep],file = paste("NAADmat2LowCor_",rep))
-  write.csv(Betas.2[,,rep],file = paste("NABeta2LowCor_",rep))
-  write.csv(theta.dist[,,kk],file = paste("NAtheta2LowCor_",rep))
+  write.csv(eta.2[rep],file = paste("NAeta2_",rep))
+  write.csv(ADmat.2[,,rep],file = paste("NAADmat2_",rep))
+  write.csv(Betas.2[,,rep],file = paste("NABeta2_",rep))
+  write.csv(theta.dist[,,kk],file = paste("NAtheta2_",rep))
 }
 
 #sim2 EMM
