@@ -962,13 +962,19 @@ sqrt(rmsesum[3]/(20*48))
 
 absbias1=0
 absbias2=0
+be1.length=0
+be2.length=0
 for (rep in c(1:11,13:29,31:50)){
-  absbias1=absbias1+sum(abs(read.csv(paste("/Users/zhux0445/Documents/Github/RegDIF_SimData/Beta2adapt_",rep),row.names = 1)[c(4:9,12:17),1]-0.5))
-  absbias2=absbias2+sum(abs(read.csv(paste("/Users/zhux0445/Documents/Github/RegDIF_SimData/Beta2adapt_",rep),row.names = 1)[c(4:9,12:17),2]-1))
+  be1=read.csv(paste("/Users/zhux0445/Documents/Github/RegDIF_SimData/Beta2adapt_",rep),row.names = 1)[c(4:9,12:17),1]
+  be2=read.csv(paste("/Users/zhux0445/Documents/Github/RegDIF_SimData/Beta2adapt_",rep),row.names = 1)[c(4:9,12:17),2]
+  absbias1=absbias1+sum(abs(be1[which(be1!=0)]-0.5))
+  absbias2=absbias2+sum(abs(be2[which(be2!=0)]-1))
+  be1.length=be1.length+length(be1[which(be1!=0)])
+  be2.length=be2.length+length(be2[which(be2!=0)])
 }
 
-absbias1/(12*48)
-absbias2/(12*48)
+absbias1/be1.length
+absbias2/be2.length
 
 # sim 3 adapt 
 reps=50
@@ -1986,7 +1992,7 @@ absbias1/(12*reps)
 absbias2/(12*reps)
 
 # sim8 adapt
-reps=11
+reps=50
 Gamma.8=array(double(18*2*reps),dim = c(18,2,reps))
 power=matrix(0,reps,3)
 tpI=matrix(0,reps,3)
@@ -2014,14 +2020,14 @@ for (rep in 1:reps){
   biassum[1:2]=biassum[1:2]+colSums(read.csv(paste("/Users/zhux0445/Documents/Github/RegDIF_SimData/ADmat8adapt_",rep),row.names = 1)[,1:2]-Amat1)/10
   biassum[3]=biassum[3]+colMeans(read.csv(paste("/Users/zhux0445/Documents/Github/RegDIF_SimData/ADmat8adapt_",rep),row.names = 1)[,3]-Dmat1)
 }
-biassum/10
+biassum/reps
 
 for (rep in 1:reps){
   rmsesum[1:2]=rmsesum[1:2]+colSums((read.csv(paste("/Users/zhux0445/Documents/Github/RegDIF_SimData/ADmat8adapt_",rep),row.names = 1)[,1:2]-Amat1)^2)
   rmsesum[3]=rmsesum[3]+colSums((read.csv(paste("/Users/zhux0445/Documents/Github/RegDIF_SimData/ADmat8adapt_",rep),row.names = 1)[,3]-Dmat1)^2)
 }
-sqrt(rmsesum[1:2]/(10*9))
-sqrt(rmsesum[3]/(20*9))
+sqrt(rmsesum[1:2]/(10*reps))
+sqrt(rmsesum[3]/(20*reps))
 
 absbias1=0
 absbias2=0
