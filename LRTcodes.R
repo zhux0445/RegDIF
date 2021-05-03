@@ -6,8 +6,8 @@ library(mvtnorm)
 library(graphics)
 library(dmutate)
 setwd('/Users/zhux0445/Documents/GitHub/RegDIF_SimData')
-params=read.csv("Para1.csv",row.names = 1)
-responses=read.csv("RESP3.csv",row.names = 1)
+params=read.csv("Para2.csv",row.names = 1)
+responses=read.csv("RESP2.csv",row.names = 1)
 beta.1=read.csv("Beta1_ 1.dms",row.names = 1)
 ad.1=read.csv("ADmat1_ 1.dms",row.names = 1)
 
@@ -17,7 +17,7 @@ soft=function(s, tau) {
 # Dataset #4 (2 Non-uniform DIF items per scale)
 J=20
 
-N1=N2=N3=1000 
+N1=N2=N3=500 
 Group=c(rep('G1', N1), rep('G2', N2), rep('G3', N3))
 Group01=c(rep('G1', N1), rep('G2', N2))
 Group02=c(rep('G1', N1), rep('G3', N3))
@@ -162,6 +162,7 @@ sqrt(colMeans((rmse.mirt3)^2))
 colMeans(difrec.mirt.fn3)
 
 
+
 #####  No anchor (program iterative select procedure)
 
 
@@ -209,10 +210,10 @@ for (rep in 1:50){
   md.noncons0 <- multipleGroup(resp, s, group = Group,SE=TRUE,invariance=c('free_means', 'free_var','slopes',colnames(resp)[anchors]))#,anchor3,anchor4)]))
   dif1=DIF(md.noncons0, which.par = c('d'), p.adjust = 'fdr',scheme = 'add',items2test=c(1:J)[-anchors])#,anchor3,anchor4)])
   dif1.t=dif1[which(dif1$adj_pvals<0.05),]
-  #power1[rep]=sum(c("V4" , "V5" , "V6", "V7","V8","V9","V12", "V13","V14","V15","V16","V17")%in%rownames(dif1.t))
-  #tpI1[rep]=sum(c("V1","V2","V3","V10","V11","V18","V19","V20")%in%rownames(dif1.t))
-  power1[rep]=sum(c("V4" , "V5" ,"V12", "V13")%in%rownames(dif1.t))
-  tpI1[rep]=sum(c("V1","V2","V3", "V6", "V7","V8","V9","V10","V11","V14","V15","V16","V17","V18","V19","V20")%in%rownames(dif1.t))
+  power1[rep]=sum(c("V4" , "V5" , "V6", "V7","V8","V9","V12", "V13","V14","V15","V16","V17")%in%rownames(dif1.t))
+  tpI1[rep]=sum(c("V1","V2","V3","V10","V11","V18","V19","V20")%in%rownames(dif1.t))
+  #power1[rep]=sum(c("V4" , "V5" ,"V12", "V13")%in%rownames(dif1.t))
+  #tpI1[rep]=sum(c("V1","V2","V3", "V6", "V7","V8","V9","V10","V11","V14","V15","V16","V17","V18","V19","V20")%in%rownames(dif1.t))
   md.refit0 <- multipleGroup(resp, s, group = Group,SE=TRUE,invariance=c('free_means', 'free_var','slopes',colnames(resp)[which(colnames(resp)%in%rownames(dif1.t)==0)]))
   #md.refit.r <- multipleGroup(resp, s, group = Group,SE=TRUE,invariance=c('free_means', 'free_var','slopes',colnames(resp)[-c(4,5,12,13)]))
   bias.mirt1[rep,1:2]=colSums(coef(md.refit0,simplify=T)$G1$items[,1:r]-Amat1)/10
@@ -232,10 +233,10 @@ for (rep in 1:50){
   md.noncons01 <- multipleGroup(resp01, s, group = Group01,SE=TRUE,invariance=c('free_means', 'free_var','slopes',colnames(resp)[anchors]))#,anchor3,anchor4)]))
   dif2=DIF(md.noncons01, which.par = c('d'), p.adjust = 'fdr',scheme = 'add',items2test=c(1:J)[-anchors])#,anchor3,anchor4)])
   dif2.t=dif2[which(dif2$adj_pvals<0.05),]
-  #power2[rep]=sum(c("V4" , "V5" , "V6", "V7","V8","V9","V12", "V13","V14","V15","V16","V17")%in%rownames(dif2.t))
-  #tpI2[rep]=sum(c("V1","V2","V3","V10","V11","V18","V19","V20")%in%rownames(dif2.t))
-  power2[rep]=sum(c("V4" , "V5" ,"V12", "V13")%in%rownames(dif2.t))
-  tpI2[rep]=sum(c("V1","V2","V3", "V6", "V7","V8","V9","V10","V11","V14","V15","V16","V17","V18","V19","V20")%in%rownames(dif2.t))
+  power2[rep]=sum(c("V4" , "V5" , "V6", "V7","V8","V9","V12", "V13","V14","V15","V16","V17")%in%rownames(dif2.t))
+  tpI2[rep]=sum(c("V1","V2","V3","V10","V11","V18","V19","V20")%in%rownames(dif2.t))
+  #power2[rep]=sum(c("V4" , "V5" ,"V12", "V13")%in%rownames(dif2.t))
+  #tpI2[rep]=sum(c("V1","V2","V3", "V6", "V7","V8","V9","V10","V11","V14","V15","V16","V17","V18","V19","V20")%in%rownames(dif2.t))
   if ((power2[rep])==0){
     md.refit01 <-multipleGroup(resp01, s, group = Group01,SE=TRUE,invariance=c('free_means', 'free_var','slopes',colnames(resp01)[1:J]))
   } else {
@@ -251,10 +252,10 @@ for (rep in 1:50){
   md.noncons02 <- multipleGroup(resp02, s, group = Group02,SE=TRUE,invariance=c('free_means', 'free_var','slopes',colnames(resp)[anchors]))#,anchor3,anchor4)]))
   dif3=DIF(md.noncons01, which.par = c('d'), p.adjust = 'fdr',scheme = 'add',items2test=c(1:J)[-anchors])#,anchor3,anchor4)])
   dif3.t=dif3[which(dif3$adj_pvals<0.05),]
-  #power3[rep]=sum(c("V4" , "V5" , "V6", "V7","V8","V9","V12", "V13","V14","V15","V16","V17")%in%rownames(dif3.t))
-  #tpI3[rep]=sum(c("V1","V2","V3","V10","V11","V18","V19","V20")%in%rownames(dif3.t))
-  power3[rep]=sum(c("V4" , "V5" ,"V12", "V13")%in%rownames(dif3.t))
-  tpI3[rep]=sum(c("V1","V2","V3", "V6", "V7","V8","V9","V10","V11","V14","V15","V16","V17","V18","V19","V20")%in%rownames(dif3.t))
+  power3[rep]=sum(c("V4" , "V5" , "V6", "V7","V8","V9","V12", "V13","V14","V15","V16","V17")%in%rownames(dif3.t))
+  tpI3[rep]=sum(c("V1","V2","V3","V10","V11","V18","V19","V20")%in%rownames(dif3.t))
+  #power3[rep]=sum(c("V4" , "V5" ,"V12", "V13")%in%rownames(dif3.t))
+  #tpI3[rep]=sum(c("V1","V2","V3", "V6", "V7","V8","V9","V10","V11","V14","V15","V16","V17","V18","V19","V20")%in%rownames(dif3.t))
   if ((power3[rep])==0){
     md.refit02 <-multipleGroup(resp02, s, group = Group02,SE=TRUE,invariance=c('free_means', 'free_var','slopes',colnames(resp02)[1:J]))
   } else {
@@ -285,6 +286,18 @@ sum(tpI3)/(50*16)
 colMeans(bias.mirt3)
 sqrt(colMeans((rmse.mirt3)^2))
 colMeans(difrec.mirt.fn3)
+
+write.csv(power1, file = "NALRTUnifpower3.csv")
+write.csv(tpI1, file = "NALRTUniftpI3.csv")
+write.csv(bias.mirt1, file = "NALRTUnifbias3.csv")
+write.csv(rmse.mirt1, file = "NALRTUnifrmse3.csv")
+write.csv(difrec.mirt.fn1, file = "NALRTUnifrec3.csv")
+write.csv(power2, file = "NALRTUnifpower32.csv")
+write.csv(tpI2, file = "NALRTUniftpI32.csv")
+write.csv(difrec.mirt.fn2, file = "NALRTUnifrec32.csv")
+write.csv(power3, file = "NALRTUnifpower33.csv")
+write.csv(tpI3, file = "NALRTUniftpI33.csv")
+write.csv(difrec.mirt.fn3, file = "NALRTUnifrec33.csv")
 
 
 #####  No anchor (drop_sequential select)
