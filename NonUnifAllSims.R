@@ -5,7 +5,7 @@ library(mvtnorm)
 mirtCluster(4)
 library(ggplot2)
 
-# uniform DIF, 2D2PL 
+# Nonuniform DIF, 2D2PL 
 #set.seed(1)
 #A=runif(20,1.5,2.5)
 A11=read.csv("Para1.csv",row.names = 1)[,1]
@@ -31,15 +31,20 @@ Dmat2=cbind(D12);Dmat3=cbind(D13)
 N1=N2=N3=1000
 N=N1+N2+N3
 set.seed(1)
-Theta=mvrnorm(N,c(0,0),matrix(c(1,0.25,0.25,1),2,2))
-Theta1=Theta[1:N1,]
-Theta2=Theta[(N1+1):(N1+N2),]
-Theta3=Theta[(N1+N2+1):(N1+N2+N3),]
-datasetR=simdata(Amat1,Dmat1,itemtype = "dich",Theta=Theta1)
-datasetF1=simdata(Amat2,Dmat2,itemtype = "dich",Theta=Theta2)
-datasetF2=simdata(Amat3,Dmat3,itemtype = "dich",Theta=Theta3)
-resp=rbind(datasetR,datasetF1,datasetF2)
-#write.csv(resp, file = "resp8lowcornew.csv")
+#Theta=mvrnorm(N*50,c(0,0),matrix(c(1,0.25,0.25,1),2,2))
+Theta=mvrnorm(N*50,c(0,0),matrix(c(1,0.85,0.85,1),2,2))
+resp=matrix(0,N*50,J)
+for (rep in 1:50){
+  Theta1=Theta[((rep-1)*N+1):((rep-1)*N+N1),]
+  Theta2=Theta[((rep-1)*N+N1+1):((rep-1)*N+N1+N2),]
+  Theta3=Theta[((rep-1)*N+N1+N2+1):(rep*N),]
+  datasetR=simdata(Amat1,Dmat1,itemtype = "dich",Theta=Theta1)
+  datasetF1=simdata(Amat2,Dmat2,itemtype = "dich",Theta=Theta2)
+  datasetF2=simdata(Amat3,Dmat3,itemtype = "dich",Theta=Theta3)
+  resp[((rep-1)*N+1):(rep*N),]=rbind(datasetR,datasetF1,datasetF2)
+}
+
+write.csv(resp, file = "resp8new.csv")
 
 # calculating wABC to check generated DIF magnitude
 X1=seq(-4,4,by=0.25)
@@ -94,8 +99,8 @@ library(RcppArmadillo)
 setwd('/Users/hyzhu27/Documents/GitHub/RegDIF_SimData')
 setwd('/Users/ruoyizhu/Documents/GitHub/RegDIF_SimData')
 setwd('/Users/zhux0445/Documents/GitHub/RegDIF_SimData')
-params=read.csv("Para1.csv",row.names = 1)
-responses=read.csv("RESP1.csv",row.names = 1)
+params=read.csv("Para3new.csv",row.names = 1)
+responses=read.csv("RESP7new.csv",row.names = 1)
 
 soft=function(s, tau) {
   val=sign(s)*max(c(abs(s) - tau,0))
@@ -103,7 +108,7 @@ soft=function(s, tau) {
 
 J=20
 
-N1=N2=N3=500 
+N1=N2=N3=1000 
 Group=c(rep('G1', N1), rep('G2', N2), rep('G3', N3))
 Group01=c(rep('G1', N1), rep('G2', N2))
 Group02=c(rep('G1', N1), rep('G3', N3))
@@ -139,16 +144,30 @@ rownames(Amat3) <- c()
 
 reps=50
 eta.2=numeric(reps)
-#Gammas.1=array(double(2*J*m*50),dim = c(2,2,J,50))
+Gammas.2=array(double(2*J*m*50),dim = c(2,2,J,50))
 Betas.2=array(double(J*2*reps),dim = c(J,2,reps))
 ADmat.2=array(double(J*3*reps),dim = c(J,3,reps)) #a has 2 columns, d has 1 column
 biass.2=matrix(0,reps,3)
 RMSEs.2=matrix(0,reps,3)
 
-md.cons0 <- multipleGroup(resp, s, group = Group,SE=TRUE,invariance=c('free_means', 'free_var',colnames(resp)))
-coef(md.cons0,simplify=T)
+s <- 'D1 = 1,3-11
+          D2 = 2,12-20
+          COV = D1*D2'
 
-md.noncons0 <- multipleGroup(resp, s, group = Group,SE=TRUE,invariance=c('free_means', 'free_var','slopes'))
+starting7new=matrix(0,20,7)
+# starting value method 1
+
+for(i in 1:20){
+  md.cons0 <- multipleGroup(resp, s, group = Group,SE=TRUE,invariance=c('free_means', 'free_var',colnames(resp)[-i]))
+  starting5new[i,1:3]=coef(md.cons0,simplify=T)$G1$items[i,1:3]
+  starting5new[i,4]=sum(coef(md.cons0,simplify=T)$G2$items[i,1:2]-coef(md.cons0,simplify=T)$G1$items[i,1:2])
+  starting5new[i,5]=sum(coef(md.cons0,simplify=T)$G3$items[i,1:2]-coef(md.cons0,simplify=T)$G1$items[i,1:2])
+  starting5new[i,6]=coef(md.cons0,simplify=T)$G2$items[i,3]-coef(md.cons0,simplify=T)$G1$items[i,3]
+  starting5new[i,7]=coef(md.cons0,simplify=T)$G3$items[i,3]-coef(md.cons0,simplify=T)$G1$items[i,3]
+}
+
+# starting value method 2
+md.noncons0 <- multipleGroup(resp, s, group = Group,SE=TRUE)
 coef(md.noncons0,simplify=T)
 mean((coef(md.noncons0,simplify=T)$G1$items[,1]-Amat1[,1])^2)
 mean((gra00[,1]-Amat1[,1])^2)
@@ -156,20 +175,23 @@ mean((gra00[,1]-Amat1[,1])^2)
 mean((coef(md.noncons0,simplify=T)$G1$items[,3]-Dmat1[,1])^2)
 mean((grd00[,1]-Dmat1[,1])^2)
 
-coef(md.noncons0,simplify=T)$G2$items[,3]-coef(md.noncons0,simplify=T)$G1$items[,3]
-coef(md.noncons0,simplify=T)$G3$items[,3]-coef(md.noncons0,simplify=T)$G1$items[,3]
-grbeta00
+cbind(coef(md.noncons0,simplify=T)$G2$items[,3]-coef(md.noncons0,simplify=T)$G1$items[,3],coef(md.noncons0,simplify=T)$G3$items[,3]-coef(md.noncons0,simplify=T)$G1$items[,3])
 
+cbind(coef(md.noncons0,simplify=T)$G2$items[,1]-coef(md.noncons0,simplify=T)$G1$items[,1],coef(md.noncons0,simplify=T)$G2$items[,2]-coef(md.noncons0,simplify=T)$G1$items[,2])
+cbind(coef(md.noncons0,simplify=T)$G3$items[,1]-coef(md.noncons0,simplify=T)$G1$items[,1],coef(md.noncons0,simplify=T)$G3$items[,2]-coef(md.noncons0,simplify=T)$G1$items[,2])
+starting5new=cbind(coef(md.noncons0,simplify=T)$G1$items[,1],coef(md.noncons0,simplify=T)$G1$items[,2],coef(md.noncons0,simplify=T)$G1$items[,3],
+                   rowSums(cbind(coef(md.noncons0,simplify=T)$G2$items[,1]-coef(md.noncons0,simplify=T)$G1$items[,1],coef(md.noncons0,simplify=T)$G2$items[,2]-coef(md.noncons0,simplify=T)$G1$items[,2])),
+rowSums(cbind(coef(md.noncons0,simplify=T)$G3$items[,1]-coef(md.noncons0,simplify=T)$G1$items[,1],coef(md.noncons0,simplify=T)$G3$items[,2]-coef(md.noncons0,simplify=T)$G1$items[,2])),
+cbind(coef(md.noncons0,simplify=T)$G2$items[,3]-coef(md.noncons0,simplify=T)$G1$items[,3],coef(md.noncons0,simplify=T)$G3$items[,3]-coef(md.noncons0,simplify=T)$G1$items[,3]))
 
 #write.csv(cbind(gra00,grd00,grbeta00),file = "StartingValues2.csv")
-StartVals=read.csv("StartingValues1.csv",row.names = 1)
-gra00=as.matrix(StartVals[,1:2])
+gra00=as.matrix(starting5new[,1:2])
 rownames(gra00) <- c()
-grd00=matrix(StartVals[,3],20,1)
-grbeta00=as.matrix(StartVals[,4:5])
-grbeta00[1,]=c(-0.0481844253,0.02196438);grbeta00[2,]=c(0.1594530242,0.15120530)
-rownames(grbeta00) <- c()
-colnames(grbeta00) <- c()
+grd00=matrix(starting5new[,3],20,1)
+grgamma00=array(0,dim=c((y-1),r,J))
+grgamma00[1,1,1]=starting5new[1,4];grgamma00[1,2,2]=starting5new[2,4];grgamma00[1,1,3:11]=starting5new[3:11,4];grgamma00[1,2,12:20]=starting5new[12:20,4]
+grgamma00[2,1,1]=starting5new[1,5];grgamma00[2,2,2]=starting5new[2,5];grgamma00[2,1,3:11]=starting5new[3:11,5];grgamma00[2,2,12:20]=starting5new[12:20,5]
+grbeta00=as.matrix(starting5new[,6:7])
 
 # 6 dif per dim
 mu100=c(0,0)
@@ -179,41 +201,17 @@ Sig100=matrix(c(1,0.2753316,0.2753316,1),2,2)
 Sig200=matrix(c(1.3259608,0.3145355,0.3145355,1.1363796),2,2)
 Sig300=matrix(c(1.2270710,0.2503095,0.2503095,1.0718629),2,2)
 
-StartVals=read.csv("StartingValues2.csv",row.names = 1)
-gra00=as.matrix(StartVals[,1:2])
-rownames(gra00) <- c()
-grd00=matrix(StartVals[,3],20,1)
-grbeta00=as.matrix(StartVals[,4:5])
-grbeta00[1,]=c(-0.0481844253,0.02196438);grbeta00[2,]=c(0.1594530242,0.15120530)
-rownames(grbeta00) <- c()
-colnames(grbeta00) <- c()
-
-StartVals=read.csv("StartingValues2.csv",row.names = 1)
-gra00=as.matrix(StartVals[,1:2])
-rownames(gra00) <- c()
-grd00=matrix(StartVals[,3],20,1)
-grbeta00=as.matrix(StartVals[,4:5])
-rownames(grbeta00) <- c()
-colnames(grbeta00) <- c()
 mu100=c(0,0)
-mu200=c(-0.1022104,0.1383983)
-mu300=c(0.03270989,0.06991659)
-Sig100=matrix(c(1,0.8512375,0.8512375,1),2,2)
+mu200=c(0,0)
+mu300=c(0,0)
+Sig100=Sig200=Sig300=matrix(c(1,0.8512375,0.8512375,1),2,2)
 Sig200=matrix(c(0.9879547,0.8953391,0.8953391,1.0742965),2,2)
 Sig300=matrix(c(0.8755486,0.8193335,0.8193335,1.0120597),2,2)
 
 
-#########################
-# 6 dif per dim
-mu100=c(0,0)
-mu200=c(0,0)
-mu300=c(0,0)
-Sig100=matrix(c(1,0.2892655,0.2892655,1),2,2)
-Sig200=matrix(c(1.0518386,0.2419183,0.2419183,1.0355795),2,2)
-Sig300=matrix(c(0.9386327,0.2428997,0.2428997,0.9842235),2,2)
 
 #sim1 EM
-for (rep in 21:reps){
+for (rep in 1:reps){
   resp=responses[((rep-1)*N+1):((rep-1)*N+N1+N2+N3),]
   if (min(resp)==0){
     resp2=as.matrix(resp)
@@ -229,6 +227,7 @@ for (rep in 21:reps){
   ADmat=array(double(J*3*length(eta.vec)),dim = c(J,3,length(eta.vec)))
   #Gammas=array(double(2*J*m*length(eta.vec)),dim = c(2,2,J,length(eta.vec)))
   Betas=array(double(J*2*length(eta.vec)),dim = c(J,2,length(eta.vec)))
+  Gammas=array(double(2*J*m*length(eta.vec)),dim = c(2,2,J,length(eta.vec)))
   biass=matrix(0,length(eta.vec),3)
   RMSEs=matrix(0,length(eta.vec),3)
   theta.dist=array(double(2*9*length(eta.vec)),dim=c(9,2,length(eta.vec)))
@@ -239,9 +238,9 @@ for (rep in 21:reps){
     sim=Reg_DIF(resp=resp,m=2,r=2,y=3,N.vec=c(1000,1000,1000),eta=eta,eps =1e-3,max.tol=1e-7,gra00=gra00,grd00=grd00,grbeta00=grbeta00,grgamma00=array(0,dim=c((y-1),r,J)),Mu.list=c(mu100,mu200,mu300),Sig.list=rbind(Sig100,Sig200,Sig300))
     print(proc.time() - ptm)
     bics[k]=sim$bic
-    #Gammas[,,,k]=sim$Gamma
     ADmat[,,k]=sim$est
     Betas[,,k]=sim$Beta
+    Gammas[,,,k]=sim$Gamma
     theta.dist[,,k]=rbind(sim$mean1,sim$mean2,sim$mean3,sim$Corr1,sim$Corr2,sim$Corr3)
   }
   
@@ -251,17 +250,20 @@ for (rep in 21:reps){
   #Gammas.13[,,,i]=Gammas[,,,kk]
   ADmat.2[,,rep]=ADmat[,,kk]
   Betas.2[,,rep]=Betas[,,kk]
+  Gammas.2[,,,rep]=Gammas[,,,kk]
   biass.2[rep,]=biass[kk,]
   RMSEs.2[rep,]=RMSEs[kk,]
   print(ADmat.2[,,rep])
   print(eta.2[rep])
   print(Betas.2[,,rep])
+  print(Gammas.2[,,,rep])
   print(biass.2[rep,])
   print(RMSEs.2[rep,])
-  write.csv(eta.2[rep],file = paste("NAeta3LowCor_",rep))
-  write.csv(ADmat.2[,,rep],file = paste("NAADmat3LowCor_",rep))
-  write.csv(Betas.2[,,rep],file = paste("NABeta3LowCor_",rep))
-  write.csv(theta.dist[,,kk],file = paste("NAtheta3LowCor_",rep))
+  write.csv(eta.2[rep],file = paste("NAeta7_",rep))
+  write.csv(ADmat.2[,,rep],file = paste("NAADmat7_",rep))
+  write.csv(Betas.2[,,rep],file = paste("NABeta7_",rep))
+  write.csv(rbind(t(rbind(Gammas.2[c(1,2),1,3:11,rep])),t(rbind(Gammas.2[c(1,2),2,12:20,rep]))),file = paste("NAGamma7_",rep))
+  write.csv(theta.dist[,,kk],file = paste("NAtheta7_",rep))
 }
 
 #sim1 EMM

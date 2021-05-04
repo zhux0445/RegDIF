@@ -122,7 +122,7 @@ Reg_DIF <- function(resp,m,r,y,N.vec,eta,eps =1e-3,max.tol=1e-7,gra00=NULL,grd00
     df.beta <- abs(betaold-grbeta)
     df.gamma <- abs(gammaold-grgamma)
     iter <- iter+1
-    print(c(iter,max(df.a), max(df.d), max(df.beta), max(df.gamma)))
+    #print(c(iter,max(df.a), max(df.d), max(df.beta), max(df.gamma)))
   }
   # Re-estimation
   sparsity1=grgamma
