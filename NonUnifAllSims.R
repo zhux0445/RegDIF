@@ -332,7 +332,7 @@ for (rep in 1:reps){
   eta.vec=seq(1,25,2)
   bics=rep(0,length(eta.vec))
   ADmat=array(double(J*3*length(eta.vec)),dim = c(J,3,length(eta.vec)))
-  #Gammas=array(double(2*J*m*length(eta.vec)),dim = c(2,2,J,length(eta.vec)))
+  Gammas=array(double(2*J*m*length(eta.vec)),dim = c(2,2,J,length(eta.vec)))
   Betas=array(double(J*2*length(eta.vec)),dim = c(J,2,length(eta.vec)))
   biass=matrix(0,length(eta.vec),3)
   RMSEs=matrix(0,length(eta.vec),3)
@@ -341,11 +341,11 @@ for (rep in 1:reps){
   {
     eta=eta.vec[k]
     ptm <- proc.time()
-    sim=Reg_Adaptive_DIF(resp=resp,m=2,r=2,y=3,N.vec=c(500,500,500),eta=eta,lam=1,eps =1e-3,max.tol=1e-7,gra00=gra00,grd00=grd00,grbeta00=grbeta00,grgamma00=array(0,dim=c((y-1),r,J)),Mu.list=c(mu100,mu200,mu300),Sig.list=rbind(Sig100,Sig200,Sig300))
+    sim=Reg_Adaptive_DIF(resp=resp,m=2,r=2,y=3,N.vec=c(500,500,500),eta=eta,lam=1,eps =1e-3,max.tol=1e-7,gra00=gra00,grd00=grd00,grbeta00=grbeta00,grgamma00=grgamma00,Mu.list=c(mu100,mu200,mu300),Sig.list=rbind(Sig100,Sig200,Sig300))
     
     print(proc.time() - ptm)
     bics[k]=sim$bic
-    #Gammas[,,,k]=sim$Gamma
+    Gammas[,,,k]=sim$Gamma
     ADmat[,,k]=sim$est
     Betas[,,k]=sim$Beta
     theta.dist[,,k]=rbind(sim$mean1,sim$mean2,sim$mean3,sim$Corr1,sim$Corr2,sim$Corr3)
@@ -354,14 +354,15 @@ for (rep in 1:reps){
   kk=which.min(bics)
   
   eta.2[rep]=eta.vec[kk]
-  #Gammas.13[,,,i]=Gammas[,,,kk]
+  Gammas.2[,,,i]=Gammas[,,,kk]
   ADmat.2[,,rep]=ADmat[,,kk]
   Betas.2[,,rep]=Betas[,,kk]
   print(ADmat.2[,,rep])
   print(eta.2[rep])
   print(Betas.2[,,rep])
-  write.csv(eta.2[rep],file = paste("NAeta1Adapt_",rep))
-  write.csv(ADmat.2[,,rep],file = paste("NAADmat1Adapt_",rep))
-  write.csv(Betas.2[,,rep],file = paste("NABeta1Adapt_",rep))
-  write.csv(theta.dist[,,kk],file = paste("NAtheta1Adapt_",rep))
+  write.csv(eta.2[rep],file = paste("NAeta5Adapt_",rep))
+  write.csv(ADmat.2[,,rep],file = paste("NAADmat5Adapt_",rep))
+  write.csv(Betas.2[,,rep],file = paste("NABeta5Adapt_",rep))
+  write.csv(rbind(t(rbind(Gammas.2[c(1,2),1,c(1,3:11),rep])),t(rbind(Gammas.2[c(1,2),2,c(2,12:20),rep]))),file = paste("NAGamma5Adapt_",rep))
+  write.csv(theta.dist[,,kk],file = paste("NAtheta5Adapt_",rep))
 }
