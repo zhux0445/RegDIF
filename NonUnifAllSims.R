@@ -211,7 +211,7 @@ Sig300=matrix(c(0.8755486,0.8193335,0.8193335,1.0120597),2,2)
 
 
 #sim1 EM
-for (rep in 1:reps){
+for (rep in 7:reps){
   resp=responses[((rep-1)*N+1):((rep-1)*N+N1+N2+N3),]
   if (min(resp)==0){
     resp2=as.matrix(resp)
@@ -235,7 +235,7 @@ for (rep in 1:reps){
   {
     eta=eta.vec[k]
     ptm <- proc.time()
-    sim=Reg_DIF(resp=resp,m=2,r=2,y=3,N.vec=c(1000,1000,1000),eta=eta,eps =1e-3,max.tol=1e-7,gra00=gra00,grd00=grd00,grbeta00=grbeta00,grgamma00=array(0,dim=c((y-1),r,J)),Mu.list=c(mu100,mu200,mu300),Sig.list=rbind(Sig100,Sig200,Sig300))
+    sim=Reg_DIF(resp=resp,m=2,r=2,y=3,N.vec=c(1000,1000,1000),eta=eta,eps =1e-3,max.tol=1e-7,gra00=gra00,grd00=grd00,grbeta00=grbeta00,grgamma00=grgamma00,Mu.list=c(mu100,mu200,mu300),Sig.list=rbind(Sig100,Sig200,Sig300))
     print(proc.time() - ptm)
     bics[k]=sim$bic
     ADmat[,,k]=sim$est
@@ -257,12 +257,10 @@ for (rep in 1:reps){
   print(eta.2[rep])
   print(Betas.2[,,rep])
   print(Gammas.2[,,,rep])
-  print(biass.2[rep,])
-  print(RMSEs.2[rep,])
   write.csv(eta.2[rep],file = paste("NAeta7_",rep))
   write.csv(ADmat.2[,,rep],file = paste("NAADmat7_",rep))
   write.csv(Betas.2[,,rep],file = paste("NABeta7_",rep))
-  write.csv(rbind(t(rbind(Gammas.2[c(1,2),1,3:11,rep])),t(rbind(Gammas.2[c(1,2),2,12:20,rep]))),file = paste("NAGamma7_",rep))
+  write.csv(rbind(t(rbind(Gammas.2[c(1,2),1,c(1,3:11),rep])),t(rbind(Gammas.2[c(1,2),2,c(2,12:20),rep]))),file = paste("NAGamma7_",rep))
   write.csv(theta.dist[,,kk],file = paste("NAtheta7_",rep))
 }
 
