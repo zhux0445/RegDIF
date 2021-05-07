@@ -99,8 +99,8 @@ library(RcppArmadillo)
 setwd('/Users/hyzhu27/Documents/GitHub/RegDIF_SimData')
 setwd('/Users/ruoyizhu/Documents/GitHub/RegDIF_SimData')
 setwd('/Users/zhux0445/Documents/GitHub/RegDIF_SimData')
-params=read.csv("Para4new.csv",row.names = 1)
-responses=read.csv("RESP6new.csv",row.names = 1)
+params=read.csv("Para3new.csv",row.names = 1)
+responses=read.csv("RESP7new.csv",row.names = 1)
 
 soft=function(s, tau) {
   val=sign(s)*max(c(abs(s) - tau,0))
@@ -108,7 +108,7 @@ soft=function(s, tau) {
 
 J=20
 
-N1=N2=N3=500 
+N1=N2=N3=1000 
 Group=c(rep('G1', N1), rep('G2', N2), rep('G3', N3))
 Group01=c(rep('G1', N1), rep('G2', N2))
 Group02=c(rep('G1', N1), rep('G3', N3))
@@ -205,8 +205,8 @@ mu100=c(0,0)
 mu200=c(0,0)
 mu300=c(0,0)
 Sig100=Sig200=Sig300=matrix(c(1,0.8512375,0.8512375,1),2,2)
-Sig200=matrix(c(1,0.835,0.835,1),2,2)
-Sig300=matrix(c(1,0.828,0.828,1),2,2)
+Sig200=matrix(c(1,0.846,0.846,1),2,2)
+Sig300=matrix(c(1,0.858,0.858,1),2,2)
 
 
 
@@ -222,7 +222,7 @@ for (rep in 1:reps){
   r=2
   m=2
   y=3
-  eta.vec=seq(11,35,2)
+  eta.vec=seq(21,45,2)
   bics=rep(0,length(eta.vec))
   ADmat=array(double(J*3*length(eta.vec)),dim = c(J,3,length(eta.vec)))
   #Gammas=array(double(2*J*m*length(eta.vec)),dim = c(2,2,J,length(eta.vec)))
@@ -276,7 +276,7 @@ for (rep in 1:reps){
   r=2
   m=2
   y=3
-  eta.vec=seq(11,35,2)
+  eta.vec=seq(21,45,2)
   bics=rep(0,length(eta.vec))
   ADmat=array(double(J*3*length(eta.vec)),dim = c(J,3,length(eta.vec)))
   Gammas=array(double(2*J*m*length(eta.vec)),dim = c(2,2,J,length(eta.vec)))
@@ -288,7 +288,7 @@ for (rep in 1:reps){
   {
     eta=eta.vec[k]
     ptm <- proc.time()
-    sim=Reg_EMM_DIF(resp=resp,m=2,r=2,y=3,N.vec=c(500,500,500),eta=eta,eps =1e-3,max.tol=1e-7,gra00=gra00,grd00=grd00,grbeta00=grbeta00,grgamma00=array(0,dim=c((y-1),r,J)),Mu.list=c(mu100,mu200,mu300),Sig.list=rbind(Sig100,Sig200,Sig300))
+    sim=Reg_EMM_DIF(resp=resp,m=2,r=2,y=3,N.vec=c(1000,1000,1000),eta=eta,eps =1e-3,max.tol=1e-7,gra00=gra00,grd00=grd00,grbeta00=grbeta00,grgamma00=grgamma00,Mu.list=c(mu100,mu200,mu300),Sig.list=rbind(Sig100,Sig200,Sig300))
     print(proc.time() - ptm)
     bics[k]=sim$bic
     Gammas[,,,k]=sim$Gamma
@@ -300,7 +300,7 @@ for (rep in 1:reps){
   kk=which.min(bics)
   
   eta.2[rep]=eta.vec[kk]
-  Gammas.2[,,,i]=Gammas[,,,kk]
+  Gammas.2[,,,rep]=Gammas[,,,kk]
   ADmat.2[,,rep]=ADmat[,,kk]
   Betas.2[,,rep]=Betas[,,kk]
   biass.2[rep,]=biass[kk,]
@@ -310,11 +310,11 @@ for (rep in 1:reps){
   print(Betas.2[,,rep])
   print(biass.2[rep,])
   print(RMSEs.2[rep,])
-  write.csv(eta.2[rep],file = paste("NAeta5EMM_",rep))
-  write.csv(ADmat.2[,,rep],file = paste("NAADmat5EMM_",rep))
-  write.csv(Betas.2[,,rep],file = paste("NABeta5EMM_",rep))
-  write.csv(rbind(t(rbind(Gammas.2[c(1,2),1,c(1,3:11),rep])),t(rbind(Gammas.2[c(1,2),2,c(2,12:20),rep]))),file = paste("NAGamma5EMM_",rep))
-  write.csv(theta.dist[,,kk],file = paste("NAtheta5EMM_",rep))
+  write.csv(eta.2[rep],file = paste("NAeta7EMM_",rep))
+  write.csv(ADmat.2[,,rep],file = paste("NAADmat7EMM_",rep))
+  write.csv(Betas.2[,,rep],file = paste("NABeta7EMM_",rep))
+  write.csv(rbind(t(rbind(Gammas.2[c(1,2),1,c(1,3:11),rep])),t(rbind(Gammas.2[c(1,2),2,c(2,12:20),rep]))),file = paste("NAGamma7EMM_",rep))
+  write.csv(theta.dist[,,kk],file = paste("NAtheta7EMM_",rep))
 }
 
 #sim1 adaptive
