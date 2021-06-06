@@ -116,6 +116,15 @@ Sig300=matrix(c(0.9386327,0.2428997,0.2428997,0.9842235),2,2)
 #sim1 EM
 for (rep in 1:reps){
   resp=responses[((rep-1)*N+1):((rep-1)*N+N1+N2+N3),]
+  md.noncons0 <- multipleGroup(resp, s, group = Group,SE=TRUE,invariance=c('slopes'))
+  starting5new=cbind(coef(md.noncons0,simplify=T)$G1$items[,1],coef(md.noncons0,simplify=T)$G1$items[,2],coef(md.noncons0,simplify=T)$G1$items[,3],
+                     cbind(coef(md.noncons0,simplify=T)$G2$items[,3]-coef(md.noncons0,simplify=T)$G1$items[,3],coef(md.noncons0,simplify=T)$G3$items[,3]-coef(md.noncons0,simplify=T)$G1$items[,3]))
+  gra00=as.matrix(starting5new[,1:2])
+  rownames(gra00) <- c()
+  grd00=matrix(starting5new[,3],20,1)
+  grbeta00=as.matrix(starting5new[,4:5])
+
+  resp=responses[((rep-1)*N+1):((rep-1)*N+N1+N2+N3),]
   if (min(resp)==0){
     resp2=as.matrix(resp)
     resp=resp+1
@@ -125,7 +134,7 @@ for (rep in 1:reps){
   r=2
   m=2
   y=3
-  eta.vec=seq(1,25,2)
+  eta.vec=seq(3,25,2)
   bics=rep(0,length(eta.vec))
   ADmat=array(double(J*3*length(eta.vec)),dim = c(J,3,length(eta.vec)))
   #Gammas=array(double(2*J*m*length(eta.vec)),dim = c(2,2,J,length(eta.vec)))
@@ -160,13 +169,21 @@ for (rep in 1:reps){
   print(biass.2[rep,])
   print(RMSEs.2[rep,])
   write.csv(eta.2[rep],file = paste("NAeta1smallsample_",rep))
-  write.csv(ADmat.2[,,rep],file = paste("NAADmat1LowCorsmallsample_",rep))
-  write.csv(Betas.2[,,rep],file = paste("NABeta1LowCorsmallsample_",rep))
-  write.csv(theta.dist[,,kk],file = paste("NAtheta1LowCorsmallsample_",rep))
+  write.csv(ADmat.2[,,rep],file = paste("NAADmat1smallsample_",rep))
+  write.csv(Betas.2[,,rep],file = paste("NABeta1smallsample_",rep))
+  write.csv(theta.dist[,,kk],file = paste("NAtheta1smallsample_",rep))
 }
 
 #sim1 EMM
 for (rep in 1:reps){
+  resp=responses[((rep-1)*N+1):((rep-1)*N+N1+N2+N3),]
+  md.noncons0 <- multipleGroup(resp, s, group = Group,SE=TRUE,invariance=c('slopes'))
+  starting5new=cbind(coef(md.noncons0,simplify=T)$G1$items[,1],coef(md.noncons0,simplify=T)$G1$items[,2],coef(md.noncons0,simplify=T)$G1$items[,3],
+                     cbind(coef(md.noncons0,simplify=T)$G2$items[,3]-coef(md.noncons0,simplify=T)$G1$items[,3],coef(md.noncons0,simplify=T)$G3$items[,3]-coef(md.noncons0,simplify=T)$G1$items[,3]))
+  gra00=as.matrix(starting5new[,1:2])
+  rownames(gra00) <- c()
+  grd00=matrix(starting5new[,3],20,1)
+  grbeta00=as.matrix(starting5new[,4:5])
   resp=responses[((rep-1)*N+1):((rep-1)*N+N1+N2+N3),]
   if (min(resp)==0){
     resp2=as.matrix(resp)
@@ -177,7 +194,7 @@ for (rep in 1:reps){
   r=2
   m=2
   y=3
-  eta.vec=seq(11,35,2)
+  eta.vec=seq(5,25,2)
   bics=rep(0,length(eta.vec))
   ADmat=array(double(J*3*length(eta.vec)),dim = c(J,3,length(eta.vec)))
   #Gammas=array(double(2*J*m*length(eta.vec)),dim = c(2,2,J,length(eta.vec)))
@@ -189,7 +206,7 @@ for (rep in 1:reps){
   {
     eta=eta.vec[k]
     ptm <- proc.time()
-    sim=Reg_EMM_DIF(resp=resp,m=2,r=2,y=3,N.vec=c(500,500,500),eta=eta,eps =1e-3,max.tol=1e-7,gra00=gra00,grd00=grd00,grbeta00=grbeta00,grgamma00=array(0,dim=c((y-1),r,J)),Mu.list=c(mu100,mu200,mu300),Sig.list=rbind(Sig100,Sig200,Sig300))
+    sim=Reg_EMM_DIF(resp=resp,m=2,r=2,y=3,N.vec=c(200,200,200),eta=eta,eps =1e-3,max.tol=1e-7,gra00=gra00,grd00=grd00,grbeta00=grbeta00,grgamma00=array(0,dim=c((y-1),r,J)),Mu.list=c(mu100,mu200,mu300),Sig.list=rbind(Sig100,Sig200,Sig300))
     print(proc.time() - ptm)
     bics[k]=sim$bic
     #Gammas[,,,k]=sim$Gamma
@@ -211,14 +228,22 @@ for (rep in 1:reps){
   print(Betas.2[,,rep])
   print(biass.2[rep,])
   print(RMSEs.2[rep,])
-  write.csv(eta.2[rep],file = paste("NAeta1EMM_",rep))
-  write.csv(ADmat.2[,,rep],file = paste("NAADmat1EMM_",rep))
-  write.csv(Betas.2[,,rep],file = paste("NABeta1EMM_",rep))
-  write.csv(theta.dist[,,kk],file = paste("NAtheta1EMM_",rep))
+  write.csv(eta.2[rep],file = paste("NAeta1EMMsmallsample_",rep))
+  write.csv(ADmat.2[,,rep],file = paste("NAADmat1EMMsmallsample_",rep))
+  write.csv(Betas.2[,,rep],file = paste("NABeta1EMMsmallsample_",rep))
+  write.csv(theta.dist[,,kk],file = paste("NAtheta1EMMsmallsample_",rep))
 }
 
 #sim1 adaptive
 for (rep in 1:reps){
+  resp=responses[((rep-1)*N+1):((rep-1)*N+N1+N2+N3),]
+  md.noncons0 <- multipleGroup(resp, s, group = Group,SE=TRUE,invariance=c('slopes'))
+  starting5new=cbind(coef(md.noncons0,simplify=T)$G1$items[,1],coef(md.noncons0,simplify=T)$G1$items[,2],coef(md.noncons0,simplify=T)$G1$items[,3],
+                     cbind(coef(md.noncons0,simplify=T)$G2$items[,3]-coef(md.noncons0,simplify=T)$G1$items[,3],coef(md.noncons0,simplify=T)$G3$items[,3]-coef(md.noncons0,simplify=T)$G1$items[,3]))
+  gra00=as.matrix(starting5new[,1:2])
+  rownames(gra00) <- c()
+  grd00=matrix(starting5new[,3],20,1)
+  grbeta00=as.matrix(starting5new[,4:5])
   resp=responses[((rep-1)*N+1):((rep-1)*N+N1+N2+N3),]
   if (min(resp)==0){
     resp2=as.matrix(resp)
@@ -241,7 +266,7 @@ for (rep in 1:reps){
   {
     eta=eta.vec[k]
     ptm <- proc.time()
-    sim=Reg_Adaptive_DIF(resp=resp,m=2,r=2,y=3,N.vec=c(500,500,500),eta=eta,lam=1,eps =1e-3,max.tol=1e-7,gra00=gra00,grd00=grd00,grbeta00=grbeta00,grgamma00=array(0,dim=c((y-1),r,J)),Mu.list=c(mu100,mu200,mu300),Sig.list=rbind(Sig100,Sig200,Sig300))
+    sim=Reg_Adaptive_DIF(resp=resp,m=2,r=2,y=3,N.vec=c(200,200,200),eta=eta,lam=1,eps =1e-3,max.tol=1e-7,gra00=gra00,grd00=grd00,grbeta00=grbeta00,grgamma00=array(0,dim=c((y-1),r,J)),Mu.list=c(mu100,mu200,mu300),Sig.list=rbind(Sig100,Sig200,Sig300))
       
     print(proc.time() - ptm)
     bics[k]=sim$bic
@@ -260,10 +285,10 @@ for (rep in 1:reps){
   print(ADmat.2[,,rep])
   print(eta.2[rep])
   print(Betas.2[,,rep])
-  write.csv(eta.2[rep],file = paste("NAeta1Adapt_",rep))
-  write.csv(ADmat.2[,,rep],file = paste("NAADmat1Adapt_",rep))
-  write.csv(Betas.2[,,rep],file = paste("NABeta1Adapt_",rep))
-  write.csv(theta.dist[,,kk],file = paste("NAtheta1Adapt_",rep))
+  write.csv(eta.2[rep],file = paste("NAeta1Adaptsmallsample_",rep))
+  write.csv(ADmat.2[,,rep],file = paste("NAADmat1Adaptsmallsample_",rep))
+  write.csv(Betas.2[,,rep],file = paste("NABeta1Adaptsmallsample_",rep))
+  write.csv(theta.dist[,,kk],file = paste("NAtheta1Adaptsmallsample_",rep))
 }
 
 #sim2 EM
