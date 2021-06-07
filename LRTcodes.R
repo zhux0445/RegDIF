@@ -6,8 +6,8 @@ library(mvtnorm)
 library(graphics)
 library(dmutate)
 setwd('/Users/zhux0445/Documents/GitHub/RegDIF_SimData')
-params=read.csv("Para3new.csv",row.names = 1)
-responses=read.csv("RESP5new.csv",row.names = 1)
+params=read.csv("Para1.csv",row.names = 1)
+responses=read.csv("RESP1new_SS600.csv",row.names = 1)
 beta.1=read.csv("Beta1_ 1.dms",row.names = 1)
 ad.1=read.csv("ADmat1_ 1.dms",row.names = 1)
 
@@ -17,7 +17,7 @@ soft=function(s, tau) {
 # Dataset #4 (2 Non-uniform DIF items per scale)
 J=20
 
-N1=N2=N3=500 
+N1=N2=N3=200 
 Group=c(rep('G1', N1), rep('G2', N2), rep('G3', N3))
 Group01=c(rep('G1', N1), rep('G2', N2))
 Group02=c(rep('G1', N1), rep('G3', N3))
@@ -214,19 +214,6 @@ for (rep in 1:50){
   #tpI1[rep]=sum(c("V1","V2","V3","V10","V11","V18","V19","V20")%in%rownames(dif1.t))
   power1[rep]=sum(c("V4" , "V5" ,"V12", "V13")%in%rownames(dif1.t))
   tpI1[rep]=sum(c("V1","V2","V3", "V6", "V7","V8","V9","V10","V11","V14","V15","V16","V17","V18","V19","V20")%in%rownames(dif1.t))
-  md.refit0 <- multipleGroup(resp, s, group = Group,SE=TRUE,invariance=c('free_means', 'free_var','slopes',colnames(resp)[which(colnames(resp)%in%rownames(dif1.t)==0)]))
-  #md.refit.r <- multipleGroup(resp, s, group = Group,SE=TRUE,invariance=c('free_means', 'free_var','slopes',colnames(resp)[-c(4,5,12,13)]))
-  bias.mirt1[rep,1:2]=colSums(coef(md.refit0,simplify=T)$G1$items[,1:r]-Amat1)/10
-  rmse.mirt1[rep,1:2]=sqrt(colSums((coef(md.refit0,simplify=T)$G1$items[,1:r]-Amat1)^2)/10)
-  bias.mirt1[rep,3]=colMeans(coef(md.refit0,simplify=T)$G1$items[,3]-Dmat1)
-  rmse.mirt1[rep,3]=sqrt(colMeans((coef(md.refit0,simplify=T)$G1$items[,3]-Dmat1)^2))
-  z1=(coef(md.refit0,simplify=T)$G2$items[,3]-coef(md.refit0,simplify=T)$G1$items[,3])[c(4,5,12,13)]
-  z2=(coef(md.refit0,simplify=T)$G3$items[,3]-coef(md.refit0,simplify=T)$G1$items[,3])[c(4,5,12,13)]
-  difrec.mirt.fn1[rep,2:3]= c(mean(abs(z1[z1!=0]-0.5)),mean(abs(z2[z2!=0]-1)))
-  difrec.mirt.fn1[rep,1]=mean(c(difrec.mirt.fn1[rep,2],difrec.mirt.fn1[rep,3])) #omnibus DIF recovery in report (only need this)
-  #difrec.mirt.fn1.r[rep,2:3]= c(mean(abs((coef(md.refit.r,simplify=T)$G2$items[,3]-coef(md.refit.r,simplify=T)$G1$items[,3])[c(4,5,12,13)]-0.5)),mean(abs((coef(md.refit.r,simplify=T)$G3$items[,3]-coef(md.refit.r,simplify=T)$G1$items[,3])[c(4,5,12,13)]-1)))
-  #difrec.mirt.fn1.r[rep,1]=mean(c(difrec.mirt.fn1.r[rep,2],difrec.mirt.fn1.r[rep,3])) #omnibus DIF recovery in report (only need this)
-  
   
   
   #ref vs focal1
@@ -250,7 +237,7 @@ for (rep in 1:50){
   difrec.mirt.fn2[rep,2]= mean(abs(z3[z3!=0]-0.5))
   #ref vs focal2
   md.noncons02 <- multipleGroup(resp02, s, group = Group02,SE=TRUE,invariance=c('free_means', 'free_var','slopes',colnames(resp)[anchors]))#,anchor3,anchor4)]))
-  dif3=DIF(md.noncons01, which.par = c('d'), p.adjust = 'fdr',scheme = 'add',items2test=c(1:J)[-anchors])#,anchor3,anchor4)])
+  dif3=DIF(md.noncons02, which.par = c('d'), p.adjust = 'fdr',scheme = 'add',items2test=c(1:J)[-anchors])#,anchor3,anchor4)])
   dif3.t=dif3[which(dif3$adj_pvals<0.05),]
   #power3[rep]=sum(c("V4" , "V5" , "V6", "V7","V8","V9","V12", "V13","V14","V15","V16","V17")%in%rownames(dif3.t))
   #tpI3[rep]=sum(c("V1","V2","V3","V10","V11","V18","V19","V20")%in%rownames(dif3.t))
@@ -272,14 +259,14 @@ sum(power1)/(50*4)
 sum(tpI1)/(50*16)
 colMeans(bias.mirt1)
 sqrt(colMeans((rmse.mirt1)^2))
-colMeans(difrec.mirt.fn1)
-colMeans(difrec.mirt.fn1.r)
+colMeans(na.omit(difrec.mirt.fn1))
 
 sum(power2)/(50*4)
 sum(tpI2)/(50*16)
 colMeans(bias.mirt2)
 sqrt(colMeans((rmse.mirt2)^2))
 colMeans(na.omit(difrec.mirt.fn2))
+
 
 sum(power3)/(50*4)
 sum(tpI3)/(50*16)
@@ -306,6 +293,8 @@ sum(read.csv("NALRTUnifpower12.csv")[,2])/(50*4)
 sum(read.csv("NALRTUniftpI12.csv")[,2])/(50*16)
 sum(read.csv("NALRTUnifpower13.csv")[,2])/(50*4)
 sum(read.csv("NALRTUniftpI13.csv")[,2])/(50*16)
+
+
 
 sum(power1)/(50*12)
 sum(tpI1)/(50*8)
@@ -716,21 +705,21 @@ sd(power3/4)/7
 sd(tpI3/16)/7
 
 
-write.csv(power1, file = "NALRTNonUnifpower6lowcor.csv")
-write.csv(tpI1, file = "NALRTNonUniftpI6lowcor.csv")
-write.csv(bias.mirt1, file = "NALRTNonUnifbias6lowcor.csv")
-write.csv(rmse.mirt1, file = "NALRTNonUnifrmse6lowcor.csv")
-write.csv(difrec.mirt.fn1, file = "NALRTNonUnifrec6lowcor.csv")
-write.csv(difrec.mirt.fn1.a, file = "NALRTNonUnifArec6lowcor.csv")
-write.csv(power2, file = "NALRTNonUnifpower62lowcor.csv")
-write.csv(tpI2, file = "NALRTNonUniftpI62lowcor.csv")
-write.csv(difrec.mirt.fn2, file = "NALRTNonUnifrec62lowcor.csv")
-write.csv(difrec.mirt.fn2.a, file = "NALRTNonUnifArec62lowcor.csv")
-write.csv(power3, file = "NALRTNonUnifpower63lowcor.csv")
-write.csv(tpI3, file = "NALRTNonUniftpI63lowcor.csv")
-write.csv(difrec.mirt.fn3, file = "NALRTNonUnifrec63lowcor.csv")
-write.csv(difrec.mirt.fn3.a, file = "NALRTNonUnifArec63lowcor.csv")
-write.csv(anchors.all, file = "NALRTNonUnifanchor6lowcor.csv")
+write.csv(power1, file = "NALRTUnifpower1smallsample.csv")
+write.csv(tpI1, file = "NALRTUniftpI1smallsample.csv")
+write.csv(bias.mirt1, file = "NALRTUnifbias1smallsample.csv")
+write.csv(rmse.mirt1, file = "NALRTUnifrmse1smallsample.csv")
+write.csv(difrec.mirt.fn1, file = "NALRTUnifrec1smallsample.csv")
+#write.csv(difrec.mirt.fn1.a, file = "NALRTNonUnifArec6lowcor.csv")
+write.csv(power2, file = "NALRTUnifpower12smallsample.csv")
+write.csv(tpI2, file = "NALRTUniftpI12smallsample.csv")
+write.csv(difrec.mirt.fn2, file = "NALRTUnifrec12smallsamplecsv")
+#write.csv(difrec.mirt.fn2.a, file = "NALRTNonUnifArec12smallsample.csv")
+write.csv(power3, file = "NALRTUnifpower13smallsample.csv")
+write.csv(tpI3, file = "NALRTUniftpI13smallsample.csv")
+write.csv(difrec.mirt.fn3, file = "NALRTUnifrec13smallsample.csv")
+#write.csv(difrec.mirt.fn3.a, file = "NALRTNonUnifArec13smallsample.csv")
+write.csv(anchors.all, file = "NALRTUnifanchor1lowcor.csv")
 
 
 
