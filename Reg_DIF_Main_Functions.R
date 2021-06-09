@@ -18,8 +18,8 @@
 #####                                      Sig.list=rbind(Sig100,Sig200,Sig300)
 ##### gra00: starting values of a, should include the information of known loading structure
 ##### grd00: starting values of d
-##### grbeta00: starting values of beta; grbeta00=matrix(0,J,2)
-##### grgamma00: starting values of gamma
+##### grbeta00: starting values of beta; Items with starting value zero are used as anchor. grbeta00=matrix(0,J,2)
+##### grgamma00: starting values of gamma. Items with starting value zero are used as anchor.
 ##################################################                          
 ##### Outputs:
 ##### est: estimated parameter a and d.
