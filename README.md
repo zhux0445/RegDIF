@@ -4,7 +4,7 @@ The r file Reg_DIF_Main_Functions includes the main functions for three methods 
 
 The r file EMsteps includes functions for the E-step and M-steps used in main functions.
 
-The file LRTcodes includes code for running likelihood ratio tests.
+The file LRTcode includes code for running likelihood ratio tests.
 
 NonUnifAllSims is code for non-uniform DIF simulation studies. 
 
