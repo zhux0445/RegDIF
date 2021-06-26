@@ -1,9 +1,14 @@
 #MBR non-uniform DIF simulations
-library(mirt) 
 library(MASS)
-library(mvtnorm)
+library(mirt) 
 mirtCluster(4)
-library(ggplot2)
+library(cacIRT)
+library(mvtnorm)
+library(graphics)
+library(dmutate)
+library(Rcpp)
+library(RcppParallel)
+library(RcppArmadillo)
 
 # Nonuniform DIF, 2D2PL 
 #set.seed(1)
@@ -67,21 +72,25 @@ ybeta1=Dmat2-Dmat1
 axmat=gra%*%t(X)
 pstar1=pstar2=array(double(J*(m-1)*G),dim = c(J,(m-1),G))
 p1=p2=array(double(J*m*G),dim = c(J,m,G))
+up1=up2=array(double(J*m*G),dim = c(J,m,G))
 for (g in 1:G)
 {
   pstar1[,,g] = 1/(1+exp(-(grd+matrix(axmat[,g],J,1))))
   p1[,,g] = t(-diff(rbind(rep(1,J),t(pstar1[,,g]),rep(0,J)))) #(2)
+  #up1[,,g] = cbind(rep(0,J),rep(1,J))* p1[,,g]#(4)
 }
+
 for (g in 1:G)
 {
   pstar2[,,g] = 1/(1+exp(-(grd+matrix(axmat[,g],J,1)+matrix(ygamat1[,g],J,1)+ybeta1))) #(3)
   p2[,,g] = t(-diff(rbind(rep(1,J),t(pstar2[,,g]),rep(0,J))))
+ # up2[,,g] = cbind(rep(0,J),rep(1,J))* p2[,,g]#(4)
 }
 
 wABCr=wABCf1=numeric(J)
 for (j in 1:J){
-  wABCr[j]=sum(abs((p1[,2,]-p2[,2,])[j,])*WXr)
-  wABCf1[j]=sum(abs((p1[,2,]-p2[,2,])[j,])*WXf1)
+  wABCr[j]=sum(abs((p1[,2,]-p2[,2,])[j,])*WXr)/16 #step^2=8/32
+  wABCf1[j]=sum(abs((p1[,2,]-p2[,2,])[j,])*WXf1)/16
 }
 wABC1=  (wABCr+  wABCf1)/2 #for no impact condition, item 6,11,12,13,14 all have wABC between 0.3-0.9
 
