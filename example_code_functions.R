@@ -1,4 +1,4 @@
-sourceCpp("Reg_DIF_EM.cpp")
+sourceCpp("/Users/ruoyizhu/Documents/GitHub/RegDIF/Reg_DIF_EM.cpp")
 soft=function(s, tau) {
   val=sign(s)*max(c(abs(s) - tau,0))
   return(val) }
@@ -475,7 +475,8 @@ Reg_DIF <- function(resp,m,r,y,N.vec,eta,eps =1e-3,max.tol=1e-7,gra00=NULL,grd00
     
     for (j in 1:J){
       rgk=rgkest(j=j,Xijk=Xijk,LiA=LiA,y=y,Nvec=N.vec,G=G,N=N,m=m)
-      estj=M_step(j=j,ng=ng,rgk=rgk,grd=grd,gra=gra,grgamma=grgamma,grbeta=grbeta,max.tol=max.tol,X=X,y.allgroup=y.allgroup,y=y,G=G,m=m,eta=eta)
+      sourceCpp("/Users/ruoyizhu/Documents/GitHub/RegDIF_middle_steps/MstepTemp.cpp")
+      estj=M_step(j=j,ng=ng,rgk=rgk,grd=grd,gra=gra,grgamma=grgamma,grbeta=grbeta,maxtol=max.tol,X=X,yallgroup=y.allgroup,y=y,G=G,m=m,r=r,eta=eta)
       gra[j,] <- estj[m:(m+r-1)]*Tau  # re-scale a and gamma
       grd[j,] <- estj[1:(m-1)]
       grgamma[,,j] <- matrix(estj[(m+r):(m+r+r*(y-1)-1)],y-1,r)*matrix(rep(Tau,(y-1)),y-1,r,byrow = T)

@@ -10,8 +10,8 @@ library(RcppParallel)
 library(RcppArmadillo)
 
 
-params=read.csv("Para3new.csv",row.names = 1)
-responses=read.csv("RESP5new.csv",row.names = 1)
+params=read.csv("/Users/ruoyizhu/Documents/GitHub/RegDIF_SimData/Para3new.csv",row.names = 1)
+responses=read.csv("/Users/ruoyizhu/Documents/GitHub/RegDIF_SimData/RESP5new.csv",row.names = 1)
 
 J=20 #test length
 N1=N2=N3=500 # sample size each group
