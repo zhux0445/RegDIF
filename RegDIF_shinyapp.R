@@ -401,7 +401,7 @@ M_step_Adaptive=function(j,ng,rgk,grd,gra,grgamma,grgamma00,grbeta,grbeta00,max.
         #Mu0[,yy]=coef(md.noncons0,simplify=T)[[yy]]$means
       }
     } else {
-      md.noncons0 <- multipleGroup(u, model, group = Group,SE=TRUE)
+      md.noncons0 <- multipleGroup(resp, model, group = Group,SE=TRUE)
       starting5new=cbind(coef(md.noncons0,simplify=T)[[1]]$items[,1:(domain+m-1)])
       for (yy in 2:y){
         starting5new=cbind(starting5new,coef(md.noncons0,simplify=T)[[yy]]$items[,1:domain]-coef(md.noncons0,simplify=T)[[1]]$items[,1:domain])
@@ -1326,7 +1326,7 @@ ui <- navbarPage("Regularized DIF",
                               
                               
                               h2("Information Criteria"),
-                              plotOutput("plot1"),
+                              plotOutput("plot")
                               
                             )
                             
@@ -1412,8 +1412,7 @@ server <- function(input, output,session) {
     } 
     result=reg_DIF_alllbd(u(),indic(),Group(),Method,Unif)
     return(result)
-  }
-  )
+  })
   
   output$warn<-renderText({
     input$go1
@@ -1467,12 +1466,11 @@ server <- function(input, output,session) {
   })
   
   
-  output$plot1 <- renderPlot({
+  output$plot <- renderPlot({
     input$go1
     isolate({
-      #plot(result0()$ICs,xlab="Tuning parameter",ylab="Information Criteria")
-      m=plot(seq(10,20,5),result0()$ICs,xlab="Tuning parameter",ylab="Information Criteria")
-      return(m)
+    m=result0()$ICs
+    plot(m)
     })
   })
   #Downloadable csv of selected dataset ----
@@ -1501,7 +1499,7 @@ server <- function(input, output,session) {
           colnames(m)<-c(paste("a",1:(result0()$domain),sep=""),"b",paste(rep(paste("gamma",1:domain,sep=""),(y-1)),gp,sep=""),paste("beta",1:(y-1),sep=""))
           
           write.csv(m,file,row.names = F)
-        } else (input$checkGroup1=="cov"){
+        }else if(input$checkGroup1=="cov"){
           m1<-matrix(result0()$Mu)
           m2<-result0()$Sig
           m=cbind(m1,m2)
