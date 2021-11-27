@@ -117,7 +117,7 @@ M_step=function(j,ng,rgk,grd,gra,grgamma,grbeta,max.tol,X,y.allgroup,y,G,m,eta){
     }
     Asco = numeric(sum(ifelse(a==0,0,1)))
     for (yy in 1:y){
-      Asco=Asco+(apply(rgk[(yy*G+1):(yy*G+G),]/P[,,yy]*PQdif[,,yy],1,sum))%*%(X%*%ifelse(a==0,0,1))
+      Asco=Asco+((apply(rgk[(yy*G+1):(yy*G+G),]/P[,,yy]*PQdif[,,yy],1,sum))%*%(X))[which(ifelse(a==0,0,1)!=0)]
     }
     Gamsco =numeric(sum(ifelse(gam==0,0,1)))
     if (sum(ifelse(gam==0,0,1))>0){
@@ -129,6 +129,7 @@ M_step=function(j,ng,rgk,grd,gra,grgamma,grbeta,max.tol,X,y.allgroup,y,G,m,eta){
     } else {
       Gamsco=as.null(Gamsco)
     }
+    
     Betsco =numeric(sum(ifelse(bet==0,0,1)))
     if (sum(ifelse(bet==0,0,1))>0){
       Betsco.all=bet
@@ -164,16 +165,18 @@ M_step=function(j,ng,rgk,grd,gra,grgamma,grbeta,max.tol,X,y.allgroup,y,G,m,eta){
       #  FI[mm,mm+1] <-  sum(ng*Pstar[,mm]*Qstar[,mm]*Pstar[,mm+1]*Qstar[,mm+1]*(1/P[,mm+1]))#(1,2),(2,3)
       #}
     }
-    for (kk in (length(Dsco)+1):(length(Dsco)+length(Asco))){
-      for (yy in 1:y){
-        FI[kk,kk] = FI[kk,kk]+ (-sum(ng[(yy*G+1):(yy*G+G)]*(X%*%ifelse(a==0,0,1))[,(kk-length(Dsco))]*(X%*%ifelse(a==0,0,1))[,(kk-length(Dsco))]*apply(PQdif[,,yy]^2/P[,,yy],1,sum)))
-        for (bb in 1:length(Dsco)){
-          FI[kk,bb] <-  FI[kk,bb]+ sum(ng[(yy*G+1):(yy*G+G)]*(X%*%ifelse(a==0,0,1))[,(kk-length(Dsco))]*(Pstar[,bb,yy]*Qstar[,bb,yy])*(PQdif[,bb,yy]/P[,bb,yy]-PQdif[,bb+1,yy]/P[,bb+1,yy]))
-          FI[bb,kk] <-  FI[kk,bb]
+    for (kk1 in (length(Dsco)+1):(length(Dsco)+length(Asco))){
+      for (kk2 in (length(Dsco)+1):(length(Dsco)+length(Asco))){
+        for (yy in 1:y){
+          FI[kk1,kk2] = FI[kk1,kk2]+ (-sum(ng[(yy*G+1):(yy*G+G)]*((X[,(which(ifelse(a==0,0,1)!=0))[(kk1-length(Dsco))]]))*X[,(which(ifelse(a==0,0,1)!=0))[(kk2-length(Dsco))]]*apply(PQdif[,,yy]^2/P[,,yy],1,sum)))
         }
       }
-      
-      
+      for (bb in 1:length(Dsco)){
+        for (yy in 1:y){
+          FI[kk1,bb] <-  FI[kk1,bb]+ sum(ng[(yy*G+1):(yy*G+G)]*X[,(which(ifelse(a==0,0,1)!=0))[(kk1-length(Dsco))]]*(Pstar[,bb,yy]*Qstar[,bb,yy])*(PQdif[,bb,yy]/P[,bb,yy]-PQdif[,bb+1,yy]/P[,bb+1,yy]))
+        }
+        FI[bb,kk1] <-  FI[kk1,bb]
+      }
       #if (length(Asco)>1){
       #  n.cross=choose(length(Asco),2)
       #  for (c in 1:n.cross){
@@ -194,7 +197,25 @@ M_step=function(j,ng,rgk,grd,gra,grgamma,grbeta,max.tol,X,y.allgroup,y,G,m,eta){
           grp=grp.number+1
           dim.number=which(gam!=0)[kk-(length(Dsco)+length(Asco))]%/%(y-1)+1
         }
-        FI[kk,kk] = FI[kk,2]= FI[2,kk]= -sum(ng[(grp*G+1):(grp*G+G)]*X[,dim.number]*X[,dim.number]*apply(PQdif[,,grp]^2/P[,,grp],1,sum))
+        
+        for (kk1 in (length(Dsco)+length(Asco)+1):(length(Dsco)+length(Asco)+length(Gamsco))){
+          grp.number2=which(gam!=0)[kk1-(length(Dsco)+length(Asco))]%%(y-1)
+          if (grp.number2==0){
+            grp2=y
+            dim.number2=which(gam!=0)[kk1-(length(Dsco)+length(Asco))]/(y-1)
+          } else {
+            grp2=grp.number2+1
+            dim.number2=which(gam!=0)[kk1-(length(Dsco)+length(Asco))]%/%(y-1)+1
+          }
+          if (grp==grp2){
+            FI[kk,kk1] = -sum(ng[(grp*G+1):(grp*G+G)]*X[,dim.number]*X[,dim.number2]*apply(PQdif[,,grp]^2/P[,,grp],1,sum))
+          }
+        }  
+        
+        for (kk2 in (length(Dsco)+1):(length(Dsco)+length(Asco))){
+          FI[kk,kk2]= FI[kk2,kk]= -sum(ng[(grp*G+1):(grp*G+G)]*X[,(which(ifelse(a==0,0,1)!=0))[(kk2-length(Dsco))]]*X[,dim.number]*apply(PQdif[,,grp]^2/P[,,grp],1,sum))
+          }
+        
         #if (length(Asco)>1){
         #  for (aa in 1:length(asco)){
         #    FI[kk,aa] = FI[aa,kk]=-sum(ng[(grp*G+1):(grp*G+G)]*X[,dim.number]*X[,aa]*apply(PQdif[,,grp]^2/P[,,grp],1,sum))
@@ -210,7 +231,9 @@ M_step=function(j,ng,rgk,grd,gra,grgamma,grbeta,max.tol,X,y.allgroup,y,G,m,eta){
       for (kk in (length(Dsco)+length(Asco)+length(Gamsco)+1):(length(Dsco)+length(Asco)+length(Gamsco)+length(Betsco))){
         grp.number=which(bet!=0)[kk-(length(Dsco)+length(Asco)+length(Gamsco))]
         FI[kk,kk] =  FI[kk,m-1] =  FI[m-1,kk]= (-sum(ng[((grp.number+1)*G+1):((grp.number+2)*G)]*(Pstar[,1,grp.number+1]*Qstar[,1,grp.number+1])^2*(1/P[,1,grp.number+1]+1/P[,m,grp.number+1])))
-        FI[kk,m] =  FI[m,kk]= sum(ng[((grp.number+1)*G+1):((grp.number+2)*G)]*(X%*%ifelse(a==0,0,1))*Pstar[,1,grp.number+1]*Qstar[,1,grp.number+1]*(PQdif[,1,grp.number+1]/P[,1,grp.number+1]-PQdif[,2,grp.number+1]/P[,2,grp.number+1]))
+        for (kk2 in (length(Dsco)+1):(length(Dsco)+length(Asco))){
+          FI[kk,kk2] =  FI[kk2,kk]= sum(ng[((grp.number+1)*G+1):((grp.number+2)*G)]*X[,(which(ifelse(a==0,0,1)!=0))[(kk2-length(Dsco))]]*Pstar[,1,grp.number+1]*Qstar[,1,grp.number+1]*(PQdif[,1,grp.number+1]/P[,1,grp.number+1]-PQdif[,2,grp.number+1]/P[,2,grp.number+1]))
+        }
         if (length(Gamsco)>0){
           for (kk2 in (length(Dsco)+length(Asco)+1):(length(Dsco)+length(Asco)+length(Gamsco))){
             grp.number2=which(gam!=0)[kk2-(length(Dsco)+length(Asco))]%%(y-1)
@@ -222,7 +245,7 @@ M_step=function(j,ng,rgk,grd,gra,grgamma,grbeta,max.tol,X,y.allgroup,y,G,m,eta){
               dim.number=which(gam!=0)[kk2-(length(Dsco)+length(Asco))]%/%(y-1)+1
             }
             if (grp==(grp.number+1)){
-              FI[kk,kk2] =  FI[kk2,kk]= sum(ng[((grp.number+1)*G+1):((grp.number+2)*G)]*(X%*%ifelse(a==0,0,1))*Pstar[,1,grp.number+1]*Qstar[,1,grp.number+1]*(PQdif[,1,grp.number+1]/P[,1,grp.number+1]-PQdif[,2,grp.number+1]/P[,2,grp.number+1])) #2pl only, not for GRM
+              FI[kk,kk2] =  FI[kk2,kk]= sum(ng[((grp.number+1)*G+1):((grp.number+2)*G)]*(X[,dim.number])*Pstar[,1,grp.number+1]*Qstar[,1,grp.number+1]*(PQdif[,1,grp.number+1]/P[,1,grp.number+1]-PQdif[,2,grp.number+1]/P[,2,grp.number+1])) #2pl only, not for GRM
             }
           }
         }
