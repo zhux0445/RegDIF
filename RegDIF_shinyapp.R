@@ -1,4 +1,10 @@
 #MBR three DIF functions
+library(shiny)
+library(psych)
+library(Rcpp)
+library(testit)
+library(Matrix)
+library(gtools)
 library(MASS)
 library(mirt) 
 library(cacIRT)
@@ -354,10 +360,10 @@ M_step_Adaptive=function(j,ng,rgk,grd,gra,grgamma,grgamma00,grbeta,grbeta00,max.
 
 #Starting Values
 
-  DIF_init=function(u,Group,indic){
+  DIF_init=function(resp,Group,indic,Unif){
     m=2 ##fixed, 2pl only
-    N=nrow(u)
-    J=ncol(u)
+    N=nrow(resp)
+    J=ncol(resp)
     domain=nrow(indic)
     y=length(unique(Group)) 
     y.allgroup=rbind(rep(0,y-1),diag(y-1)) 
@@ -371,33 +377,59 @@ M_step_Adaptive=function(j,ng,rgk,grd,gra,grgamma,grgamma00,grbeta,grbeta00,max.
     # defalt for no impact (when using mirt to estimate MLE, fix the mean and variance for all groups)
     COV <- matrix(TRUE,domain,domain); diag(COV)=FALSE
     model <- mirt.model(t(indic), COV=COV) ##
-    md.noncons0 <- multipleGroup(u, model, group = Group,SE=TRUE)
-    starting5new=cbind(coef(md.noncons0,simplify=T)[[1]]$items[,1:(domain+m-1)])
-    for (yy in 2:y){
-      starting5new=cbind(starting5new,coef(md.noncons0,simplify=T)[[yy]]$items[,1:domain]-coef(md.noncons0,simplify=T)[[1]]$items[,1:domain])
+    if (Unif==T){
+      md.noncons0 <- multipleGroup(u, model, group = Group,SE=TRUE,invariance=c('slopes'))
+      starting5new=cbind(coef(md.noncons0,simplify=T)[[1]]$items[,1:(domain+m-1)])
+      for (yy in 2:y){
+        starting5new=cbind(starting5new,coef(md.noncons0,simplify=T)[[yy]]$items[,domain+1]-coef(md.noncons0,simplify=T)[[1]]$items[,domain+1])
+        
+      }
+      gra00=as.matrix(starting5new[,1:domain])
+      rownames(gra00) <- c()
+      colnames(gra00) <- c()
+      grd00=matrix(starting5new[,domain+1],J,1)
+      grgamma00=array(0,dim=c((y-1),domain,J))
+      grbeta00=as.matrix(starting5new[,(domain+1+1):(domain+1+1+y-1-1)])
+      rownames(grbeta00) <- c()
+      colnames(grbeta00) <- c()
+      #Sigma0=array(double(domain*domain*y),dim = c(domain,domain,y))
+      Sigma0=matrix(0,domain*y,domain)
+      #Mu0 = matrix(0,domain,y)
+      Mu0 = numeric(domain*y)
+      for (yy in 1:y){
+        Sigma0[((yy-1)*domain+1):(yy*domain),]=coef(md.noncons0,simplify=T)[[yy]]$cov
+        #Mu0[,yy]=coef(md.noncons0,simplify=T)[[yy]]$means
+      }
+    } else {
+      md.noncons0 <- multipleGroup(u, model, group = Group,SE=TRUE)
+      starting5new=cbind(coef(md.noncons0,simplify=T)[[1]]$items[,1:(domain+m-1)])
+      for (yy in 2:y){
+        starting5new=cbind(starting5new,coef(md.noncons0,simplify=T)[[yy]]$items[,1:domain]-coef(md.noncons0,simplify=T)[[1]]$items[,1:domain])
+      }
+      for (yy in 2:y){
+        starting5new=cbind(starting5new,coef(md.noncons0,simplify=T)[[yy]]$items[,domain+1]-coef(md.noncons0,simplify=T)[[1]]$items[,domain+1])
+        
+      }
+      gra00=as.matrix(starting5new[,1:domain])
+      rownames(gra00) <- c()
+      colnames(gra00) <- c()
+      grd00=matrix(starting5new[,domain+1],J,1)
+      grgamma00=array(0,dim=c((y-1),domain,J))
+      for (yy in 2:y){
+        grgamma00[(yy-1),,]=t(starting5new[,(domain+2+(yy-2)*domain):(2*domain+1+(yy-2)*domain)])
+      }
+      grbeta00=as.matrix(starting5new[,(2*domain+2+(y-2)*domain):(2*domain+1+(y-2)*domain+m)])
+      rownames(grbeta00) <- c()
+      colnames(grbeta00) <- c()
+      #Sigma0=array(double(domain*domain*y),dim = c(domain,domain,y))
+      Sigma0=matrix(0,domain*y,domain)
+      Mu0 = matrix(0,domain,y)
+      for (yy in 1:y){
+        Sigma0[((yy-1)*domain+1):(yy*domain),]=coef(md.noncons0,simplify=T)[[yy]]$cov
+        #Mu0[,yy]=coef(md.noncons0,simplify=T)[[yy]]$means
+      }
     }
-    for (yy in 2:y){
-      starting5new=cbind(starting5new,coef(md.noncons0,simplify=T)[[yy]]$items[,domain+1]-coef(md.noncons0,simplify=T)[[1]]$items[,domain+1])
-      
-    }
-    gra00=as.matrix(starting5new[,1:domain])
-    rownames(gra00) <- c()
-    colnames(gra00) <- c()
-    grd00=matrix(starting5new[,domain+1],J,1)
-    grgamma00=array(0,dim=c((y-1),domain,J))
-    for (yy in 2:y){
-      grgamma00[(yy-1),,]=t(starting5new[,(domain+2+(yy-2)*domain):(2*domain+1+(yy-2)*domain)])
-    }
-    grbeta00=as.matrix(starting5new[,(2*domain+2+(y-2)*domain):(2*domain+1+(y-2)*domain+m)])
-    rownames(grbeta00) <- c()
-    colnames(grbeta00) <- c()
-    #Sigma0=array(double(domain*domain*y),dim = c(domain,domain,y))
-    Sigma0=matrix(0,domain*y,domain)
-    Mu0 = matrix(0,domain,y)
-    for (yy in 1:y){
-      Sigma0[((yy-1)*domain+1):(yy*domain),]=coef(md.noncons0,simplify=T)[[yy]]$cov
-      #Mu0[,yy]=coef(md.noncons0,simplify=T)[[yy]]$means
-    }
+    
     return(list(G=G,y=y,r=domain,gra00=gra00,grd00=grd00,grbeta00=grbeta00,grgamma00=grgamma00,Sigma0=Sigma0,Mu0 =Mu0))
   }
 
@@ -436,7 +468,7 @@ M_step_Adaptive=function(j,ng,rgk,grd,gra,grgamma,grgamma00,grbeta,grbeta00,max.
 ##################################################
 # 4
 
-Reg_DIF <- function(resp,Group,indic,eta,eps =1e-3,max.tol=1e-7)
+Reg_DIF <- function(resp,Group,indic,Unif,eta,eps =1e-3,max.tol=1e-7,r,y,gra00,grd00,grbeta00,grgamma00)
 {
   if (min(resp)==0){
     resp2=as.matrix(resp)
@@ -447,17 +479,7 @@ Reg_DIF <- function(resp,Group,indic,eta,eps =1e-3,max.tol=1e-7)
   N <- nrow(resp)
   J <- ncol(resp)
   #m,r,y,N.vec,gra00=NULL,grd00=NULL,grbeta00=NULL,grgamma00=NULL,Mu.list=NULL,Sig.list= NULL
-  init=DIF_init(u=resp2,Group=Group,indic=indic)
-  m=2 #fixed 2pl
-  r=init$r
-  y=init$y
-  N.vec=as.vector(table(Group))
-  gra00=init$gra00
-  grd00=init$grd00
-  grbeta00=init$grbeta00
-  grgamma00=init$grgamma00
-  Mu.list=init$Mu0
-  Sig.list=init$Sigma0
+ 
   # Gauss-Hermite quadrature nodes
   X1=seq(-3,3,by=0.2)
   G=length(X1)^r
@@ -664,7 +686,7 @@ Reg_DIF <- function(resp,Group,indic,eta,eps =1e-3,max.tol=1e-7)
 
 # 5
 
-Reg_EMM_DIF <- function(resp,Group,indic,eta,eps =1e-3,max.tol=1e-7)
+Reg_EMM_DIF <- function(resp,Group,indic,eta,Unif=F,eps =1e-3,max.tol=1e-7,r,y,gra00,grd00,grbeta00,grgamma00)
 {
   if (min(resp)==0){
     resp2=as.matrix(resp)
@@ -675,17 +697,7 @@ Reg_EMM_DIF <- function(resp,Group,indic,eta,eps =1e-3,max.tol=1e-7)
   N <- nrow(resp)
   J <- ncol(resp)
   #m,r,y,N.vec,gra00=NULL,grd00=NULL,grbeta00=NULL,grgamma00=NULL,Mu.list=NULL,Sig.list= NULL
-  init=DIF_init(u=resp2,Group=Group,indic=indic)
-  m=2 #fixed 2pl
-  r=init$r
-  y=init$y
-  N.vec=as.vector(table(Group))
-  gra00=init$gra00
-  grd00=init$grd00
-  grbeta00=init$grbeta00
-  grgamma00=init$grgamma00
-  Mu.list=init$Mu0
-  Sig.list=init$Sigma0
+  
   # Gauss-Hermite quadrature nodes
   X1=seq(-3,3,by=0.2)
   G=length(X1)^r
@@ -823,7 +835,7 @@ Reg_EMM_DIF <- function(resp,Group,indic,eta,eps =1e-3,max.tol=1e-7)
 
 # 6
 
-Reg_Adaptive_DIF <- function(resp,Group,indic,eta,lam=1,eps =1e-3,max.tol=1e-7)
+Reg_Adaptive_DIF <- function(resp,Group,indic,eta,lam=1,Unif=F,eps =1e-3,max.tol=1e-7,r,y,gra00,grd00,grbeta00,grgamma00)
 {
   if (min(resp)==0){
     resp2=as.matrix(resp)
@@ -833,18 +845,7 @@ Reg_Adaptive_DIF <- function(resp,Group,indic,eta,lam=1,eps =1e-3,max.tol=1e-7)
   }
   N <- nrow(resp)
   J <- ncol(resp)
-  #m,r,y,N.vec,gra00=NULL,grd00=NULL,grbeta00=NULL,grgamma00=NULL,Mu.list=NULL,Sig.list= NULL
-  init=DIF_init(u=resp2,Group=Group,indic=indic)
-  m=2 #fixed 2pl
-  r=init$r
-  y=init$y
-  N.vec=as.vector(table(Group))
-  gra00=init$gra00
-  grd00=init$grd00
-  grbeta00=init$grbeta00
-  grgamma00=init$grgamma00
-  Mu.list=init$Mu0
-  Sig.list=init$Sigma0
+ 
   # Gauss-Hermite quadrature nodes
   X1=seq(-3,3,by=0.2)
   G=length(X1)^r
@@ -1050,50 +1051,95 @@ Reg_Adaptive_DIF <- function(resp,Group,indic,eta,lam=1,eps =1e-3,max.tol=1e-7)
 
 
 
-reg_DIF_alllbd=function(u,indic,Group,COV,Method){
+reg_DIF_alllbd=function(resp,indic,Group,Method,Unif=F){
+  if (min(resp)==0){
+    resp2=as.matrix(resp)
+    resp=resp+1
+  } else {
+    resp2=as.matrix(resp)-1
+  }
+  init=DIF_init(resp=resp2,Group=Group,indic=indic,Unif=Unif)
+  m=2 #fixed 2pl
+  r=init$r
+  y=init$y
+  N.vec=as.vector(table(Group))
+  gra00=init$gra00
+  grd00=init$grd00
+  grbeta00=init$grbeta00
+  grgamma00=init$grgamma00
+  Mu.list=init$Mu0
+  Sig.list=init$Sigma0
+  
   person=nrow(u)
   item=ncol(u)
   domain=nrow(indic)
   y=length(unique(Group)) 
-  lbd.vec=seq(10,30,5)
+  lbd.vec=seq(10,20,5)
   bics=gics=rep(0,length(lbd.vec))
   ADmat=array(double(item*(domain+1)*length(lbd.vec)),dim = c(item,(domain+1),length(lbd.vec)))
   Gammas=array(double((y-1)*domain*item*length(lbd.vec)),dim = c((y-1),domain,item,length(lbd.vec)))
   Betas=array(double(item*(y-1)*length(lbd.vec)),dim = c(item,(y-1),length(lbd.vec)))
-  Mus=array(double(domain*y*length(lbd.vec)),dim = c(domain,y,length(lbd.vec)))
-  Sigs=array(double(domain*domain*y*length(lbd.vec)),dim = c(domain,domain,y,length(lbd.vec)))
-  for (k in 1:length(lbd.vec))
+  Mus=matrix(0,domain*y,length(lbd.vec))
+  Sigs=array(double(domain*domain*y*length(lbd.vec)),dim = c(domain*y,domain,length(lbd.vec)))
+  for (k in 1:1)
   {
     lbd=lbd.vec[k]
     #ptm <- proc.time()
     if (Method=="EM"){
-      sim=Reg_DIF(u=u,indic=indic,lbd=lbd,Group=Group)
+      sim=Reg_DIF(resp=u,indic=indic,eta=lbd,Group=Group,Unif=Unif,r=r,y=y,gra00=gra00,grd00=grd00,grbeta00=grbeta00,grgamma00=grgamma00)
     } 
     if (Method=="EMM"){
-      sim=Reg_EMM_DIF(u=u,indic=indic,lbd=lbd,Group=Group)
+      sim=Reg_EMM_DIF(resp=u,indic=indic,eta=lbd,Group=Group,Unif=Unif,r=r,y=y,gra00=gra00,grd00=grd00,grbeta00=grbeta00,grgamma00=grgamma00)
     } 
     if (Method=="Adapt"){
-      sim=Reg_Adaptive_DIF(u=u,indic=indic,lbd=lbd,Group=Group)
+      sim=Reg_EMM_DIF(resp=u,indic=indic,eta=lbd,Group=Group,Unif=Unif,r=r,y=y,gra00=gra00,grd00=grd00,grbeta00=grbeta00,grgamma00=grgamma00)
     }
     #print(proc.time() - ptm)
-    bics[k]=sim$BIC
-    gics[k]=sim$GIC
-    Gammas[,,,k]=sim$rgamma
-    Betas[,,k]=t(sim$rbeta)
-    ADmat[,,k]=t(rbind(sim$ra,sim$rb))
-    Mus[,,k]=sim$rmu
-    Sigs[,,,k]=sim$rsigma
+    bics[k]=sim$bic
+    Gammas[,,,k]=sim$Gamma
+    Betas[,,k]=sim$Beta
+    ADmat[,,k]=sim$est
+    Mus[,k]=sim$means
+    Sigs[,,k]=sim$Covs
+    
+    gra00=sim$est[,1:domain]
+    grd00=matrix(sim$est[,domain+1])
+    grbeta00=sim$Beta
+    grgamma00=sim$Gamma
+    Mu.list=sim$means
+    Sig.list=sim$Covs
+  }
+  for (k in 2:length(lbd.vec))
+  {
+    lbd=lbd.vec[k]
+    #ptm <- proc.time()
+    if (Method=="EM"){
+      sim=Reg_DIF(resp=u,indic=indic,eta=lbd,Group=Group,Unif=Unif,r=r,y=y,gra00=gra00,grd00=grd00,grbeta00=grbeta00,grgamma00=grgamma00)
+    } 
+    if (Method=="EMM"){
+      sim=Reg_EMM_DIF(resp=u,indic=indic,eta=lbd,Group=Group,Unif=Unif,r=r,y=y,gra00=gra00,grd00=grd00,grbeta00=grbeta00,grgamma00=grgamma00)
+    } 
+    if (Method=="Adapt"){
+      sim=Reg_EMM_DIF(resp=u,indic=indic,eta=lbd,Group=Group,Unif=Unif,r=r,y=y,gra00=gra00,grd00=grd00,grbeta00=grbeta00,grgamma00=grgamma00)
+    }
+    #print(proc.time() - ptm)
+    bics[k]=sim$bic
+    Gammas[,,,k]=sim$Gamma
+    Betas[,,k]=sim$Beta
+    ADmat[,,k]=sim$est
+    Mus[,k]=sim$means
+    Sigs[,,k]=sim$Covs
   }
   
-
+  #est=cbind(gra,grd),Gamma=grgamma,Beta=grbeta,iter=iter,bic=BIC, means=Mu.est,Covs=Sig.est)
     kk=which.min(bics)
     lbd=lbd.vec[kk]
     Gamma=Gammas[,,,kk]
     Beta=Betas[,,kk]
     Amat=ADmat[,1:domain,kk]
     Dmat=ADmat[,domain+1,kk]
-    Mu=Mus[,,kk]
-    Sig=Sigs[,,,kk]
+    Mu=Mus[,kk]
+    Sig=Sigs[,,kk]
     ICs=bics
     IC=bics[kk]
   
@@ -1220,6 +1266,14 @@ ui <- navbarPage("Regularized DIF",
                                           selected = "EM"),
                               
                             
+                              #Input: Select information criteria ----
+                              selectInput("Type", 
+                                          label = "Choose a DIF type",
+                                          choices = list("Uniform"='T', 
+                                                         "Non-uniform"='F'),
+                                          selected = "T"),
+                              
+                              
                               
                               
                               # Horizontal line ----
@@ -1253,10 +1307,6 @@ ui <- navbarPage("Regularized DIF",
                               # Output: Data file ----
                               tableOutput("contents2"),
                               
-                              h2("Covariance Matrix"),
-                              # Output: Data file ----
-                              tableOutput("contents3"),
-                              
                               h2("Loading indicator"),
                               # Output: Data file ----
                               tableOutput("contents4"),
@@ -1267,9 +1317,8 @@ ui <- navbarPage("Regularized DIF",
                               h2("Item Parameter Results"),
                               tableOutput("par1"),
                               
-                              h2("DIF Parameter Results"),
-                              tableOutput("difpar1"),
-                              
+                              h2("Mean Vector"),
+                              tableOutput("mean1"),
                               
                               h2("Covariance Matrix"),
                               tableOutput("cov1"),
@@ -1313,7 +1362,7 @@ server <- function(input, output,session) {
   Group<-reactive({req(input$file2)
     df <- read.csv(input$file2$datapath,
                    header = input$header2,
-                   sep = input$sep2)[,1]
+                   sep = input$sep2)
     return(df)
   })
   output$contents2 <- renderTable({
@@ -1354,6 +1403,12 @@ server <- function(input, output,session) {
     if (input$method == "Adapt") {
       Method="Adapt"
     } 
+    if (input$Type == "T") {
+      Unif="T"
+    } 
+    if (input$Type == "F") {
+      Unif="F"
+    } 
     result=reg_DIF_alllbd(u(),indic(),Group(),Method)
     return(result)
   }
@@ -1362,7 +1417,7 @@ server <- function(input, output,session) {
   output$warn<-renderText({
     input$go1
     isolate({
-      if(result0 ()$lbd == 10 || result0 ()$lbd == 30){
+      if(result0 ()$lbd == 10 || result0 ()$lbd == 20){
         return("Warning: The optimal penalty parameter may be out of range, a different gamma value is suggested")
       }else{
         return(NULL)
@@ -1372,20 +1427,10 @@ server <- function(input, output,session) {
   output$par1<-renderTable({
     input$go1
     isolate({
-      m<-cbind(result0()$Amat,result0()$Dmat)
-      colnames(m)<-c(paste("a",1:(result0()$domain),sep=""),"b")
-      return(m)
-    })
-    
-  })
-  
-  output$difpar1<-renderTable({
-    input$go1
-    isolate({
       domain=result0()$domain
       y=result0()$y
-      m=t(result0()$Gamma[1,,])
-      for (r in 2:domain){
+      m<-cbind(result0()$Amat,result0()$Dmat)
+      for (r in 1:domain){
         m<-cbind(m,t(result0()$Gamma[r,,]))
       }
       m<-cbind(m,result0()$Beta)
@@ -1393,18 +1438,28 @@ server <- function(input, output,session) {
       for(yy in 1:(y-1)){
         gp=c(gp,rep(yy,domain))
       }
-      colnames(m)<-c(paste(rep(paste("gamma",1:domain,sep=""),(y-1)),gp,sep=""),paste("beta",1:(y-1),sep=""))
+      colnames(m)<-c(paste("a",1:(result0()$domain),sep=""),"b",paste(rep(paste("gamma",1:domain,sep=""),(y-1)),gp,sep=""),paste("beta",1:(y-1),sep=""))
       return(m)
     })
     
   })
   
+  output$mean1<-renderTable({
+    input$go1
+    isolate({
+      m<-matrix(result0()$Mu)
+      rownames(m)<-paste("group",rep(1:(result0()$y),each=result0()$domain)," dimension",rep(1:(result0()$domain),result0()$y),sep="")
+      return(m)
+    })
+    
+  })
   
   output$cov1<-renderTable({
     input$go1
     isolate({
       m<-result0()$Sig
-      #rownames(m)<-colnames(m)<-paste("dimension",1:(result0()$domain),sep="")
+      colnames(m)<-paste("dimension",1:(result0()$domain),sep="")
+      rownames(m)<-paste("group",rep(1:(result0()$y),each=result0()$domain)," dimension",rep(1:(result0()$domain),result0()$y),sep="")
       return(m)
     })
     
@@ -1415,7 +1470,7 @@ server <- function(input, output,session) {
     input$go1
     isolate({
       #plot(result0()$ICs,xlab="Tuning parameter",ylab="Information Criteria")
-      plot(seq(10,30,5),result0()$ICs,xlab="Tuning parameter",ylab="Information Criteria")
+      plot(seq(10,20,5),result0$ICs,type = "b",xlab="Tuning parameter",ylab="Information Criteria")
     })
   })
   #Downloadable csv of selected dataset ----
@@ -1430,12 +1485,26 @@ server <- function(input, output,session) {
     content = function(file) {
       if(input$checkGroup1=="all"){
         saveRDS(result0(), file)}else if(input$checkGroup1=="item"){
+          domain=result0()$domain
+          y=result0()$y
           m<-cbind(result0()$Amat,result0()$Dmat)
-          colnames(m)<-c(paste("a",1:(result0()$domain),sep=""),"b")
+          for (r in 1:domain){
+            m<-cbind(m,t(result0()$Gamma[r,,]))
+          }
+          m<-cbind(m,result0()$Beta)
+          gp=NULL
+          for(yy in 1:(y-1)){
+            gp=c(gp,rep(yy,domain))
+          }
+          colnames(m)<-c(paste("a",1:(result0()$domain),sep=""),"b",paste(rep(paste("gamma",1:domain,sep=""),(y-1)),gp,sep=""),paste("beta",1:(y-1),sep=""))
+          
           write.csv(m,file,row.names = F)
         }else if(input$checkGroup1=="cov"){
-          m<-result0()$rsigma
-          rownames(m)<-colnames(m)<-paste("dimension",1:(result0()$domain),sep="")
+          m1<-matrix(result0()$Mu)
+          m2<-result0()$Sig
+          m=cbind(m1,m2)
+          colnames(m)<-c(paste("Mean"),paste("Var dimension",1:(result0()$domain),sep=""))
+          rownames(m)<-paste("group",rep(1:(result0()$y),each=result0()$domain)," dimension",rep(1:(result0()$domain),result0()$y),sep="")
           write.csv(m,file,row.names = F)
         }
     }
