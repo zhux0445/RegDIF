@@ -20,7 +20,7 @@ soft=function(s, tau) {
   val=sign(s)*max(c(abs(s) - tau,0))
   return(val) }
 
-M_step=function(j,ng,rgk,grd,gra,grgamma,grbeta,max.tol,X,y.allgroup,y,G,m,eta){
+M_step=function(j,ng,rgk,grd,gra,grgamma,grbeta,max.tol,X,y.allgroup,y,G,m,eta,r){
   d <- grd[j,] 
   a <- gra[j,]
   gam=grgamma[,,j]
@@ -177,7 +177,7 @@ M_step=function(j,ng,rgk,grd,gra,grgamma,grbeta,max.tol,X,y.allgroup,y,G,m,eta){
   return(c(d=d,a=a,gam=gam,bet=bet))
   #end of M step loop
 }
-M_step_Adaptive=function(j,ng,rgk,grd,gra,grgamma,grgamma00,grbeta,grbeta00,max.tol,X,y.allgroup,y,G,m,eta,lam){
+M_step_Adaptive=function(j,ng,rgk,grd,gra,grgamma,grgamma00,grbeta,grbeta00,max.tol,X,y.allgroup,y,G,m,eta,lam,r){
   d <- grd[j,] 
   a <- gra[j,]
   gam=grgamma[,,j]
@@ -378,7 +378,7 @@ M_step_Adaptive=function(j,ng,rgk,grd,gra,grgamma,grgamma00,grbeta,grbeta00,max.
     COV <- matrix(TRUE,domain,domain); diag(COV)=FALSE
     model <- mirt.model(t(indic), COV=COV) ##
     if (Unif==T){
-      md.noncons0 <- multipleGroup(u, model, group = Group,SE=TRUE,invariance=c('slopes'))
+      md.noncons0 <- multipleGroup(resp, model, group = Group,SE=TRUE,invariance=c('slopes'))
       starting5new=cbind(coef(md.noncons0,simplify=T)[[1]]$items[,1:(domain+m-1)])
       for (yy in 2:y){
         starting5new=cbind(starting5new,coef(md.noncons0,simplify=T)[[yy]]$items[,domain+1]-coef(md.noncons0,simplify=T)[[1]]$items[,domain+1])
@@ -468,7 +468,7 @@ M_step_Adaptive=function(j,ng,rgk,grd,gra,grgamma,grgamma00,grbeta,grbeta00,max.
 ##################################################
 # 4
 
-Reg_DIF <- function(resp,Group,indic,Unif,eta,eps =1e-3,max.tol=1e-7,r,y,gra00,grd00,grbeta00,grgamma00)
+Reg_DIF <- function(resp,Group,indic,Unif,eta,eps =1e-3,max.tol=1e-7,r,y,N.vec=N.vec,gra00,grd00,grbeta00,grgamma00,Mu.list,Sig.list)
 {
   if (min(resp)==0){
     resp2=as.matrix(resp)
@@ -478,6 +478,7 @@ Reg_DIF <- function(resp,Group,indic,Unif,eta,eps =1e-3,max.tol=1e-7,r,y,gra00,g
   }
   N <- nrow(resp)
   J <- ncol(resp)
+  m=2 #fixed 2pl
   #m,r,y,N.vec,gra00=NULL,grd00=NULL,grbeta00=NULL,grgamma00=NULL,Mu.list=NULL,Sig.list= NULL
  
   # Gauss-Hermite quadrature nodes
@@ -549,7 +550,7 @@ Reg_DIF <- function(resp,Group,indic,Unif,eta,eps =1e-3,max.tol=1e-7,r,y,gra00,g
     
     for (j in 1:J){
       rgk=rgkest(j=j,Xijk=Xijk,LiA=LiA,y=y,Nvec=N.vec,G=G,N=N,m=m)
-      estj=M_step(j=j,ng=ng,rgk=rgk,grd=grd,gra=gra,grgamma=grgamma,grbeta=grbeta,max.tol=max.tol,X=X,y.allgroup=y.allgroup,y=y,G=G,m=m,eta=eta)
+      estj=M_step(j=j,ng=ng,rgk=rgk,grd=grd,gra=gra,grgamma=grgamma,grbeta=grbeta,max.tol=max.tol,X=X,y.allgroup=y.allgroup,y=y,G=G,m=m,eta=eta,r=r)
       gra[j,] <- estj[m:(m+r-1)]*Tau  # re-scale a and gamma
       grd[j,] <- estj[1:(m-1)]
       grgamma[,,j] <- matrix(estj[(m+r):(m+r+r*(y-1)-1)],y-1,r)*matrix(rep(Tau,(y-1)),y-1,r,byrow = T)
@@ -630,7 +631,7 @@ Reg_DIF <- function(resp,Group,indic,Unif,eta,eps =1e-3,max.tol=1e-7,r,y,gra00,g
       rgk=rgkest(j=j,Xijk=Xijk,LiA=LiA,y=y,Nvec=N.vec,G=G,N=N,m=m)
       Pstar <- Qstar <- array(double(G*(m-1)*(y)),dim=c(G,m-1,y))
       P<- array(double(G*m*(y)),dim=c(G,m,y))
-      estj=M_step(j=j,ng=ng,rgk=rgk,grd=grd,gra=gra,grgamma=grgamma,grbeta=grbeta,max.tol=max.tol,X=X,y.allgroup=y.allgroup,y=y,G=G,m=m,eta=0)
+      estj=M_step(j=j,ng=ng,rgk=rgk,grd=grd,gra=gra,grgamma=grgamma,grbeta=grbeta,max.tol=max.tol,X=X,y.allgroup=y.allgroup,y=y,G=G,m=m,eta=0,r=r)
       gra[j,] <- estj[m:(m+r-1)]*Tau  # re-scale a and gamma
       grd[j,] <- estj[1:(m-1)]
       grgamma[,,j] <- matrix(estj[(m+r):(m+r+r*(y-1)-1)],y-1,r)*matrix(rep(Tau,(y-1)),y-1,r,byrow = T)
@@ -686,7 +687,7 @@ Reg_DIF <- function(resp,Group,indic,Unif,eta,eps =1e-3,max.tol=1e-7,r,y,gra00,g
 
 # 5
 
-Reg_EMM_DIF <- function(resp,Group,indic,eta,Unif=F,eps =1e-3,max.tol=1e-7,r,y,gra00,grd00,grbeta00,grgamma00)
+Reg_EMM_DIF <- function(resp,Group,indic,eta,Unif=F,eps =1e-3,max.tol=1e-7,r,y,N.vec=N.vec,gra00,grd00,grbeta00,grgamma00,Mu.list,Sig.list)
 {
   if (min(resp)==0){
     resp2=as.matrix(resp)
@@ -697,7 +698,7 @@ Reg_EMM_DIF <- function(resp,Group,indic,eta,Unif=F,eps =1e-3,max.tol=1e-7,r,y,g
   N <- nrow(resp)
   J <- ncol(resp)
   #m,r,y,N.vec,gra00=NULL,grd00=NULL,grbeta00=NULL,grgamma00=NULL,Mu.list=NULL,Sig.list= NULL
-  
+  m=2 #fixed 2pl
   # Gauss-Hermite quadrature nodes
   X1=seq(-3,3,by=0.2)
   G=length(X1)^r
@@ -764,7 +765,7 @@ Reg_EMM_DIF <- function(resp,Group,indic,eta,Unif=F,eps =1e-3,max.tol=1e-7,r,y,g
     
     for (j in 1:J){
       rgk=rgkest(j=j,Xijk=Xijk,LiA=LiA,y=y,Nvec=N.vec,G=G,N=N,m=m)
-      estj=M_step(j=j,ng=ng,rgk=rgk,grd=grd,gra=gra,grgamma=grgamma,grbeta=grbeta,max.tol=max.tol,X=X,y.allgroup=y.allgroup,y=y,G=G,m=m,eta=eta)
+      estj=M_step(j=j,ng=ng,rgk=rgk,grd=grd,gra=gra,grgamma=grgamma,grbeta=grbeta,max.tol=max.tol,X=X,y.allgroup=y.allgroup,y=y,G=G,m=m,eta=eta,r=r)
       gra[j,] <- estj[m:(m+r-1)]*Tau  # re-scale a and gamma
       grd[j,] <- estj[1:(m-1)]
       grgamma[,,j] <- matrix(estj[(m+r):(m+r+r*(y-1)-1)],y-1,r)*matrix(rep(Tau,(y-1)),y-1,r,byrow = T)
@@ -778,7 +779,7 @@ Reg_EMM_DIF <- function(resp,Group,indic,eta,Unif=F,eps =1e-3,max.tol=1e-7,r,y,g
     for (j in 1:J){
       rgk=rgkest(j=j,Xijk=Xijk,LiA=LiA,y=y,Nvec=N.vec,G=G,N=N,m=m)
       #estj2=M_step2(j=j,ng=ng,rgk=rgk,grd=grd,gra=gra,grgamma=grgamma,grbeta=grbeta,max.tol=max.tol,X=X,y.allgroup=y.allgroup,y=y,G=G,m=m,eta=eta)
-      estj=M_step(j=j,ng=ng,rgk=rgk,grd=grd,gra=gra,grgamma=grgamma,grbeta=grbeta,max.tol=max.tol,X=X,y.allgroup=y.allgroup,y=y,G=G,m=m,eta=0)
+      estj=M_step(j=j,ng=ng,rgk=rgk,grd=grd,gra=gra,grgamma=grgamma,grbeta=grbeta,max.tol=max.tol,X=X,y.allgroup=y.allgroup,y=y,G=G,m=m,eta=0,r=r)
       gra[j,] <- estj[m:(m+r-1)]*Tau  # re-scale a and gamma
       grd[j,] <- estj[1:(m-1)]
       grgamma[,,j] <- matrix(estj[(m+r):(m+r+r*(y-1)-1)],y-1,r)*matrix(rep(Tau,(y-1)),y-1,r,byrow = T)
@@ -835,7 +836,7 @@ Reg_EMM_DIF <- function(resp,Group,indic,eta,Unif=F,eps =1e-3,max.tol=1e-7,r,y,g
 
 # 6
 
-Reg_Adaptive_DIF <- function(resp,Group,indic,eta,lam=1,Unif=F,eps =1e-3,max.tol=1e-7,r,y,gra00,grd00,grbeta00,grgamma00)
+Reg_Adaptive_DIF <- function(resp,Group,indic,eta,lam=1,Unif=F,eps =1e-3,max.tol=1e-7,r,y,N.vec=N.vec,gra00,grd00,grbeta00,grgamma00,Mu.list,Sig.list)
 {
   if (min(resp)==0){
     resp2=as.matrix(resp)
@@ -845,7 +846,7 @@ Reg_Adaptive_DIF <- function(resp,Group,indic,eta,lam=1,Unif=F,eps =1e-3,max.tol
   }
   N <- nrow(resp)
   J <- ncol(resp)
- 
+  m=2 #fixed 2pl
   # Gauss-Hermite quadrature nodes
   X1=seq(-3,3,by=0.2)
   G=length(X1)^r
@@ -912,7 +913,7 @@ Reg_Adaptive_DIF <- function(resp,Group,indic,eta,lam=1,Unif=F,eps =1e-3,max.tol
     
     for (j in 1:J){
       rgk=rgkest(j=j,Xijk=Xijk,LiA=LiA,y=y,Nvec=N.vec,G=G,N=N,m=m)
-      estj=M_step_Adaptive(j=j,ng=ng,rgk=rgk,grd=grd,gra=gra,grgamma=grgamma,grgamma00=grgamma00,grbeta=grbeta,grbeta00=grbeta00,max.tol=max.tol,X=X,y.allgroup=y.allgroup,y=y,G=G,m=m,eta=eta,lam=lam)
+      estj=M_step_Adaptive(j=j,ng=ng,rgk=rgk,grd=grd,gra=gra,grgamma=grgamma,grgamma00=grgamma00,grbeta=grbeta,grbeta00=grbeta00,max.tol=max.tol,X=X,y.allgroup=y.allgroup,y=y,G=G,m=m,eta=eta,lam=lam,r=r)
       gra[j,] <- estj[m:(m+r-1)]*Tau  # re-scale a and gamma
       grd[j,] <- estj[1:(m-1)]
       grgamma[,,j] <- matrix(estj[(m+r):(m+r+r*(y-1)-1)],y-1,r)*matrix(rep(Tau,(y-1)),y-1,r,byrow = T)
@@ -993,7 +994,7 @@ Reg_Adaptive_DIF <- function(resp,Group,indic,eta,lam=1,Unif=F,eps =1e-3,max.tol
       rgk=rgkest(j=j,Xijk=Xijk,LiA=LiA,y=y,Nvec=N.vec,G=G,N=N,m=m)
       Pstar <- Qstar <- array(double(G*(m-1)*(y)),dim=c(G,m-1,y))
       P<- array(double(G*m*(y)),dim=c(G,m,y))
-      estj=M_step_Adaptive(j=j,ng=ng,rgk=rgk,grd=grd,gra=gra,grgamma=grgamma,grgamma00=grgamma00,grbeta=grbeta,grbeta00=grbeta00,max.tol=max.tol,X=X,y.allgroup=y.allgroup,y=y,G=G,m=m,eta=0,lam=lam)
+      estj=M_step_Adaptive(j=j,ng=ng,rgk=rgk,grd=grd,gra=gra,grgamma=grgamma,grgamma00=grgamma00,grbeta=grbeta,grbeta00=grbeta00,max.tol=max.tol,X=X,y.allgroup=y.allgroup,y=y,G=G,m=m,eta=0,lam=lam,r=r)
       gra[j,] <- estj[m:(m+r-1)]*Tau  # re-scale a and gamma
       grd[j,] <- estj[1:(m-1)]
       grgamma[,,j] <- matrix(estj[(m+r):(m+r+r*(y-1)-1)],y-1,r)*matrix(rep(Tau,(y-1)),y-1,r,byrow = T)
@@ -1070,8 +1071,8 @@ reg_DIF_alllbd=function(resp,indic,Group,Method,Unif=F){
   Mu.list=init$Mu0
   Sig.list=init$Sigma0
   
-  person=nrow(u)
-  item=ncol(u)
+  person=nrow(resp)
+  item=ncol(resp)
   domain=nrow(indic)
   y=length(unique(Group)) 
   lbd.vec=seq(10,20,5)
@@ -1086,13 +1087,13 @@ reg_DIF_alllbd=function(resp,indic,Group,Method,Unif=F){
     lbd=lbd.vec[k]
     #ptm <- proc.time()
     if (Method=="EM"){
-      sim=Reg_DIF(resp=u,indic=indic,eta=lbd,Group=Group,Unif=Unif,r=r,y=y,gra00=gra00,grd00=grd00,grbeta00=grbeta00,grgamma00=grgamma00)
+      sim=Reg_DIF(resp=resp,indic=indic,eta=lbd,Group=Group,Unif=Unif,r=r,y=y,N.vec=N.vec,gra00=gra00,grd00=grd00,grbeta00=grbeta00,grgamma00=grgamma00,Mu.list=Mu.list,Sig.list=Sig.list)
     } 
     if (Method=="EMM"){
-      sim=Reg_EMM_DIF(resp=u,indic=indic,eta=lbd,Group=Group,Unif=Unif,r=r,y=y,gra00=gra00,grd00=grd00,grbeta00=grbeta00,grgamma00=grgamma00)
+      sim=Reg_EMM_DIF(resp=resp,indic=indic,eta=lbd,Group=Group,Unif=Unif,r=r,y=y,N.vec=N.vec,gra00=gra00,grd00=grd00,grbeta00=grbeta00,grgamma00=grgamma00,Mu.list=Mu.list,Sig.list=Sig.list)
     } 
     if (Method=="Adapt"){
-      sim=Reg_EMM_DIF(resp=u,indic=indic,eta=lbd,Group=Group,Unif=Unif,r=r,y=y,gra00=gra00,grd00=grd00,grbeta00=grbeta00,grgamma00=grgamma00)
+      sim=Reg_EMM_DIF(resp=resp,indic=indic,eta=lbd,Group=Group,Unif=Unif,r=r,y=y,N.vec=N.vec,gra00=gra00,grd00=grd00,grbeta00=grbeta00,grgamma00=grgamma00,Mu.list=Mu.list,Sig.list=Sig.list)
     }
     #print(proc.time() - ptm)
     bics[k]=sim$bic
@@ -1114,13 +1115,13 @@ reg_DIF_alllbd=function(resp,indic,Group,Method,Unif=F){
     lbd=lbd.vec[k]
     #ptm <- proc.time()
     if (Method=="EM"){
-      sim=Reg_DIF(resp=u,indic=indic,eta=lbd,Group=Group,Unif=Unif,r=r,y=y,gra00=gra00,grd00=grd00,grbeta00=grbeta00,grgamma00=grgamma00)
+      sim=Reg_DIF(resp=resp,indic=indic,eta=lbd,Group=Group,Unif=Unif,r=r,y=y,N.vec=N.vec,gra00=gra00,grd00=grd00,grbeta00=grbeta00,grgamma00=grgamma00,Mu.list=Mu.list,Sig.list=Sig.list)
     } 
     if (Method=="EMM"){
-      sim=Reg_EMM_DIF(resp=u,indic=indic,eta=lbd,Group=Group,Unif=Unif,r=r,y=y,gra00=gra00,grd00=grd00,grbeta00=grbeta00,grgamma00=grgamma00)
+      sim=Reg_EMM_DIF(resp=resp,indic=indic,eta=lbd,Group=Group,Unif=Unif,r=r,y=y,N.vec=N.vec,gra00=gra00,grd00=grd00,grbeta00=grbeta00,grgamma00=grgamma00,Mu.list=Mu.list,Sig.list=Sig.list)
     } 
     if (Method=="Adapt"){
-      sim=Reg_EMM_DIF(resp=u,indic=indic,eta=lbd,Group=Group,Unif=Unif,r=r,y=y,gra00=gra00,grd00=grd00,grbeta00=grbeta00,grgamma00=grgamma00)
+      sim=Reg_EMM_DIF(resp=resp,indic=indic,eta=lbd,Group=Group,Unif=Unif,r=r,y=y,N.vec=N.vec,gra00=gra00,grd00=grd00,grbeta00=grbeta00,grgamma00=grgamma00,Mu.list=Mu.list,Sig.list=Sig.list)
     }
     #print(proc.time() - ptm)
     bics[k]=sim$bic
