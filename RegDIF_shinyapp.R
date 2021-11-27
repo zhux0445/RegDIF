@@ -15,7 +15,7 @@ library(Rcpp)
 library(RcppParallel)
 library(RcppArmadillo)
 
-sourceCpp("/Users/ruoyizhu/Documents/GitHub/RegDIF/Reg_DIF_EM.cpp")
+sourceCpp("/Users/zhux0445/Documents/GitHub/RegDIF/Reg_DIF_EM.cpp")
 soft=function(s, tau) {
   val=sign(s)*max(c(abs(s) - tau,0))
   return(val) }
@@ -1325,7 +1325,7 @@ ui <- navbarPage("Regularized DIF",
                               
                               
                               h2("Information Criteria"),
-                              plotOutput("plot"),
+                              plotOutput("plot1"),
                               
                             )
                             
@@ -1362,12 +1362,12 @@ server <- function(input, output,session) {
   Group<-reactive({req(input$file2)
     df <- read.csv(input$file2$datapath,
                    header = input$header2,
-                   sep = input$sep2)
+                   sep = input$sep2)[,1]
     return(df)
   })
   output$contents2 <- renderTable({
     if(input$disp2 == "head") {
-      return(Group()[1:6])
+      return(Group()[1:6,])
     }
     else {
       return(Group())
@@ -1409,7 +1409,7 @@ server <- function(input, output,session) {
     if (input$Type == "F") {
       Unif="F"
     } 
-    result=reg_DIF_alllbd(u(),indic(),Group(),Method)
+    result=reg_DIF_alllbd(u(),indic(),Group(),Method,Unif)
     return(result)
   }
   )
@@ -1466,11 +1466,12 @@ server <- function(input, output,session) {
   })
   
   
-  output$plot <- renderPlot({
+  output$plot1 <- renderPlot({
     input$go1
     isolate({
       #plot(result0()$ICs,xlab="Tuning parameter",ylab="Information Criteria")
-      plot(seq(10,20,5),result0$ICs,type = "b",xlab="Tuning parameter",ylab="Information Criteria")
+      m=plot(seq(10,20,5),result0()$ICs,xlab="Tuning parameter",ylab="Information Criteria")
+      return(m)
     })
   })
   #Downloadable csv of selected dataset ----
@@ -1499,7 +1500,7 @@ server <- function(input, output,session) {
           colnames(m)<-c(paste("a",1:(result0()$domain),sep=""),"b",paste(rep(paste("gamma",1:domain,sep=""),(y-1)),gp,sep=""),paste("beta",1:(y-1),sep=""))
           
           write.csv(m,file,row.names = F)
-        }else if(input$checkGroup1=="cov"){
+        } else (input$checkGroup1=="cov"){
           m1<-matrix(result0()$Mu)
           m2<-result0()$Sig
           m=cbind(m1,m2)
