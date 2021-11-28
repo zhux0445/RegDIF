@@ -30,7 +30,14 @@ arma::mat sumoverk (int G, arma::mat rgky, arma::rowvec aj, arma::rowvec dj,arma
   }
   return (sumoverky);
 }
+'
+sourceCpp(code=sumoverk)
 
+ngest<-'
+// [[Rcpp::depends(RcppArmadillo, RcppEigen)]]
+#include <RcppArmadillo.h>
+#include <RcppEigen.h>
+using namespace arma;
 // [[Rcpp::export]]
 arma::rowvec ngest (arma::mat LiA, int y, arma::uvec Nvec, int G){
   arma::mat Pi = sum(LiA,1);
@@ -42,7 +49,14 @@ arma::rowvec ngest (arma::mat LiA, int y, arma::uvec Nvec, int G){
   }
   return(join_horiz(ng,ngallgrp));
 }
+'
+sourceCpp(code=ngest)
 
+rgkest<-'
+// [[Rcpp::depends(RcppArmadillo, RcppEigen)]]
+#include <RcppArmadillo.h>
+#include <RcppEigen.h>
+using namespace arma;
 // [[Rcpp::export]]
 arma::mat rgkest (int j, arma::cube Xijk, arma::mat LiA, int y, arma::vec Nvec, int G, int N, int m){
   arma::mat Pi = sum(LiA,1);
@@ -62,7 +76,15 @@ arma::mat rgkest (int j, arma::cube Xijk, arma::mat LiA, int y, arma::vec Nvec, 
   }
   return(rgk);
 }
+'
+sourceCpp(code=rgkest)
 
+
+eigenMapMatMult<-'
+// [[Rcpp::depends(RcppArmadillo, RcppEigen)]]
+#include <RcppArmadillo.h>
+#include <RcppEigen.h>
+using namespace arma;
 // [[Rcpp::export]]
 SEXP eigenMapMatMult(const Eigen::Map<Eigen::MatrixXd> A, Eigen::Map<Eigen::MatrixXd> B){
   Eigen::MatrixXd C = A * B;
@@ -70,7 +92,15 @@ SEXP eigenMapMatMult(const Eigen::Map<Eigen::MatrixXd> A, Eigen::Map<Eigen::Matr
   return Rcpp::wrap(C);
 }
 
+'
+sourceCpp(code=eigenMapMatMult)
 
+
+E_step1<-'
+// [[Rcpp::depends(RcppArmadillo, RcppEigen)]]
+#include <RcppArmadillo.h>
+#include <RcppEigen.h>
+using namespace arma;
 // [[Rcpp::export]]
 arma::mat E_step1 (arma::mat resp, arma::vec Nvec, arma::mat X, int y, int G, arma::mat yallgroup, arma::mat Mulist, arma::cube Siglist, arma::mat gra, arma::mat grd, arma::mat grbeta, arma::cube grgamma,int r, int J, int m, int N)
 {
@@ -127,8 +157,15 @@ arma::mat E_step1 (arma::mat resp, arma::vec Nvec, arma::mat X, int y, int G, ar
   }
   return(LiA);
 }
+'
+sourceCpp(code=E_step1)
 
 
+scocal<-'
+// [[Rcpp::depends(RcppArmadillo, RcppEigen)]]
+#include <RcppArmadillo.h>
+#include <RcppEigen.h>
+using namespace arma;
 // [[Rcpp::export]]
 arma::mat scocal(int j, arma::rowvec ng, arma::mat rgk, arma::rowvec a, arma::rowvec d, arma::rowvec bet, arma::mat gam, double maxtol,arma::mat X, arma::mat yallgroup, int y, int G, int r, int m, int eta)
 {
@@ -212,7 +249,7 @@ arma::mat scocal(int j, arma::rowvec ng, arma::mat rgk, arma::rowvec a, arma::ro
   return(minusgrad);
 }
 '
-sourceCpp(code=sumoverk)
+sourceCpp(code=scocal)
 
 soft=function(s, tau) {
   val=sign(s)*max(c(abs(s) - tau,0))
