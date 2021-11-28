@@ -15,7 +15,6 @@ library(Rcpp)
 library(RcppParallel)
 library(RcppArmadillo)
 
-<<<<<<< HEAD
 sumoverk<-'
 // [[Rcpp::depends(RcppArmadillo, RcppEigen)]]
 #include <RcppArmadillo.h>
@@ -252,9 +251,6 @@ arma::mat scocal(int j, arma::rowvec ng, arma::mat rgk, arma::rowvec a, arma::ro
 '
 sourceCpp(code=scocal)
 
-=======
-sourceCpp("/Users/zhux0445/Documents/GitHub/RegDIF/Reg_DIF_EM.cpp")
->>>>>>> parent of 64b1425 (Update RegDIF_shinyapp.R)
 soft=function(s, tau) {
   val=sign(s)*max(c(abs(s) - tau,0))
   return(val) }
@@ -1291,7 +1287,7 @@ Reg_Adaptive_DIF <- function(resp,Group,indic,eta,lam=1,Unif=F,eps =1e-3,max.tol
 
 
 
-reg_DIF_alllbd=function(resp,indic,Group,Method,Unif=F){
+reg_DIF_alllbd=function(resp,indic,Group,Method,Unif=F,updateProgress=NULL){
   if (min(resp)==0){
     resp2=as.matrix(resp)
     resp=resp+1
@@ -1323,6 +1319,10 @@ reg_DIF_alllbd=function(resp,indic,Group,Method,Unif=F){
   Sigs=array(double(domain*domain*y*length(lbd.vec)),dim = c(domain*y,domain,length(lbd.vec)))
   for (k in 1:1)
   {
+    if (is.function(updateProgress)) {
+      text <- paste0("k=:", k)
+      updateProgress(detail = text)
+    }
     lbd=lbd.vec[k]
     #ptm <- proc.time()
     if (Method=="EM"){
@@ -1500,9 +1500,9 @@ ui <- navbarPage("Regularized DIF",
                               #Input: Select Reg_DIF methods ----
                               selectInput("method", 
                                           label = "Choose a regulariztion algorithm",
-                                          choices = list("lasso GVEM"='EM', 
-                                                         "lasso GVEMM"='EMM',
-                                                         "Adaptive lasso GVEM"="Adapt"),
+                                          choices = list("lasso EM"='EM', 
+                                                         "lasso EMM"='EMM',
+                                                         "Adaptive lasso EM"="Adapt"),
                                           selected = "EM"),
                               
                             
@@ -1574,7 +1574,7 @@ ui <- navbarPage("Regularized DIF",
 
 # Define server logic to read selected file ----
 server <- function(input, output,session) {
-  url <- a("Regularized DIF (EM algorithms)", href="https://www.google.com/")
+  url <- a("Regularized DIF (GVEM algorithms)", href="https://www.google.com/")
   output$tab <- renderUI({
     tagList("Other Functions:", url)
   })
@@ -1607,7 +1607,7 @@ server <- function(input, output,session) {
   })
   output$contents2 <- renderTable({
     if(input$disp2 == "head") {
-      return(Group()[1:6,])
+      return(Group()[1:6])
     }
     else {
       return(Group())
@@ -1633,7 +1633,13 @@ server <- function(input, output,session) {
     progress$set(message = "Iteration times", value = 0)
     # Close the progress when this reactive exits (even if there's an error)
     on.exit(progress$close())
-    
+    updateProgress <- function(value = NULL, detail = NULL) {
+      if (is.null(value)) {
+        value <- progress$getValue()
+        value <- value + (progress$getMax() - value) / 10
+      }
+      progress$set(value = value, detail = detail)
+    }
     if (input$method == "EM") {
       Method="EM"
     } 
@@ -1649,7 +1655,7 @@ server <- function(input, output,session) {
     if (input$Type == "F") {
       Unif="F"
     } 
-    result=reg_DIF_alllbd(u(),indic(),Group(),Method,Unif)
+    result=reg_DIF_alllbd(u(),indic(),Group(),Method,Unif,updateProgress)
     return(result)
   })
   
@@ -1708,8 +1714,9 @@ server <- function(input, output,session) {
   output$plot <- renderPlot({
     input$go1
     isolate({
-    m=result0()$ICs
-    plot(m)
+    bic=result0()$ICs
+    eta=seq(10,20,5)
+    plot(eta,bic)
     })
   })
   #Downloadable csv of selected dataset ----
@@ -1736,7 +1743,7 @@ server <- function(input, output,session) {
             gp=c(gp,rep(yy,domain))
           }
           colnames(m)<-c(paste("a",1:(result0()$domain),sep=""),"b",paste(rep(paste("gamma",1:domain,sep=""),(y-1)),gp,sep=""),paste("beta",1:(y-1),sep=""))
-          
+          rownames<-c(paste("Item",1:ncol(indic),sep=""))
           write.csv(m,file,row.names = F)
         }else if(input$checkGroup1=="cov"){
           m1<-matrix(result0()$Mu)
