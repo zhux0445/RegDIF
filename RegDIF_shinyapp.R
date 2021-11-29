@@ -14,6 +14,7 @@ library(dmutate)
 library(Rcpp)
 library(RcppParallel)
 library(RcppArmadillo)
+library(RcppEigen)
 
 sumoverk<-'
 // [[Rcpp::depends(RcppArmadillo, RcppEigen)]]
@@ -1781,3 +1782,4 @@ shinyApp(ui, server)
 
 #username: uwpmetrics  (or uwpmetrics@gmail.com)
 # password: COE_psychometrics21
+
