@@ -2,7 +2,7 @@
 #include <RcppEigen.h>
 
 using namespace arma;
-
+using namespace Rcpp;
 
 
 // [[Rcpp::depends(RcppArmadillo, RcppEigen)]]
@@ -263,7 +263,7 @@ arma::mat scocal(int j, arma::rowvec ng, arma::mat rgk, arma::rowvec a, arma::ro
 }
 
 //[[Rcpp::export]]
-List M_step(int j, arma::rowvec ng, arma::mat rgk, arma::mat gra, arma::mat grd, arma::mat grbeta, arma::cube grgamma, double maxtol,arma::mat X, arma::mat yallgroup, int y, int G, int r, int m, int eta)
+List Mstep(int j, arma::rowvec ng, arma::mat rgk, arma::mat gra, arma::mat grd, arma::mat grbeta, arma::cube grgamma, double maxtol,arma::mat X, arma::mat yallgroup, int y, int G, int r, int m, int eta)
 {
   arma::rowvec d=grd.row(j-1);
   arma::rowvec a=gra.row(j-1);

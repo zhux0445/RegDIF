@@ -271,167 +271,287 @@ arma::mat scocal(int j, arma::rowvec ng, arma::mat rgk, arma::rowvec a, arma::ro
 '
 sourceCpp(code=scocal)
 
+
+Mstep<-'
+// [[Rcpp::depends(RcppArmadillo, RcppEigen)]]
+#include <RcppArmadillo.h>
+#include <RcppEigen.h>
+using namespace arma;
+using namespace Rcpp;
+
+//[[Rcpp::export]]
+double soft2(double s, double tau){
+  arma::vec v1=zeros<arma::vec>(2);
+  v1(1)=abs(s)-tau;
+  double val=sign(s)* v1.max();
+  return(val);
+}
+
+//[[Rcpp::export]]
+List Mstep(int j, arma::rowvec ng, arma::mat rgk, arma::mat gra, arma::mat grd, arma::mat grbeta, arma::cube grgamma, double maxtol,arma::mat X, arma::mat yallgroup, int y, int G, int r, int m, int eta)
+{
+  arma::rowvec d=grd.row(j-1);
+  arma::rowvec a=gra.row(j-1);
+  arma::mat gam=grgamma.slice(j-1);
+  arma::rowvec bet=grbeta.row(j-1);
+  arma::cube Pstar=zeros<cube>(G,(m-1),y);
+  arma::cube Qstar=zeros<cube>(G,(m-1),y);
+  arma::cube P=zeros<cube>(G,m,y); 
+  
+  int miter=0;
+  for(miter=0; miter<500; miter++){
+    miter++;
+    for(int yy=0; yy<y; yy++){
+      for(int g = 0; g < G; g++){
+        (Pstar.slice(yy)).row(g)=1/(1+exp(-(d+a*(X.row(g)).t()+ yallgroup.row(yy)*bet.t()+yallgroup.row(yy)*gam*X.row(g).t())));
+        (P.slice(yy)).row(g)=-diff(join_horiz(ones<colvec>(1),(Pstar.slice(yy)).row(g),zeros<colvec>(1)),1,1);
+      }
+    }
+    Qstar=ones<cube>(G,(m-1),y)-Pstar;
+    arma::rowvec Dsco=zeros<rowvec>(m-1);
+    for (int yy=0; yy<y; yy++){
+      Dsco += sum(diff(rgk.rows((yy+1)*G,(yy+2)*G-1)/P.slice(yy),1,1)%Pstar.slice(yy)%Qstar.slice(yy));
+    }
+    arma::cube PQdif=zeros<cube>(G,m,y); 
+    for (int yy=0; yy<y; yy++){
+      PQdif.slice(yy)=-diff(join_horiz(zeros<colvec>(G),Pstar.slice(yy)%Qstar.slice(yy),zeros<colvec>(G)),1,1);
+    }
+    
+    int len=0;
+    for (int kk=0; kk<r; kk++){
+      if (a(kk)!=0){
+        len++;
+      }
+    }
+    
+    arma::rowvec Ascoall=zeros<rowvec>(a.n_elem);
+    arma::rowvec a01=a;
+    for (int kk=0; kk<r; kk++){
+      if (a(kk)!=0){
+        a01(kk)=1;
+      }
+    }
+    for (int yy=0; yy<y; yy++){
+      Ascoall += (sum(rgk.rows((yy+1)*G,(yy+2)*G-1)/P.slice(yy)%PQdif.slice(yy),1).t()*X);
+    }
+    arma::vec Asco=Ascoall(find(a!=0));
+    int len2=0;
+    for (int kk=0; kk<r; kk++){
+      for (int mm=0; mm<(y-1); mm++){
+        if (gam(kk,mm)!=0){
+          len2++;
+        }
+      }
+    }
+    arma::mat Gamscoall=gam;
+    for (int yy=1; yy<y; yy++){
+      Gamscoall.row(yy-1)=(sum(rgk.rows((yy+1)*G,(yy+2)*G-1)/P.slice(yy)%PQdif.slice(yy),1)).t()*X;
+    }
+    for (int kk=0; kk<r; kk++){
+      for (int mm=0; mm<(y-1); mm++){
+        if (gam(kk,mm)==0){
+          Gamscoall(kk,mm)=0;
+        }
+      }
+    }
+    arma::vec Gamsco=Gamscoall.elem(find(gam!=0));
+    int len3=0;
+    for (int mm=0; mm<(y-1); mm++){
+      if (bet(mm)!=0){
+        len3++;
+      }
+    }
+    arma::rowvec Betscoall=bet;
+    for (int yy=1; yy<y; yy++){
+      Betscoall.subvec(yy-1,yy-1) = sum(diff(rgk.rows((yy+1)*G,(yy+2)*G-1)/P.slice(yy),1,1)%Pstar.slice(yy)%Qstar.slice(yy),0);
+    }
+    for (int mm=0; mm<2; mm++){
+      if (bet(mm)==0){
+        Betscoall(mm)=0;
+      }
+    }
+    arma::vec Betsco=Betscoall.elem(find(Betscoall!=0));
+    arma::rowvec minusgrad = -join_horiz(Dsco,Asco.t(),Gamsco.t(),Betsco.t());
+    
+    arma::mat FI =zeros<arma::mat>( minusgrad.n_elem, minusgrad.n_elem);
+    
+    for (int yy=0; yy<y; yy++){
+      ( FI.row(0)).subvec(0,0) = ( FI.row(0)).subvec(0,0)+ (-sum(ng.subvec(((yy+1)*G),((yy+2)*G-1)).t()%square(Pstar.slice(yy)%Qstar.slice(yy))%(1/(P.slice(yy)).col(0)+1/(P.slice(yy)).col(1))));
+    }
+    for (int kk1=1; kk1<(Asco.n_elem+1); kk1++){
+      uvec ind1=find(a!=0);
+      int ind2=kk1-1;
+      int ind3=ind1(ind2);
+      for (int kk2=1; kk2<(Asco.n_elem+1); kk2++){
+        int ind4=kk2-1;
+        int ind5=ind1(ind4);
+        for (int yy=0; yy<y; yy++){
+          ( FI.row(kk1)).subvec(kk2,kk2) = ( FI.row(kk1)).subvec(kk2,kk2)+ (-sum(ng.subvec(((yy+1)*G),((yy+2)*G-1)).t()%(X.col(ind3))%(X.col(ind5))%sum(square(PQdif.slice(yy))/P.slice(yy),1)));
+        }
+      }
+      for (int yy=0; yy<y; yy++){
+        ( FI.row(kk1)).subvec(0,0) = ( FI.row(kk1)).subvec(0,0)+ sum(ng.subvec(((yy+1)*G),((yy+2)*G-1)).t()%(X.col(ind3))%Pstar.slice(yy)%Qstar.slice(yy)%((PQdif.slice(yy)).col(0)/(P.slice(yy)).col(0)-(PQdif.slice(yy)).col(1)/(P.slice(yy)).col(1)));
+        FI(0,kk1)=FI(kk1,0);
+      }
+    }
+    if (len2>0){
+      for (int kk=(1+Asco.n_elem); kk<(1+Asco.n_elem+len2); kk++){
+        uvec ind1=find(gam!=0);
+        int ind2=kk-(1+Asco.n_elem);
+        int ind3=ind1(ind2);
+        int grpnumber=(ind3+1)-floor((ind3+1)/(y-1))*(y-1);
+        if (grpnumber==0){
+          int grp=y;
+          int dimnumber=(ind3+1)/(y-1);
+          for (int kk1=(1+Asco.n_elem); kk1<(1+Asco.n_elem+len2); kk1++){
+            uvec ind12=find(gam!=0);
+            int ind22=kk1-(1+Asco.n_elem);
+            int ind32=ind12(ind22);
+            int grpnumber2=(ind32+1)-floor((ind32+1)/(y-1))*(y-1);
+            if (grpnumber2==0){
+              int grp2=y;
+              int dimnumber2=(ind32+1)/(y-1);
+              if (grp==grp2){
+                ( FI.row(kk)).subvec(kk1,kk1) = (-sum(ng.subvec((grp*G),((grp+1)*G-1)).t()%(X.col(dimnumber-1))%(X.col(dimnumber2-1))%sum(square(PQdif.slice(grp-1))/P.slice(grp-1),1)));
+              }
+            } else {
+              int grp2=grpnumber2+1;
+              int dimnumber2=floor((ind32+1)/(y-1))+1;
+              if (grp==grp2){
+                ( FI.row(kk)).subvec(kk1,kk1) = (-sum(ng.subvec((grp*G),((grp+1)*G-1)).t()%(X.col(dimnumber-1))%(X.col(dimnumber2-1))%sum(square(PQdif.slice(grp-1))/P.slice(grp-1),1)));
+              }
+            }
+          }
+          for (int kk2=1; kk2<(Asco.n_elem+1); kk2++){
+            uvec ind13=find(a!=0);
+            int ind23=kk2-1;
+            int ind33=ind13(ind23);
+            ( FI.row(kk)).subvec(kk2,kk2) = (-sum(ng.subvec(((grp)*G),((grp+1)*G-1)).t()%(X.col(ind33))%(X.col(dimnumber-1))%sum(square(PQdif.slice(grp-1))/P.slice(grp-1),1)));
+            ( FI.row(kk2)).subvec(kk,kk) = ( FI.row(kk)).subvec(kk2,kk2);
+          }
+          ( FI.row(kk)).subvec(0,0)=sum(ng.subvec((grp*G),((grp+1)*G-1)).t()%(X.col(dimnumber-1))%Pstar.slice(grp-1)%Qstar.slice(grp-1)%((PQdif.slice(grp-1)).col(0)/(P.slice(grp-1)).col(0)-(PQdif.slice(grp-1)).col(1)/(P.slice(grp-1)).col(1)));
+          FI(0,kk)=FI(kk,0);
+        } else {
+          int grp=grpnumber+1;
+          int dimnumber=floor((ind3+1)/(y-1))+1;
+          for (int kk1=(1+Asco.n_elem); kk1<(1+Asco.n_elem+len2); kk1++){
+            uvec ind12=find(gam!=0);
+            int ind22=kk1-(1+Asco.n_elem);
+            int ind32=ind12(ind22);
+            int grpnumber2=(ind32+1)-floor((ind32+1)/(y-1))*(y-1);
+            if (grpnumber2==0){
+              int grp2=y;
+              int dimnumber2=(ind32+1)/(y-1);
+              if (grp==grp2){
+                ( FI.row(kk)).subvec(kk1,kk1) = (-sum(ng.subvec((grp*G),((grp+1)*G-1)).t()%(X.col(dimnumber-1))%(X.col(dimnumber2-1))%sum(square(PQdif.slice(grp-1))/P.slice(grp-1),1)));
+              }
+            } else {
+              int grp2=grpnumber2+1;
+              int dimnumber2=floor((ind32+1)/(y-1))+1;
+              if (grp==grp2){
+                ( FI.row(kk)).subvec(kk1,kk1) = (-sum(ng.subvec((grp*G),((grp+1)*G-1)).t()%(X.col(dimnumber-1))%(X.col(dimnumber2-1))%sum(square(PQdif.slice(grp-1))/P.slice(grp-1),1)));
+              }
+            }
+          }
+          for (int kk2=1; kk2<(Asco.n_elem+1); kk2++){
+            uvec ind13=find(a!=0);
+            int ind23=kk2-1;
+            int ind33=ind13(ind23);
+            ( FI.row(kk)).subvec(kk2,kk2) = (-sum(ng.subvec(((grp)*G),((grp+1)*G-1)).t()%(X.col(ind33))%(X.col(dimnumber-1))%sum(square(PQdif.slice(grp-1))/P.slice(grp-1),1)));
+            ( FI.row(kk2)).subvec(kk,kk) = ( FI.row(kk)).subvec(kk2,kk2);
+          }
+          ( FI.row(kk)).subvec(0,0)=sum(ng.subvec((grp*G),((grp+1)*G-1)).t()%(X.col(dimnumber-1))%Pstar.slice(grp-1)%Qstar.slice(grp-1)%((PQdif.slice(grp-1)).col(0)/(P.slice(grp-1)).col(0)-(PQdif.slice(grp-1)).col(1)/(P.slice(grp-1)).col(1)));
+          FI(0,kk)=FI(kk,0);
+        }
+      }
+    }
+    if (len3>0){
+      for (int kk=(1+len+len2); kk<(1+len+len2+len3); kk++){
+        uvec ind1=find(bet!=0);
+        int ind2=kk-(1+len+len2);
+        int ind3=ind1(ind2);
+        int grpnumber=ind3;
+        ( FI.row(kk)).subvec(kk,kk) = (-sum(ng.subvec(((grpnumber+2)*G),((grpnumber+3)*G-1)).t()%square((Pstar.slice(grpnumber+1)).col(0)%(Qstar.slice(grpnumber+1)).col(0))%(1/(P.slice(grpnumber+1)).col(0)+1/(P.slice(grpnumber+1)).col(1))));
+        FI(kk,0)=FI(kk,kk);
+        FI(0,kk)=FI(kk,kk);
+        for (int kk2=1; kk2<(Asco.n_elem+1); kk2++){
+          uvec ind13=find(a!=0);
+          int ind23=kk2-1;
+          int ind33=ind13(ind23);
+          ( FI.row(kk)).subvec(kk2,kk2) = sum(ng.subvec(((grpnumber+2)*G),((grpnumber+3)*G-1)).t()%(X.col(ind33))%Pstar.slice(grpnumber+1)%Qstar.slice(grpnumber+1)%((PQdif.slice(grpnumber+1)).col(0)/(P.slice(grpnumber+1)).col(0)-(PQdif.slice(grpnumber+1)).col(1)/(P.slice(grpnumber+1)).col(1)));
+          ( FI.row(kk2)).subvec(kk,kk) = ( FI.row(kk)).subvec(kk2,kk2);
+        }
+        if (len2>0){
+          for (int kk3=(1+Asco.n_elem); kk3<(1+Asco.n_elem+len2); kk3++){
+            uvec ind14=find(gam!=0);
+            int ind24=kk3-(1+Asco.n_elem);
+            int ind34=ind14(ind24);
+            int grpnumber2=(ind34+1)-floor((ind34+1)/(y-1))*(y-1);
+            if (grpnumber2==0){
+              int grp=y;
+              int dimnumber=(ind34+1)/(y-1);
+              if (grp==(grpnumber+2)){
+                ( FI.row(kk)).subvec(kk3,kk3) = sum(ng.subvec(((grpnumber+2)*G),((grpnumber+3)*G-1)).t()%(X.col(dimnumber-1))%Pstar.slice(grpnumber+1)%Qstar.slice(grpnumber+1)%((PQdif.slice(grpnumber+1)).col(0)/(P.slice(grpnumber+1)).col(0)-(PQdif.slice(grpnumber+1)).col(1)/(P.slice(grpnumber+1)).col(1)));
+                ( FI.row(kk3)).subvec(kk,kk) = ( FI.row(kk)).subvec(kk3,kk3);
+              }
+            } else {
+              int grp=grpnumber2+1;
+              int dimnumber=floor((ind34+1)/(y-1))+1;
+              if (grp==(grpnumber+2)){
+                ( FI.row(kk)).subvec(kk3,kk3) = sum(ng.subvec(((grpnumber+2)*G),((grpnumber+3)*G-1)).t()%(X.col(dimnumber-1))%Pstar.slice(grpnumber+1)%Qstar.slice(grpnumber+1)%((PQdif.slice(grpnumber+1)).col(0)/(P.slice(grpnumber+1)).col(0)-(PQdif.slice(grpnumber+1)).col(1)/(P.slice(grpnumber+1)).col(1)));
+                ( FI.row(kk3)).subvec(kk,kk) = ( FI.row(kk)).subvec(kk3,kk3);
+              }
+            }
+          }
+        }
+      }
+    }
+    arma::rowvec add=minusgrad*inv(FI);
+    d=d+add(0);
+    a(find(a!=0))=a(find(a!=0))+add.subvec(1,len);
+    if (len2>0){
+      arma::mat gam0=gam;
+      gam0(find(gam!=0))=gam(find(gam!=0))+add.subvec(len+1,len+len2).t();
+      for (int mm=(len+1); mm<(len+len2+1); mm++){
+        int ind1=mm-(len+1);
+        uvec ind2=find(gam!=0);
+        int ind3=ind2(ind1);
+        double sgam=gam0(ind3);
+        double taugam=-eta/FI(mm,mm);
+        add(mm)=soft2(sgam,taugam)-gam(ind3);
+      }
+      gam(find(gam!=0))=gam(find(gam!=0))+(add.subvec(len+1,len+len2)).t();
+    }
+    
+    if (len3>0){
+      arma::rowvec bet0=bet;
+      bet0(find(bet!=0))=bet(find(bet!=0))+add.subvec(len+len2+1,len+len2+len3).t();
+      for (int mm=(len+len2+1); mm<(len+len2+len3+1); mm++){
+        int ind1=mm-(len+len2+1);
+        uvec ind2=find(bet!=0);
+        int ind3=ind2(ind1);
+        double sbet=bet0(ind3);
+        double taubet=-eta/FI(mm,mm);
+        add(mm)=soft2(sbet,taubet)-bet(ind3);
+      }
+      bet(find(bet!=0))=bet(find(bet!=0))+add.subvec(len+len2+1,len+len2+len3).t();
+    }
+    
+    if(sum(abs(add))<maxtol){
+      break;
+    }
+  }
+  return List::create(Named("d") = d,Named("a") = a,
+                      Named("gam") = gam,Named("bet") = bet);
+}
+'
+sourceCpp(code=Mstep)
+
+
 soft=function(s, tau) {
   val=sign(s)*max(c(abs(s) - tau,0))
   return(val) }
 
-M_step=function(j,ng,rgk,grd,gra,grgamma,grbeta,max.tol,X,y.allgroup,y,G,m,eta,r){
-  d <- grd[j,] 
-  a <- gra[j,]
-  gam=grgamma[,,j]
-  bet=grbeta[j,]
-  Pstar <- Qstar <- array(double(G*(m-1)*(y)),dim=c(G,m-1,y))
-  P<- array(double(G*m*(y)),dim=c(G,m,y))
-  #M-step loop starts for item j
-  miter <- 0
-  add <- max.tol+1
-  while(sum(abs(add))>max.tol)
-  {
-    miter <- miter+1
-    for  (yy in 1:y){
-      for(g in 1:G){
-        Pstar[g,,yy] <- 1/(1+exp(-(d+rep(a%*%X[g,])+y.allgroup[yy,]%*%bet+rep((y.allgroup[yy,]%*%gam)%*%X[g,]))))
-        P[g,,yy] <- -diff(c(1,Pstar[g,,yy],0))
-      }
-    }
-    Qstar <- 1-Pstar
-    
-    PQdif=array(double(G*m*y),dim=c(G,m,y))
-    for (yy in 1:y){
-      PQdif[,,yy] <- -t(apply(cbind(0,Pstar[,,yy]*Qstar[,,yy],0),1, diff))
-    }
-    
-    Dsco=numeric(length(d));Asco=numeric(sum(a!=0));Gamsco=numeric(sum(gam!=0));Betsco=numeric(sum(bet!=0))
-    minusgrad <- scocal(j=j,ng=ng,rgk=rgk,d=d,a=a,gam=gam,bet=bet,maxtol=max.tol,X=X,yallgroup=y.allgroup,y=y,G=G,m=m,r=r,eta=eta)
-    
-    FI <- matrix(0,length(minusgrad),length(minusgrad))
-    for (kk in 1:length(Dsco)){
-      for (yy in 1:y){
-        FI[kk,kk] = FI[kk,kk]+ (-sum(ng[(yy*G+1):(yy*G+G)]*(Pstar[,kk,yy]*Qstar[,kk,yy])^2*(1/P[,kk,yy]+1/P[,kk+1,yy])))
-      }
-    }
-    if (m>2){
-      for (mm in 2:(m-1)){
-        FI[mm,mm-1] <-FI[mm-1,mm] <- sum(ng*Pstar[,mm]*Qstar[,mm]*Pstar[,mm-1]*Qstar[,mm-1]*(1/P[,mm]))#(2,1),(3,2)
-      }
-      #for (mm in 1:(m-2)){
-      #  FI[mm,mm+1] <-  sum(ng*Pstar[,mm]*Qstar[,mm]*Pstar[,mm+1]*Qstar[,mm+1]*(1/P[,mm+1]))#(1,2),(2,3)
-      #}
-    }
-    for (kk1 in (length(Dsco)+1):(length(Dsco)+length(Asco))){
-      for (kk2 in (length(Dsco)+1):(length(Dsco)+length(Asco))){
-        for (yy in 1:y){
-          FI[kk1,kk2] = FI[kk1,kk2]+ (-sum(ng[(yy*G+1):(yy*G+G)]*((X[,(which(ifelse(a==0,0,1)!=0))[(kk1-length(Dsco))]]))*X[,(which(ifelse(a==0,0,1)!=0))[(kk2-length(Dsco))]]*apply(PQdif[,,yy]^2/P[,,yy],1,sum)))
-        }
-      }
-      for (bb in 1:length(Dsco)){
-        for (yy in 1:y){
-          FI[kk1,bb] <-  FI[kk1,bb]+ sum(ng[(yy*G+1):(yy*G+G)]*X[,(which(ifelse(a==0,0,1)!=0))[(kk1-length(Dsco))]]*(Pstar[,bb,yy]*Qstar[,bb,yy])*(PQdif[,bb,yy]/P[,bb,yy]-PQdif[,bb+1,yy]/P[,bb+1,yy]))
-        }
-        FI[bb,kk1] <-  FI[kk1,bb]
-      }
-      #if (length(Asco)>1){
-      #  n.cross=choose(length(Asco),2)
-      #  for (c in 1:n.cross){
-      #    for (yy in 1:y){
-      #      FI[kk,kk] = FI[kk,kk]+ (-sum(ng[(yy*G+1):(yy*G+G)]*(X%*%ifelse(a==0,0,1))[,(kk-length(Dsco))]*(X%*%ifelse(a==0,0,1))[,(kk-length(Dsco))]*apply(PQdif[,,yy]^2/P[,,yy],1,sum)))
-      #    }
-      #  }
-      #}
-    }
-    
-    if (length(Gamsco)>0){
-      for (kk in (length(Dsco)+length(Asco)+1):(length(Dsco)+length(Asco)+length(Gamsco))){
-        grp.number=which(gam!=0)[kk-(length(Dsco)+length(Asco))]%%(y-1)
-        if (grp.number==0){
-          grp=y
-          dim.number=which(gam!=0)[kk-(length(Dsco)+length(Asco))]/(y-1)
-        } else {
-          grp=grp.number+1
-          dim.number=which(gam!=0)[kk-(length(Dsco)+length(Asco))]%/%(y-1)+1
-        }
-        
-        for (kk1 in (length(Dsco)+length(Asco)+1):(length(Dsco)+length(Asco)+length(Gamsco))){
-          grp.number2=which(gam!=0)[kk1-(length(Dsco)+length(Asco))]%%(y-1)
-          if (grp.number2==0){
-            grp2=y
-            dim.number2=which(gam!=0)[kk1-(length(Dsco)+length(Asco))]/(y-1)
-          } else {
-            grp2=grp.number2+1
-            dim.number2=which(gam!=0)[kk1-(length(Dsco)+length(Asco))]%/%(y-1)+1
-          }
-          if (grp==grp2){
-            FI[kk,kk1] = -sum(ng[(grp*G+1):(grp*G+G)]*X[,dim.number]*X[,dim.number2]*apply(PQdif[,,grp]^2/P[,,grp],1,sum))
-          }
-        }  
-        
-        for (kk2 in (length(Dsco)+1):(length(Dsco)+length(Asco))){
-          FI[kk,kk2]= FI[kk2,kk]= -sum(ng[(grp*G+1):(grp*G+G)]*X[,(which(ifelse(a==0,0,1)!=0))[(kk2-length(Dsco))]]*X[,dim.number]*apply(PQdif[,,grp]^2/P[,,grp],1,sum))
-        }
-        
-        #if (length(Asco)>1){
-        #  for (aa in 1:length(asco)){
-        #    FI[kk,aa] = FI[aa,kk]=-sum(ng[(grp*G+1):(grp*G+G)]*X[,dim.number]*X[,aa]*apply(PQdif[,,grp]^2/P[,,grp],1,sum))
-        #  }
-        #}
-        for (dd in 1:length(Dsco)){
-          FI[kk,dd]=FI[dd,kk]=sum(ng[(grp*G+1):(grp*G+G)]*X[,dim.number]*Pstar[,dd,grp]*Qstar[,dd,grp]*(PQdif[,dd,grp]/P[,dd,grp]-PQdif[,dd+1,grp]/P[,dd+1,grp])) #GRM
-        }
-      }
-    }
-    
-    if (length(Betsco)>0){
-      for (kk in (length(Dsco)+length(Asco)+length(Gamsco)+1):(length(Dsco)+length(Asco)+length(Gamsco)+length(Betsco))){
-        grp.number=which(bet!=0)[kk-(length(Dsco)+length(Asco)+length(Gamsco))]
-        FI[kk,kk] =  FI[kk,m-1] =  FI[m-1,kk]= (-sum(ng[((grp.number+1)*G+1):((grp.number+2)*G)]*(Pstar[,1,grp.number+1]*Qstar[,1,grp.number+1])^2*(1/P[,1,grp.number+1]+1/P[,m,grp.number+1])))
-        for (kk2 in (length(Dsco)+1):(length(Dsco)+length(Asco))){
-          FI[kk,kk2] =  FI[kk2,kk]= sum(ng[((grp.number+1)*G+1):((grp.number+2)*G)]*X[,(which(ifelse(a==0,0,1)!=0))[(kk2-length(Dsco))]]*Pstar[,1,grp.number+1]*Qstar[,1,grp.number+1]*(PQdif[,1,grp.number+1]/P[,1,grp.number+1]-PQdif[,2,grp.number+1]/P[,2,grp.number+1]))
-        }
-        if (length(Gamsco)>0){
-          for (kk2 in (length(Dsco)+length(Asco)+1):(length(Dsco)+length(Asco)+length(Gamsco))){
-            grp.number2=which(gam!=0)[kk2-(length(Dsco)+length(Asco))]%%(y-1)
-            if (grp.number2==0){
-              grp=y
-              dim.number=which(gam!=0)[kk2-(length(Dsco)+length(Asco))]/(y-1)
-            } else {
-              grp=grp.number2+1
-              dim.number=which(gam!=0)[kk2-(length(Dsco)+length(Asco))]%/%(y-1)+1
-            }
-            if (grp==(grp.number+1)){
-              FI[kk,kk2] =  FI[kk2,kk]= sum(ng[((grp.number+1)*G+1):((grp.number+2)*G)]*(X[,dim.number])*Pstar[,1,grp.number+1]*Qstar[,1,grp.number+1]*(PQdif[,1,grp.number+1]/P[,1,grp.number+1]-PQdif[,2,grp.number+1]/P[,2,grp.number+1])) #2pl only, not for GRM
-            }
-          }
-        }
-      }
-    }
-    
-    
-    add <- qr.solve(FI,t(minusgrad))
-    d=d+add[1:(m-1)]
-    a[which(a!=0)]= a[which(a!=0)]+add[(length(Dsco)+1):(length(Dsco)+length(Asco))]
-    if (length(Gamsco)>0){
-      gam0=gam
-      gam0[which(gam!=0)]=gam[which(gam!=0)]+add[(length(Dsco)+length(Asco)+1):(length(Dsco)+length(Asco)+length(Gamsco))]
-      for (mm in (length(Dsco)+length(Asco)+1):(length(Dsco)+length(Asco)+length(Gamsco))){
-        add[mm]=soft(  (gam0[which(gam!=0)])[mm-(length(Dsco)+length(Asco))],-eta/FI[mm,mm])- (gam[which(gam!=0)])[mm-(length(Dsco)+length(Asco))]
-      }
-      gam[which(gam!=0)]=gam[which(gam!=0)]+add[(length(Dsco)+length(Asco)+1):(length(Dsco)+length(Asco)+length(Gamsco))]
-      
-    }
-    if (length(Betsco)>0){
-      bet0=bet
-      bet0[which(bet!=0)]=bet[which(bet!=0)]+add[(length(Dsco)+length(Asco)+length(Gamsco)+1):(length(Dsco)+length(Asco)+length(Gamsco)+length(Betsco))]
-      for (mm in (length(Dsco)+length(Asco)+length(Gamsco)+1):(length(Dsco)+length(Asco)+length(Gamsco)+length(Betsco))){
-        add[mm]=soft(  (bet0[which(bet!=0)])[mm-(length(Dsco)+length(Asco)+length(Gamsco))],-eta/FI[mm,mm])- (bet[which(bet!=0)])[mm-(length(Dsco)+length(Asco)+length(Gamsco))]
-      }
-      bet[which(bet!=0)]=bet[which(bet!=0)]+add[(length(Dsco)+length(Asco)+length(Gamsco)+1):(length(Dsco)+length(Asco)+length(Gamsco)+length(Betsco))]
-      
-    }
-    #print(c(miter,add))
-  }
-  return(c(d=d,a=a,gam=gam,bet=bet))
-  #end of M step loop
-}
 M_step_Adaptive=function(j,ng,rgk,grd,gra,grgamma,grgamma00,grbeta,grbeta00,max.tol,X,y.allgroup,y,G,m,eta,lam,r){
   d <- grd[j,] 
   a <- gra[j,]
@@ -805,16 +925,16 @@ Reg_DIF <- function(resp,Group,indic,Unif,eta,eps =1e-3,max.tol=1e-7,r,y,N.vec=N
     
     for (j in 1:J){
       rgk=rgkest(j=j,Xijk=Xijk,LiA=LiA,y=y,Nvec=N.vec,G=G,N=N,m=m)
-      estj=M_step(j=j,ng=ng,rgk=rgk,grd=grd,gra=gra,grgamma=grgamma,grbeta=grbeta,max.tol=max.tol,X=X,y.allgroup=y.allgroup,y=y,G=G,m=m,eta=eta,r=r)
-      gra[j,] <- estj[m:(m+r-1)]*Tau  # re-scale a and gamma
-      grd[j,] <- estj[1:(m-1)]
-      grgamma[,,j] <- matrix(estj[(m+r):(m+r+r*(y-1)-1)],y-1,r)*matrix(rep(Tau,(y-1)),y-1,r,byrow = T)
-      grbeta[j,] <- estj[(m+r+r*(y-1)):(m+r+r*(y-1)+(m-1)*(y-1)-1)]
-      #estj=M_step(j=j,ng=ng,rgk=rgk,grd=grd,gra=gra,grgamma=grgamma,grbeta=grbeta,maxtol=max.tol,X=X,yallgroup=y.allgroup,y=y,G=G,m=m,eta=eta,r=r,J=J)
-      #gra[j,] <- estj$a*Tau  # re-scale a and gamma
-      #grd[j,] <- estj$d
-      #grgamma[,,j] <- estj$gam*matrix(rep(Tau,(y-1)),y-1,r,byrow = T)
-      #grbeta[j,] <- estj$bet
+      #estj=Mstep(j=j,ng=ng,rgk=rgk,gra=gra,grd=grd,grbeta=grbeta,grgamma=grgamma,max.tol=max.tol,X=X,y.allgroup=y.allgroup,y=y,G=G,m=m,eta=eta,r=r)
+      #gra[j,] <- estj[m:(m+r-1)]*Tau  # re-scale a and gamma
+      #grd[j,] <- estj[1:(m-1)]
+      #grgamma[,,j] <- matrix(estj[(m+r):(m+r+r*(y-1)-1)],y-1,r)*matrix(rep(Tau,(y-1)),y-1,r,byrow = T)
+      #grbeta[j,] <- estj[(m+r+r*(y-1)):(m+r+r*(y-1)+(m-1)*(y-1)-1)]
+      estj=Mstep(j=j,ng=ng,rgk=rgk,gra=gra,grd=grd,grbeta=grbeta,grgamma=grgamma,maxtol=max.tol,X=X,yallgroup=y.allgroup,y=y,G=G,m=m,eta=eta,r=r)
+      gra[j,] <- estj$a*Tau  # re-scale a and gamma
+      grd[j,] <- estj$d
+      grgamma[,,j] <- estj$gam*matrix(rep(Tau,(y-1)),y-1,r,byrow = T)
+      grbeta[j,] <- estj$bet
     }
     df.d <- abs(dold-grd)
     df.a <- abs(aold-gra)
@@ -886,16 +1006,16 @@ Reg_DIF <- function(resp,Group,indic,Unif,eta,eps =1e-3,max.tol=1e-7,r,y,N.vec=N
       rgk=rgkest(j=j,Xijk=Xijk,LiA=LiA,y=y,Nvec=N.vec,G=G,N=N,m=m)
       Pstar <- Qstar <- array(double(G*(m-1)*(y)),dim=c(G,m-1,y))
       P<- array(double(G*m*(y)),dim=c(G,m,y))
-      estj=M_step(j=j,ng=ng,rgk=rgk,grd=grd,gra=gra,grgamma=grgamma,grbeta=grbeta,max.tol=max.tol,X=X,y.allgroup=y.allgroup,y=y,G=G,m=m,eta=0,r=r)
-      gra[j,] <- estj[m:(m+r-1)]*Tau  # re-scale a and gamma
-      grd[j,] <- estj[1:(m-1)]
-      grgamma[,,j] <- matrix(estj[(m+r):(m+r+r*(y-1)-1)],y-1,r)*matrix(rep(Tau,(y-1)),y-1,r,byrow = T)
-      grbeta[j,] <- estj[(m+r+r*(y-1)):(m+r+r*(y-1)+(m-1)*(y-1)-1)]
-      #estj=M_step(j=j,ng=ng,rgk=rgk,grd=grd,gra=gra,grgamma=grgamma,grbeta=grbeta,maxtol=max.tol,X=X,yallgroup=y.allgroup,y=y,G=G,m=m,eta=0,r=r,J=J)
-      #gra[j,] <- estj$a*Tau  # re-scale a and gamma
-      #grd[j,] <- estj$d
-      #grgamma[,,j] <- estj$gam*matrix(rep(Tau,(y-1)),y-1,r,byrow = T)
-      #grbeta[j,] <- estj$bet
+      #estj=M_step(j=j,ng=ng,rgk=rgk,grd=grd,gra=gra,grgamma=grgamma,grbeta=grbeta,max.tol=max.tol,X=X,y.allgroup=y.allgroup,y=y,G=G,m=m,eta=0,r=r)
+      #gra[j,] <- estj[m:(m+r-1)]*Tau  # re-scale a and gamma
+      #grd[j,] <- estj[1:(m-1)]
+      #grgamma[,,j] <- matrix(estj[(m+r):(m+r+r*(y-1)-1)],y-1,r)*matrix(rep(Tau,(y-1)),y-1,r,byrow = T)
+      #grbeta[j,] <- estj[(m+r+r*(y-1)):(m+r+r*(y-1)+(m-1)*(y-1)-1)]
+      estj=Mstep(j=j,ng=ng,rgk=rgk,gra=gra,grd=grd,grbeta=grbeta,grgamma=grgamma,maxtol=max.tol,X=X,yallgroup=y.allgroup,y=y,G=G,m=m,eta=0,r=r)
+      gra[j,] <- estj$a*Tau  # re-scale a and gamma
+      grd[j,] <- estj$d
+      grgamma[,,j] <- estj$gam*matrix(rep(Tau,(y-1)),y-1,r,byrow = T)
+      grbeta[j,] <- estj$bet
     }
     df.d <- abs(dold-grd)
     df.a <- abs(aold-gra)
@@ -1020,30 +1140,29 @@ Reg_EMM_DIF <- function(resp,Group,indic,eta,Unif=F,eps =1e-3,max.tol=1e-7,r,y,N
     
     for (j in 1:J){
       rgk=rgkest(j=j,Xijk=Xijk,LiA=LiA,y=y,Nvec=N.vec,G=G,N=N,m=m)
-      estj=M_step(j=j,ng=ng,rgk=rgk,grd=grd,gra=gra,grgamma=grgamma,grbeta=grbeta,max.tol=max.tol,X=X,y.allgroup=y.allgroup,y=y,G=G,m=m,eta=eta,r=r)
-      gra[j,] <- estj[m:(m+r-1)]*Tau  # re-scale a and gamma
-      grd[j,] <- estj[1:(m-1)]
-      grgamma[,,j] <- matrix(estj[(m+r):(m+r+r*(y-1)-1)],y-1,r)*matrix(rep(Tau,(y-1)),y-1,r,byrow = T)
-      grbeta[j,] <- estj[(m+r+r*(y-1)):(m+r+r*(y-1)+(m-1)*(y-1)-1)]
-      #estj=M_step(j=j,ng=ng,rgk=rgk,grd=grd,gra=gra,grgamma=grgamma,grbeta=grbeta,maxtol=max.tol,X=X,yallgroup=y.allgroup,y=y,G=G,m=m,eta=eta,r=r,J=J)
-      #gra[j,] <- estj$a*Tau  # re-scale a and gamma
-      #grd[j,] <- estj$d
-      #grgamma[,,j] <- estj$gam*matrix(rep(Tau,(y-1)),y-1,r,byrow = T)
-      #grbeta[j,] <- estj$bet
+      #estj=M_step(j=j,ng=ng,rgk=rgk,grd=grd,gra=gra,grgamma=grgamma,grbeta=grbeta,max.tol=max.tol,X=X,y.allgroup=y.allgroup,y=y,G=G,m=m,eta=eta,r=r)
+      #gra[j,] <- estj[m:(m+r-1)]*Tau  # re-scale a and gamma
+      #grd[j,] <- estj[1:(m-1)]
+      #grgamma[,,j] <- matrix(estj[(m+r):(m+r+r*(y-1)-1)],y-1,r)*matrix(rep(Tau,(y-1)),y-1,r,byrow = T)
+      #grbeta[j,] <- estj[(m+r+r*(y-1)):(m+r+r*(y-1)+(m-1)*(y-1)-1)]
+      estj=Mstep(j=j,ng=ng,rgk=rgk,gra=gra,grd=grd,grbeta=grbeta,grgamma=grgamma,maxtol=max.tol,X=X,yallgroup=y.allgroup,y=y,G=G,m=m,eta=eta,r=r)
+      gra[j,] <- estj$a*Tau  # re-scale a and gamma
+      grd[j,] <- estj$d
+      grgamma[,,j] <- estj$gam*matrix(rep(Tau,(y-1)),y-1,r,byrow = T)
+      grbeta[j,] <- estj$bet
     }
     for (j in 1:J){
       rgk=rgkest(j=j,Xijk=Xijk,LiA=LiA,y=y,Nvec=N.vec,G=G,N=N,m=m)
-      #estj2=M_step2(j=j,ng=ng,rgk=rgk,grd=grd,gra=gra,grgamma=grgamma,grbeta=grbeta,max.tol=max.tol,X=X,y.allgroup=y.allgroup,y=y,G=G,m=m,eta=eta)
-      estj=M_step(j=j,ng=ng,rgk=rgk,grd=grd,gra=gra,grgamma=grgamma,grbeta=grbeta,max.tol=max.tol,X=X,y.allgroup=y.allgroup,y=y,G=G,m=m,eta=0,r=r)
-      gra[j,] <- estj[m:(m+r-1)]*Tau  # re-scale a and gamma
-      grd[j,] <- estj[1:(m-1)]
-      grgamma[,,j] <- matrix(estj[(m+r):(m+r+r*(y-1)-1)],y-1,r)*matrix(rep(Tau,(y-1)),y-1,r,byrow = T)
-      grbeta[j,] <- estj[(m+r+r*(y-1)):(m+r+r*(y-1)+(m-1)*(y-1)-1)]
-      #estj=M_step(j=j,ng=ng,rgk=rgk,grd=grd,gra=gra,grgamma=grgamma,grbeta=grbeta,maxtol=max.tol,X=X,yallgroup=y.allgroup,y=y,G=G,m=m,eta=0,r=r,J=J)
-      #gra[j,] <- estj$a*Tau  # re-scale a and gamma
-      #grd[j,] <- estj$d
-      #grgamma[,,j] <- estj$gam*matrix(rep(Tau,(y-1)),y-1,r,byrow = T)
-      #grbeta[j,] <- estj$bet
+      #estj=M_step(j=j,ng=ng,rgk=rgk,grd=grd,gra=gra,grgamma=grgamma,grbeta=grbeta,max.tol=max.tol,X=X,y.allgroup=y.allgroup,y=y,G=G,m=m,eta=0,r=r)
+      #gra[j,] <- estj[m:(m+r-1)]*Tau  # re-scale a and gamma
+      #grd[j,] <- estj[1:(m-1)]
+      #grgamma[,,j] <- matrix(estj[(m+r):(m+r+r*(y-1)-1)],y-1,r)*matrix(rep(Tau,(y-1)),y-1,r,byrow = T)
+      #grbeta[j,] <- estj[(m+r+r*(y-1)):(m+r+r*(y-1)+(m-1)*(y-1)-1)]
+      estj=Mstep(j=j,ng=ng,rgk=rgk,gra=gra,grd=grd,grbeta=grbeta,grgamma=grgamma,maxtol=max.tol,X=X,yallgroup=y.allgroup,y=y,G=G,m=m,eta=0,r=r)
+      gra[j,] <- estj$a*Tau  # re-scale a and gamma
+      grd[j,] <- estj$d
+      grgamma[,,j] <- estj$gam*matrix(rep(Tau,(y-1)),y-1,r,byrow = T)
+      grbeta[j,] <- estj$bet
     }
     df.d <- abs(dold-grd)
     df.a <- abs(aold-gra)
