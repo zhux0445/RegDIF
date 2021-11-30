@@ -1490,6 +1490,10 @@ reg_DIF_alllbd=function(resp,indic,Group,Method,Unif=F,updateProgress=NULL){
   }
   for (k in 2:length(lbd.vec))
   {
+    if (is.function(updateProgress)) {
+      text <- paste0("k=:", k)
+      updateProgress(detail = text)
+    }
     lbd=lbd.vec[k]
     #ptm <- proc.time()
     if (Method=="EM"){
@@ -1775,7 +1779,7 @@ server <- function(input, output,session) {
     updateProgress <- function(value = NULL, detail = NULL) {
       if (is.null(value)) {
         value <- progress$getValue()
-        value <- value + (progress$getMax() - value) / 10
+        value <- value + (progress$getMax() - value) /4
       }
       progress$set(value = value, detail = detail)
     }
@@ -1863,8 +1867,8 @@ server <- function(input, output,session) {
   output$downloadData <- downloadHandler(
     filename = function() {
       if(input$checkGroup1=="all"){
-        paste("GVEMDIF",input$checkGroup1 ,"results.rds",sep="")}else{
-          paste("GVEMDIF",input$checkGroup1 ,"results.csv",sep="")}
+        paste("EMDIF",input$checkGroup1 ,"results.rds",sep="")}else{
+          paste("EMDIF",input$checkGroup1 ,"results.csv",sep="")}
       
     },
     content = function(file) {
