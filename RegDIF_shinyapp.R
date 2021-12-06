@@ -1,7 +1,6 @@
 #MBR three DIF functions
 library(shiny)
 library(psych)
-library(Rcpp)
 library(testit)
 library(Matrix)
 library(gtools)
@@ -2086,3 +2085,7 @@ shinyApp(ui, server)
 #username: uwpmetrics  (or uwpmetrics@gmail.com)
 # password: COE_psychometrics21
 
+#remote desktop
+# pmetrics@uw.edu
+# COE_psychometrics19
+#  pin:123456

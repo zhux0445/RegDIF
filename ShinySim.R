@@ -87,6 +87,10 @@ write.csv(resp,file = "resp2grp.csv", row.names = F)
 write.csv(Group,file = "Group2grp.csv", row.names = F)
 write.csv(indic,file = "indic2grp.csv", row.names = F)
 
+resp=read.csv("/Users/ruoyizhu/Documents/GitHub/RegDIF/DIF_sims/resp2grp.csv")
+Group=read.csv("/Users/ruoyizhu/Documents/GitHub/RegDIF/DIF_sims/Group2grp.csv")
+indic=read.csv("/Users/ruoyizhu/Documents/GitHub/RegDIF/DIF_sims/indic.csv")
+
 
 result0=reg_DIF_alllbd(resp=resp,indic=indic,Group=Group,Method='EMM',Unif=T)
 
@@ -137,6 +141,6 @@ write.csv(indic,file = "indic4grp.csv", row.names = F)
 
 
 
-result0=reg_DIF_alllbd(resp=resp,indic=indic,Group=Group,Method='EMM',Unif=T)
+result0=reg_DIF_alllbd(resp=resp,indic=indic,Group=Group,Method='EM',Unif=T)
 
 
