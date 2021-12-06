@@ -15,6 +15,7 @@ library(Rcpp)
 library(RcppParallel)
 library(RcppArmadillo)
 library(RcppEigen)
+library(abind)
 
 sumoverk<-'
 // [[Rcpp::depends(RcppArmadillo, RcppEigen)]]
@@ -231,7 +232,7 @@ arma::mat scocal(int j, arma::rowvec ng, arma::mat rgk, arma::rowvec a, arma::ro
   int len2=0;
   for (int kk=0; kk<r; kk++){
     for (int mm=0; mm<2; mm++){
-      if (gam(kk,mm)!=0){
+      if (gam(mm,kk)!=0){
         len2++;
       }
     }
@@ -242,8 +243,8 @@ arma::mat scocal(int j, arma::rowvec ng, arma::mat rgk, arma::rowvec a, arma::ro
   }
   for (int kk=0; kk<r; kk++){
     for (int mm=0; mm<(y-1); mm++){
-      if (gam(kk,mm)==0){
-        Gamscoall(kk,mm)=0;
+      if (gam(mm,kk)==0){
+        Gamscoall(mm,kk)=0;
       }
     }
   }
@@ -338,7 +339,7 @@ List Mstep(int j, arma::rowvec ng, arma::mat rgk, arma::mat gra, arma::mat grd, 
     int len2=0;
     for (int kk=0; kk<r; kk++){
       for (int mm=0; mm<(y-1); mm++){
-        if (gam(kk,mm)!=0){
+        if (gam(mm,kk)!=0){
           len2++;
         }
       }
@@ -349,8 +350,8 @@ List Mstep(int j, arma::rowvec ng, arma::mat rgk, arma::mat gra, arma::mat grd, 
     }
     for (int kk=0; kk<r; kk++){
       for (int mm=0; mm<(y-1); mm++){
-        if (gam(kk,mm)==0){
-          Gamscoall(kk,mm)=0;
+        if (gam(mm,kk)==0){
+          Gamscoall(mm,kk)=0;
         }
       }
     }
@@ -365,7 +366,7 @@ List Mstep(int j, arma::rowvec ng, arma::mat rgk, arma::mat gra, arma::mat grd, 
     for (int yy=1; yy<y; yy++){
       Betscoall.subvec(yy-1,yy-1) = sum(diff(rgk.rows((yy+1)*G,(yy+2)*G-1)/P.slice(yy),1,1)%Pstar.slice(yy)%Qstar.slice(yy),0);
     }
-    for (int mm=0; mm<2; mm++){
+    for (int mm=0; mm<(y-1); mm++){
       if (bet(mm)==0){
         Betscoall(mm)=0;
       }
@@ -599,7 +600,7 @@ List Mstepadapt(int j, arma::rowvec ng, arma::mat rgk, arma::mat gra, arma::mat 
     int len2=0;
     for (int kk=0; kk<r; kk++){
       for (int mm=0; mm<(y-1); mm++){
-        if (gam(kk,mm)!=0){
+        if (gam(mm,kk)!=0){
           len2++;
         }
       }
@@ -610,8 +611,8 @@ List Mstepadapt(int j, arma::rowvec ng, arma::mat rgk, arma::mat gra, arma::mat 
     }
     for (int kk=0; kk<r; kk++){
       for (int mm=0; mm<(y-1); mm++){
-        if (gam(kk,mm)==0){
-          Gamscoall(kk,mm)=0;
+        if (gam(mm,kk)==0){
+          Gamscoall(mm,kk)=0;
         }
       }
     }
@@ -626,7 +627,7 @@ List Mstepadapt(int j, arma::rowvec ng, arma::mat rgk, arma::mat gra, arma::mat 
     for (int yy=1; yy<y; yy++){
       Betscoall.subvec(yy-1,yy-1) = sum(diff(rgk.rows((yy+1)*G,(yy+2)*G-1)/P.slice(yy),1,1)%Pstar.slice(yy)%Qstar.slice(yy),0);
     }
-    for (int mm=0; mm<2; mm++){
+    for (int mm=0; mm<(y-1); mm++){
       if (bet(mm)==0){
         Betscoall(mm)=0;
       }
@@ -1023,15 +1024,15 @@ Reg_DIF <- function(resp,Group,indic,Unif,eta,eps =1e-3,max.tol=1e-7,r,y,N.vec=N
   # Re-estimation
   sparsity1=grgamma
   for (j in 1:J){
-    for (rr in 1:2){
-      for (nn in 1:2){
+    for (rr in 1:r){
+      for (nn in 1:(y-1)){
         sparsity1[nn,rr,j]=ifelse(grgamma[nn,rr,j]==0,0,1)
       }
     }
   }
   sparsity2=grbeta
   for (j in 1:J){
-    for (rr in 1:2){
+    for (rr in 1:(y-1)){
       sparsity2[j,rr]=ifelse(grbeta[j,rr]==0,0,1)
     }
   } 
@@ -1051,9 +1052,11 @@ Reg_DIF <- function(resp,Group,indic,Unif,eta,eps =1e-3,max.tol=1e-7,r,y,N.vec=N
     betaold=grbeta
     
     # E STEP
-    Mu.est.mat=rbind(Mu.est[1:2],Mu.est[3:4],Mu.est[5:6])
-    Sig.est.slice=array(0,c(2,2,3))
-    Sig.est.slice[,,1]=Sig.est[1:2,];Sig.est.slice[,,2]=Sig.est[3:4,];Sig.est.slice[,,3]=Sig.est[5:6,]
+    Mu.est.mat=matrix(Mu.est,y,r,byrow = T)
+    Sig.est.slice=array(0,c(r,r,y))
+    for (yy in 1:y){
+      Sig.est.slice[,,yy]=Sig.est[((yy-1)*r+1):((yy-1)*r+r),]
+    }
     LiA=Estep1(resp=resp2,Nvec=N.vec,X=X,y=y,G=G,yallgroup=y.allgroup,Mulist=Mu.est.mat,Siglist=Sig.est.slice,gra=gra, grd=grd, grbeta=grbeta, grgamma=grgamma,r=r,J=J,m=m,N=N)
     ng=ngest(LiA=LiA,y=y,Nvec=N.vec,G=G)
     #update mu hat and Sigma hat
@@ -1102,30 +1105,33 @@ Reg_DIF <- function(resp,Group,indic,Unif,eta,eps =1e-3,max.tol=1e-7,r,y,N.vec=N
     #print(c(2, iter,max(df.a), max(df.d), max(df.beta), max(df.gamma)))
   }
   # AIC BIC
-  Mu.est.mat=rbind(Mu.est[1:2],Mu.est[3:4],Mu.est[5:6])
-  Sig.est.slice=array(0,c(2,2,3))
-  Sig.est.slice[,,1]=Sig.est[1:2,];Sig.est.slice[,,2]=Sig.est[3:4,];Sig.est.slice[,,3]=Sig.est[5:6,]
+  Mu.est.mat=matrix(Mu.est,y,r,byrow = T)
+  Sig.est.slice=array(0,c(r,r,y))
+  for (yy in 1:y){
+    Sig.est.slice[,,yy]=Sig.est[((yy-1)*r+1):((yy-1)*r+r),]
+  }
   LiA=Estep1(resp=resp2,Nvec=N.vec,X=X,y=y,G=G,yallgroup=y.allgroup,Mulist=Mu.est.mat,Siglist=Sig.est.slice,gra=gra, grd=grd, grbeta=grbeta, grgamma=grgamma,r=r,J=J,m=m,N=N)
   ng=ngest(LiA=LiA,y=y,Nvec=N.vec,G=G)
   lh=numeric(J)#likelihood function for each item (overall likelihood by sum over j)
   for (j in 1:J){
     rgk=rgkest(j=j,Xijk=Xijk,LiA=LiA,y=y,Nvec=N.vec,G=G,N=N,m=m)
-    sumoverk1=sumoverk(G=G,rgky=rgk[(G+1):(2*G),],aj=gra[j,],dj=grd[j,],betjy=0,gamjy=c(0,0),X=X)#G,rgky,aj,dj,gamjy,X
-    sumoverk2=sumoverk(G=G,rgky=rgk[(2*G+1):(3*G),],aj=gra[j,],dj=grd[j,],betjy=grbeta[j,1],gamjy=grgamma[1,,j],X=X)
-    sumoverk3=sumoverk(G=G,rgky=rgk[(3*G+1):(4*G),],aj=gra[j,],dj=grd[j,],betjy=grbeta[j,2],gamjy=grgamma[2,,j],X=X)
-    temp=sumoverk1+sumoverk2+sumoverk3#-eta*norm(as.matrix(x2), type = "1")##sum over g
+    sumoverk0=sumoverk(G=G,rgky=rgk[(G+1):(2*G),],aj=gra[j,],dj=grd[j,],betjy=0,gamjy=numeric(r),X=X)
+    for (yy in 2:y){
+      sumoverk0=sumoverk0+sumoverk(G=G,rgky=rgk[(yy*G+1):((yy+1)*G),],aj=gra[j,],dj=grd[j,],betjy=grbeta[j,(yy-1)],gamjy=grgamma[(yy-1),,j],X=X)
+    }
+    temp=sumoverk0#-eta*norm(as.matrix(x2), type = "1")##sum over g
     lh[j]=temp
   }
   l0norm1=l0norm2=0
   for(i in 1:J){
-    for(j in 1:2){
-      for(k in 1:2){
+    for(j in 1:(y-1)){
+      for(k in 1:r){
         l0norm1=l0norm1+(grgamma[j,k,i]!=0)
       }
     }
   }
   for(i in 1:J){
-    for(j in 1:2){
+    for(j in 1:(y-1)){
       l0norm2=l0norm2+(grbeta[i,j]!=0)
     }
   }
@@ -1139,7 +1145,7 @@ Reg_DIF <- function(resp,Group,indic,Unif,eta,eps =1e-3,max.tol=1e-7,r,y,N.vec=N
 
 # 5
 
-Reg_EMM_DIF <- function(resp,Group,indic,eta,Unif=F,eps =1e-3,max.tol=1e-7,r,y,N.vec=N.vec,gra00,grd00,grbeta00,grgamma00,Mu.list,Sig.list)
+Reg_EMM_DIF <- function(resp,Group,indic,eta,Unif=F,eps =1e-3,max.tol=1e-7,r,y,N.vec,gra00,grd00,grbeta00,grgamma00,Mu.list,Sig.list)
 {
   if (min(resp)==0){
     resp2=as.matrix(resp)
@@ -1187,9 +1193,11 @@ Reg_EMM_DIF <- function(resp,Group,indic,eta,Unif=F,eps =1e-3,max.tol=1e-7,r,y,N
     betaold=grbeta
     
     # E STEP
-    Mu.est.mat=rbind(Mu.est[1:2],Mu.est[3:4],Mu.est[5:6])
-    Sig.est.slice=array(0,c(2,2,3))
-    Sig.est.slice[,,1]=Sig.est[1:2,];Sig.est.slice[,,2]=Sig.est[3:4,];Sig.est.slice[,,3]=Sig.est[5:6,]
+    Mu.est.mat=matrix(Mu.est,y,r,byrow = T)
+    Sig.est.slice=array(0,c(r,r,y))
+    for (yy in 1:y){
+      Sig.est.slice[,,yy]=Sig.est[((yy-1)*r+1):((yy-1)*r+r),]
+    }
     #LiA=Estep1(resp=resp2,Nvec=N.vec,X=X,y=y,G=G,yallgroup=y.allgroup,Mulist=Mu.est.mat,Siglist=Sig.est.slice,gra=gra, grd=grd, grbeta=grbeta, grgamma=grgamma,r=r,J=J,m=m,N1=N1,N2=N2,N3=N3,N=N)
     LiA=Estep1(resp=resp2,Nvec=N.vec,X=X,y=y,G=G,yallgroup=y.allgroup,Mulist=Mu.est.mat,Siglist=Sig.est.slice,gra=gra, grd=grd, grbeta=grbeta, grgamma=grgamma,r=r,J=J,m=m,N=N)
     ng=ngest(LiA=LiA,y=y,Nvec=N.vec,G=G)
@@ -1249,30 +1257,33 @@ Reg_EMM_DIF <- function(resp,Group,indic,eta,Unif=F,eps =1e-3,max.tol=1e-7,r,y,N
     #print(c(iter,max(df.a), max(df.d), max(df.beta), max(df.gamma)))
   }
   # AIC BIC
-  Mu.est.mat=rbind(Mu.est[1:2],Mu.est[3:4],Mu.est[5:6])
-  Sig.est.slice=array(0,c(2,2,3))
-  Sig.est.slice[,,1]=Sig.est[1:2,];Sig.est.slice[,,2]=Sig.est[3:4,];Sig.est.slice[,,3]=Sig.est[5:6,]
+  Mu.est.mat=matrix(Mu.est,y,r,byrow = T)
+  Sig.est.slice=array(0,c(r,r,y))
+  for (yy in 1:y){
+    Sig.est.slice[,,yy]=Sig.est[((yy-1)*r+1):((yy-1)*r+r),]
+  }
   LiA=Estep1(resp=resp2,Nvec=N.vec,X=X,y=y,G=G,yallgroup=y.allgroup,Mulist=Mu.est.mat,Siglist=Sig.est.slice,gra=gra, grd=grd, grbeta=grbeta, grgamma=grgamma,r=r,J=J,m=m,N=N)
   ng=ngest(LiA=LiA,y=y,Nvec=N.vec,G=G)
   lh=numeric(J)#likelihood function for each item (overall likelihood by sum over j)
   for (j in 1:J){
     rgk=rgkest(j=j,Xijk=Xijk,LiA=LiA,y=y,Nvec=N.vec,G=G,N=N,m=m)
-    sumoverk1=sumoverk(G=G,rgky=rgk[(G+1):(2*G),],aj=gra[j,],dj=grd[j,],betjy=0,gamjy=c(0,0),X=X)#G,rgky,aj,dj,gamjy,X
-    sumoverk2=sumoverk(G=G,rgky=rgk[(2*G+1):(3*G),],aj=gra[j,],dj=grd[j,],betjy=grbeta[j,1],gamjy=grgamma[1,,j],X=X)
-    sumoverk3=sumoverk(G=G,rgky=rgk[(3*G+1):(4*G),],aj=gra[j,],dj=grd[j,],betjy=grbeta[j,2],gamjy=grgamma[2,,j],X=X)
-    temp=sumoverk1+sumoverk2+sumoverk3#-eta*norm(as.matrix(x2), type = "1")##sum over g
+    sumoverk0=sumoverk(G=G,rgky=rgk[(G+1):(2*G),],aj=gra[j,],dj=grd[j,],betjy=0,gamjy=numeric(r),X=X)
+    for (yy in 2:y){
+      sumoverk0=sumoverk0+sumoverk(G=G,rgky=rgk[(yy*G+1):((yy+1)*G),],aj=gra[j,],dj=grd[j,],betjy=grbeta[j,(yy-1)],gamjy=grgamma[(yy-1),,j],X=X)
+    }
+    temp=sumoverk0#-eta*norm(as.matrix(x2), type = "1")##sum over g
     lh[j]=temp
   }
   l0norm1=l0norm2=0
   for(i in 1:J){
-    for(j in 1:2){
-      for(k in 1:2){
+    for(j in 1:(y-1)){
+      for(k in 1:r){
         l0norm1=l0norm1+(grgamma[j,k,i]!=0)
       }
     }
   }
   for(i in 1:J){
-    for(j in 1:2){
+    for(j in 1:(y-1)){
       l0norm2=l0norm2+(grbeta[i,j]!=0)
     }
   }
@@ -1335,9 +1346,11 @@ Reg_Adaptive_DIF <- function(resp,Group,indic,eta,lam=1,Unif=F,eps =1e-3,max.tol
     betaold=grbeta
     
     # E STEP
-    Mu.est.mat=rbind(Mu.est[1:2],Mu.est[3:4],Mu.est[5:6])
-    Sig.est.slice=array(0,c(2,2,3))
-    Sig.est.slice[,,1]=Sig.est[1:2,];Sig.est.slice[,,2]=Sig.est[3:4,];Sig.est.slice[,,3]=Sig.est[5:6,]
+    Mu.est.mat=matrix(Mu.est,y,r,byrow = T)
+    Sig.est.slice=array(0,c(r,r,y))
+    for (yy in 1:y){
+      Sig.est.slice[,,yy]=Sig.est[((yy-1)*r+1):((yy-1)*r+r),]
+    }
     LiA=Estep1(resp=resp2,Nvec=N.vec,X=X,y=y,G=G,yallgroup=y.allgroup,Mulist=Mu.est.mat,Siglist=Sig.est.slice,gra=gra, grd=grd, grbeta=grbeta, grgamma=grgamma,r=r,J=J,m=m,N=N)
     ng=ngest(LiA=LiA,y=y,Nvec=N.vec,G=G)
     #update mu hat and Sigma hat
@@ -1385,15 +1398,15 @@ Reg_Adaptive_DIF <- function(resp,Group,indic,eta,lam=1,Unif=F,eps =1e-3,max.tol
   # Re-estimation
   sparsity1=grgamma
   for (j in 1:J){
-    for (rr in 1:2){
-      for (nn in 1:2){
+    for (rr in 1:r){
+      for (nn in 1:(y-1)){
         sparsity1[nn,rr,j]=ifelse(grgamma[nn,rr,j]==0,0,1)
       }
     }
   }
   sparsity2=grbeta
   for (j in 1:J){
-    for (rr in 1:2){
+    for (rr in 1:(y-1)){
       sparsity2[j,rr]=ifelse(grbeta[j,rr]==0,0,1)
     }
   } 
@@ -1412,9 +1425,11 @@ Reg_Adaptive_DIF <- function(resp,Group,indic,eta,lam=1,Unif=F,eps =1e-3,max.tol
     betaold=grbeta
     
     # E STEP
-    Mu.est.mat=rbind(Mu.est[1:2],Mu.est[3:4],Mu.est[5:6])
-    Sig.est.slice=array(0,c(2,2,3))
-    Sig.est.slice[,,1]=Sig.est[1:2,];Sig.est.slice[,,2]=Sig.est[3:4,];Sig.est.slice[,,3]=Sig.est[5:6,]
+    Mu.est.mat=matrix(Mu.est,y,r,byrow = T)
+    Sig.est.slice=array(0,c(r,r,y))
+    for (yy in 1:y){
+      Sig.est.slice[,,yy]=Sig.est[((yy-1)*r+1):((yy-1)*r+r),]
+    }
     #LiA=E_step1(resp=resp2,Nvec=N.vec,X=X,y=y,G=G,yallgroup=y.allgroup,Mulist=Mu.est.mat,Siglist=Sig.est.slice,gra=gra, grd=grd, grbeta=grbeta, grgamma=grgamma,r=r,J=J,m=m,N1=N1,N2=N2,N3=N3,N=N)
     LiA=Estep1(resp=resp2,Nvec=N.vec,X=X,y=y,G=G,yallgroup=y.allgroup,Mulist=Mu.est.mat,Siglist=Sig.est.slice,gra=gra, grd=grd, grbeta=grbeta, grgamma=grgamma,r=r,J=J,m=m,N=N)
     ng=ngest(LiA=LiA,y=y,Nvec=N.vec,G=G)
@@ -1464,31 +1479,33 @@ Reg_Adaptive_DIF <- function(resp,Group,indic,eta,lam=1,Unif=F,eps =1e-3,max.tol
     #print(c(2,iter,max(df.a), max(df.d), max(df.beta), max(df.gamma)))
   }
   # AIC BIC
-  Mu.est.mat=rbind(Mu.est[1:2],Mu.est[3:4],Mu.est[5:6])
-  Sig.est.slice=array(0,c(2,2,3))
-  Sig.est.slice[,,1]=Sig.est[1:2,];Sig.est.slice[,,2]=Sig.est[3:4,];Sig.est.slice[,,3]=Sig.est[5:6,]
-  #LiA=E_step1(resp=resp2,Nvec=N.vec,X=X,y=y,G=G,yallgroup=y.allgroup,Mulist=Mu.est.mat,Siglist=Sig.est.slice,gra=gra, grd=grd, grbeta=grbeta, grgamma=grgamma,r=r,J=J,m=m,N1=N1,N2=N2,N3=N3,N=N)
+  Mu.est.mat=matrix(Mu.est,y,r,byrow = T)
+  Sig.est.slice=array(0,c(r,r,y))
+  for (yy in 1:y){
+    Sig.est.slice[,,yy]=Sig.est[((yy-1)*r+1):((yy-1)*r+r),]
+  }
   LiA=Estep1(resp=resp2,Nvec=N.vec,X=X,y=y,G=G,yallgroup=y.allgroup,Mulist=Mu.est.mat,Siglist=Sig.est.slice,gra=gra, grd=grd, grbeta=grbeta, grgamma=grgamma,r=r,J=J,m=m,N=N)
   ng=ngest(LiA=LiA,y=y,Nvec=N.vec,G=G)
   lh=numeric(J)#likelihood function for each item (overall likelihood by sum over j)
   for (j in 1:J){
     rgk=rgkest(j=j,Xijk=Xijk,LiA=LiA,y=y,Nvec=N.vec,G=G,N=N,m=m)
-    sumoverk1=sumoverk(G=G,rgky=rgk[(G+1):(2*G),],aj=gra[j,],dj=grd[j,],betjy=0,gamjy=c(0,0),X=X)#G,rgky,aj,dj,gamjy,X
-    sumoverk2=sumoverk(G=G,rgky=rgk[(2*G+1):(3*G),],aj=gra[j,],dj=grd[j,],betjy=grbeta[j,1],gamjy=grgamma[1,,j],X=X)
-    sumoverk3=sumoverk(G=G,rgky=rgk[(3*G+1):(4*G),],aj=gra[j,],dj=grd[j,],betjy=grbeta[j,2],gamjy=grgamma[2,,j],X=X)
-    temp=sumoverk1+sumoverk2+sumoverk3#-eta*norm(as.matrix(x2), type = "1")##sum over g
+    sumoverk0=sumoverk(G=G,rgky=rgk[(G+1):(2*G),],aj=gra[j,],dj=grd[j,],betjy=0,gamjy=numeric(r),X=X)
+    for (yy in 2:y){
+      sumoverk0=sumoverk0+sumoverk(G=G,rgky=rgk[(yy*G+1):((yy+1)*G),],aj=gra[j,],dj=grd[j,],betjy=grbeta[j,(yy-1)],gamjy=grgamma[(yy-1),,j],X=X)
+    }
+    temp=sumoverk0#-eta*norm(as.matrix(x2), type = "1")##sum over g
     lh[j]=temp
   }
   l0norm1=l0norm2=0
   for(i in 1:J){
-    for(j in 1:2){
-      for(k in 1:2){
+    for(j in 1:(y-1)){
+      for(k in 1:r){
         l0norm1=l0norm1+(grgamma[j,k,i]!=0)
       }
     }
   }
   for(i in 1:J){
-    for(j in 1:2){
+    for(j in 1:(y-1)){
       l0norm2=l0norm2+(grbeta[i,j]!=0)
     }
   }
@@ -1528,7 +1545,8 @@ reg_DIF_alllbd=function(resp,indic,Group,Method,Unif=F,updateProgress=NULL){
   item=ncol(resp)
   domain=nrow(indic)
   y=length(unique(Group)) 
-  lbd.vec=seq(10,20,5)
+  lbd.center=10+0.033*mean(N.vec)
+  lbd.vec=seq((lbd.center-10),(lbd.center+10),4)
   bics=gics=rep(0,length(lbd.vec))
   ADmat=array(double(item*(domain+1)*length(lbd.vec)),dim = c(item,(domain+1),length(lbd.vec)))
   Gammas=array(double((y-1)*domain*item*length(lbd.vec)),dim = c((y-1),domain,item,length(lbd.vec)))
@@ -1596,6 +1614,87 @@ reg_DIF_alllbd=function(resp,indic,Group,Method,Unif=F,updateProgress=NULL){
   #est=cbind(gra,grd),Gamma=grgamma,Beta=grbeta,iter=iter,bic=BIC, means=Mu.est,Covs=Sig.est)
     kk=which.min(bics)
     lbd=lbd.vec[kk]
+    
+    if (lbd==min(lbd.vec)|lbd==max(lbd.vec)){
+      if (lbd==min(lbd.vec)){
+        lbd.vec2=seq(max(0,min(lbd.vec)-12),min(lbd.vec)-4,4)
+        bics2=gics2=rep(0,length(lbd.vec2))
+        ADmat2=array(double(item*(domain+1)*length(lbd.vec2)),dim = c(item,(domain+1),length(lbd.vec2)))
+        Gammas2=array(double((y-1)*domain*item*length(lbd.vec2)),dim = c((y-1),domain,item,length(lbd.vec2)))
+        Betas2=array(double(item*(y-1)*length(lbd.vec2)),dim = c(item,(y-1),length(lbd.vec2)))
+        Mus2=matrix(0,domain*y,length(lbd.vec2))
+        Sigs2=array(double(domain*domain*y*length(lbd.vec2)),dim = c(domain*y,domain,length(lbd.vec2)))
+        for (k in 1:length(lbd.vec2))
+        {
+          if (is.function(updateProgress)) {
+            text <- paste0("k=:", k)
+            updateProgress(detail = text)
+          }
+          lbd2=lbd.vec2[k]
+          #ptm <- proc.time()
+          if (Method=="EM"){
+            sim=Reg_DIF(resp=resp,indic=indic,eta=lbd2,Group=Group,Unif=Unif,r=r,y=y,N.vec=N.vec,gra00=gra00,grd00=grd00,grbeta00=grbeta00,grgamma00=grgamma00,Mu.list=Mu.list,Sig.list=Sig.list)
+          } 
+          if (Method=="EMM"){
+            sim=Reg_EMM_DIF(resp=resp,indic=indic,eta=lbd2,Group=Group,Unif=Unif,r=r,y=y,N.vec=N.vec,gra00=gra00,grd00=grd00,grbeta00=grbeta00,grgamma00=grgamma00,Mu.list=Mu.list,Sig.list=Sig.list)
+          } 
+          if (Method=="Adapt"){
+            sim=Reg_Adaptive_DIF(resp=resp,indic=indic,eta=lbd2,lam=1,Group=Group,Unif=Unif,r=r,y=y,N.vec=N.vec,gra00=gra00,grd00=grd00,grbeta00=grbetamle,grgamma00=grgammamle,Mu.list=Mu.list,Sig.list=Sig.list)
+          }
+          #print(proc.time() - ptm)
+          bics2[k]=sim$bic
+          Gammas2[,,,k]=sim$Gamma
+          Betas2[,,k]=sim$Beta
+          ADmat2[,,k]=sim$est
+          Mus2[,k]=sim$means
+          Sigs2[,,k]=sim$Covs
+        }
+      }
+      
+      if (lbd==max(lbd.vec)){
+        lbd.vec2=seq(max(lbd.vec)+4,max(lbd.vec)+12,4)
+        bics2=gics2=rep(0,length(lbd.vec2))
+        ADmat2=array(double(item*(domain+1)*length(lbd.vec2)),dim = c(item,(domain+1),length(lbd.vec2)))
+        Gammas2=array(double((y-1)*domain*item*length(lbd.vec2)),dim = c((y-1),domain,item,length(lbd.vec2)))
+        Betas2=array(double(item*(y-1)*length(lbd.vec2)),dim = c(item,(y-1),length(lbd.vec2)))
+        Mus2=matrix(0,domain*y,length(lbd.vec2))
+        Sigs2=array(double(domain*domain*y*length(lbd.vec2)),dim = c(domain*y,domain,length(lbd.vec2)))
+        for (k in 1:length(lbd.vec2))
+        {
+          if (is.function(updateProgress)) {
+            text <- paste0("k=:", k)
+            updateProgress(detail = text)
+          }
+          lbd2=lbd.vec2[k]
+          #ptm <- proc.time()
+          if (Method=="EM"){
+            sim=Reg_DIF(resp=resp,indic=indic,eta=lbd2,Group=Group,Unif=Unif,r=r,y=y,N.vec=N.vec,gra00=gra00,grd00=grd00,grbeta00=grbeta00,grgamma00=grgamma00,Mu.list=Mu.list,Sig.list=Sig.list)
+          } 
+          if (Method=="EMM"){
+            sim=Reg_EMM_DIF(resp=resp,indic=indic,eta=lbd2,Group=Group,Unif=Unif,r=r,y=y,N.vec=N.vec,gra00=gra00,grd00=grd00,grbeta00=grbeta00,grgamma00=grgamma00,Mu.list=Mu.list,Sig.list=Sig.list)
+          } 
+          if (Method=="Adapt"){
+            sim=Reg_Adaptive_DIF(resp=resp,indic=indic,eta=lbd2,lam=1,Group=Group,Unif=Unif,r=r,y=y,N.vec=N.vec,gra00=gra00,grd00=grd00,grbeta00=grbetamle,grgamma00=grgammamle,Mu.list=Mu.list,Sig.list=Sig.list)
+          }
+          #print(proc.time() - ptm)
+          bics2[k]=sim$bic
+          Gammas2[,,,k]=sim$Gamma
+          Betas2[,,k]=sim$Beta
+          ADmat2[,,k]=sim$est
+          Mus2[,k]=sim$means
+          Sigs2[,,k]=sim$Covs
+        }
+      }
+      kk=which.min(c(bics,bics2))
+      lbd=c(lbd.vec,lbd.vec2)[kk]
+      lbd.vec=c(lbd.vec,lbd.vec2)
+      Gammas=abind(Gammas,Gammas2,along = 4)
+      Betas=abind(Betas,Betas2,along =3)
+      ADmat=abind(ADmat,ADmat2,along =3)
+      Mus=cbind(Mus,Mus2)
+      Sigs=abind(Sigs,Sigs2,along =3)
+      bics=c(bics,bics2)
+    }
     Gamma=Gammas[,,,kk]
     Beta=Betas[,,kk]
     Amat=ADmat[,1:domain,kk]

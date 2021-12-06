@@ -10,14 +10,14 @@ N=N1+N2+N3
 resp=responses[((rep-1)*N+1):((rep-1)*N+N1+N2+N3),]
 indic=matrix(0,2,20);indic[1,1]=1;indic[2,2]=1;indic[1,3:11]=1;indic[2,12:20]=1 #
 setwd('/Users/ruoyizhu/Desktop/DIF_sims')
-write.csv(resp,file = "resp.csv")
-write.csv(Group,file = "Group.csv")
-write.csv(indic,file = "indic.csv")
+write.csv(resp,file = "resp.csv", row.names = F)
+write.csv(Group,file = "Group.csv", row.names = F)
+write.csv(indic,file = "indic.csv", row.names = F)
 COV <- matrix(c(FALSE, TRUE, TRUE, FALSE), 2) #
 write.csv(COV,file = "COV.csv")
 
 
-result0=reg_DIF_alllbd(resp=resp,indic=indic,Group=Group,Method='EMM',Unif=T)
+result0=reg_DIF_alllbd(resp=resp,indic=indic,Group=Group,Method='Adapt',Unif=T)
 
 
 domain=result0$domain
@@ -49,5 +49,94 @@ rownames(m)<-paste("group",rep(1:(result0$y),each=result0$domain)," dimension",r
 plot(seq(10,20,5),result0$ICs,type = "b",xlab="Tuning parameter",ylab="Information Criteria")
 
 
+
+setwd('/Users/ruoyizhu/Documents/GitHub/RegDIF_SimData')
+params=read.csv("Para1.csv",row.names = 1)
+responses=read.csv("resp1new_SS600.csv",row.names = 1)
+rep=1
+N1=N2=N3=200 
+Group=c(rep('G1', N1), rep('G2', N2), rep('G3', N3))
+Group01=c(rep('G1', N1), rep('G2', N2))
+Group02=c(rep('G1', N1), rep('G3', N3))
+N=N1+N2+N3
+resp=responses[((rep-1)*N+1):((rep-1)*N+N1+N2+N3),]
+indic=matrix(0,2,20);indic[1,1]=1;indic[2,2]=1;indic[1,3:11]=1;indic[2,12:20]=1 #
+setwd('/Users/ruoyizhu/Desktop/DIF_sims')
+write.csv(resp,file = "resp.csv", row.names = F)
+write.csv(Group,file = "Group.csv", row.names = F)
+write.csv(indic,file = "indic.csv", row.names = F)
+COV <- matrix(c(FALSE, TRUE, TRUE, FALSE), 2) #
+write.csv(COV,file = "COV.csv")
+
+
+
+
+
+# 2-group
+setwd('/Users/ruoyizhu/Documents/GitHub/RegDIF_SimData')
+params=read.csv("Para1.csv",row.names = 1)
+responses=read.csv("resp1new_SS600.csv",row.names = 1)
+rep=1
+N1=N2=200 
+Group=c(rep('G1', N1), rep('G2', N2))
+N=N1+N2
+resp=responses[((rep-1)*N+1):((rep-1)*N+N1+N2),]
+indic=matrix(0,2,20);indic[1,1]=1;indic[2,2]=1;indic[1,3:11]=1;indic[2,12:20]=1 #
+setwd('/Users/ruoyizhu/Desktop/DIF_sims')
+write.csv(resp,file = "resp2grp.csv", row.names = F)
+write.csv(Group,file = "Group2grp.csv", row.names = F)
+write.csv(indic,file = "indic2grp.csv", row.names = F)
+
+
+result0=reg_DIF_alllbd(resp=resp,indic=indic,Group=Group,Method='EMM',Unif=T)
+
+
+
+# 4-group
+setwd('/Users/ruoyizhu/Documents/GitHub/RegDIF_SimData')
+params=read.csv("Para1.csv",row.names = 1)
+A11=read.csv("Para1.csv",row.names = 1)[,1]
+A12=A11;A13=A11;A14=A11
+A21=read.csv("Para1.csv",row.names = 1)[,2]
+A22=A21;A23=A21;A24=A21
+D11=read.csv("Para1.csv",row.names = 1)[,7]
+D12=D11;D13=D11;D14=D11
+D12[c(4:5,12:13)]=D12[c(4:5,12:13)]+0.5
+D13[c(4:5,12:13)]=D13[c(4:5,12:13)]+1
+D14[c(4:5,12:13)]=D14[c(4:5,12:13)]+0.75
+
+Amat1=cbind(A11,A21);Amat2=cbind(A12,A22);Amat3=cbind(A13,A23);Amat4=cbind(A14,A24)
+Dmat1=cbind(D11)
+Dmat2=cbind(D12);Dmat3=cbind(D13);Dmat4=cbind(D14)
+
+#write.csv(cbind(Amat1,Amat2,Amat3,Dmat1,Dmat2,Dmat3), file = "Para4new.csv")
+N1=N2=N3=N4=200
+N=N1+N2+N3+N4
+set.seed(1)
+#Theta=mvrnorm(N*50,c(0,0),matrix(c(1,0.25,0.25,1),2,2))
+Theta=mvrnorm(N,c(0,0),matrix(c(1,0.85,0.85,1),2,2))
+resp=matrix(0,N,J)
+for (rep in 1:1){
+  Theta1=Theta[((rep-1)*N+1):((rep-1)*N+N1),]
+  Theta2=Theta[((rep-1)*N+N1+1):((rep-1)*N+N1+N2),]
+  Theta3=Theta[((rep-1)*N+N1+N2+1):((rep-1)*N+N1+N2+N3),]
+  Theta4=Theta[((rep-1)*N+N1+N2+N3+1):(rep*N),]
+  datasetR=simdata(Amat1,Dmat1,itemtype = "dich",Theta=Theta1)
+  datasetF1=simdata(Amat2,Dmat2,itemtype = "dich",Theta=Theta2)
+  datasetF2=simdata(Amat3,Dmat3,itemtype = "dich",Theta=Theta3)
+  datasetF3=simdata(Amat4,Dmat4,itemtype = "dich",Theta=Theta4)
+  resp[((rep-1)*N+1):(rep*N),]=rbind(datasetR,datasetF1,datasetF2,datasetF3)
+}
+resp=as.data.frame(resp)
+Group=c(rep('G1', N1), rep('G2', N2), rep('G3', N3), rep('G4', N4))
+indic=matrix(0,2,20);indic[1,1]=1;indic[2,2]=1;indic[1,3:11]=1;indic[2,12:20]=1 #
+setwd('/Users/ruoyizhu/Desktop/DIF_sims')
+write.csv(resp,file = "resp4grp.csv", row.names = F)
+write.csv(Group,file = "Group4grp.csv", row.names = F)
+write.csv(indic,file = "indic4grp.csv", row.names = F)
+
+
+
+result0=reg_DIF_alllbd(resp=resp,indic=indic,Group=Group,Method='EMM',Unif=T)
 
 

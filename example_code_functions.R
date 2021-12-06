@@ -476,6 +476,7 @@ Reg_DIF <- function(resp,m,r,y,N.vec,eta,eps =1e-3,max.tol=1e-7,gra00=NULL,grd00
     for (j in 1:J){
       rgk=rgkest(j=j,Xijk=Xijk,LiA=LiA,y=y,Nvec=N.vec,G=G,N=N,m=m)
       sourceCpp("/Users/ruoyizhu/Documents/GitHub/RegDIF_middle_steps/MstepTemp.cpp")
+      #estj=Mstep(j=j,ng=ng,gra=gra,maxtol=max.tol,y=y,G=G,m=m,eta=eta,r=r)
       estj=M_step(j=j,ng=ng,rgk=rgk,grd=grd,gra=gra,grgamma=grgamma,grbeta=grbeta,maxtol=max.tol,X=X,yallgroup=y.allgroup,y=y,G=G,m=m,r=r,eta=eta)
       gra[j,] <- estj[m:(m+r-1)]*Tau  # re-scale a and gamma
       grd[j,] <- estj[1:(m-1)]
@@ -836,6 +837,8 @@ Reg_Adaptive_DIF <- function(resp,m,r,y,N.vec,eta,lam,eps =1e-3,max.tol=1e-7,gra
     
     for (j in 1:J){
       rgk=rgkest(j=j,Xijk=Xijk,LiA=LiA,y=y,Nvec=N.vec,G=G,N=N,m=m)
+      sourceCpp("/Users/ruoyizhu/Documents/GitHub/RegDIF_middle_steps/MstepTemp.cpp")
+      estj=Mstepadapt(j=j,ng=ng,rgk=rgk,grd=grd,gra=gra,grgamma=grgamma,grgamma00=grgamma00,grbeta=grbeta,grbeta00=grbeta00,maxtol=max.tol,X=X,yallgroup=y.allgroup,y=y,G=G,m=m,eta=eta,lam=lam,r=r)
       estj=M_step_Adaptive(j=j,ng=ng,rgk=rgk,grd=grd,gra=gra,grgamma=grgamma,grgamma00=grgamma00,grbeta=grbeta,grbeta00=grbeta00,max.tol=max.tol,X=X,y.allgroup=y.allgroup,y=y,G=G,m=m,eta=eta,lam=lam)
       gra[j,] <- estj[m:(m+r-1)]*Tau  # re-scale a and gamma
       grd[j,] <- estj[1:(m-1)]
