@@ -230,7 +230,7 @@ arma::mat scocal(int j, arma::rowvec ng, arma::mat rgk, arma::rowvec a, arma::ro
   arma::vec Asco=Ascoall(find(a!=0));
   int len2=0;
   for (int kk=0; kk<r; kk++){
-    for (int mm=0; mm<2; mm++){
+    for (int mm=0; mm<(y-1); mm++){
       if (gam(mm,kk)!=0){
         len2++;
       }
@@ -249,7 +249,7 @@ arma::mat scocal(int j, arma::rowvec ng, arma::mat rgk, arma::rowvec a, arma::ro
   }
   arma::vec Gamsco=Gamscoall.elem(find(gam!=0));
   int len3=0;
-  for (int mm=0; mm<2; mm++){
+  for (int mm=0; mm<(y-1); mm++){
     if (bet(mm)!=0){
       len3++;
     }
@@ -258,7 +258,7 @@ arma::mat scocal(int j, arma::rowvec ng, arma::mat rgk, arma::rowvec a, arma::ro
   for (int yy=1; yy<y; yy++){
     Betscoall.subvec(yy-1,yy-1) = sum(diff(rgk.rows((yy+1)*G,(yy+2)*G-1)/P.slice(yy),1,1)%Pstar.slice(yy)%Qstar.slice(yy),0);
   }
-  for (int mm=0; mm<2; mm++){
+  for (int mm=0; mm<(y-1); mm++){
     if (bet(mm)==0){
       Betscoall(mm)=0;
     }
@@ -2082,10 +2082,3 @@ server <- function(input, output,session) {
 shinyApp(ui, server)
 
 
-#username: uwpmetrics  (or uwpmetrics@gmail.com)
-# password: COE_psychometrics21
-
-#remote desktop
-# pmetrics@uw.edu
-# COE_psychometrics19
-#  pin:123456
