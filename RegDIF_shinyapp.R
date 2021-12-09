@@ -2075,10 +2075,14 @@ server <- function(input, output,session) {
           }
           m<-cbind(m,result0()$Beta)
           gp=NULL
-          for(yy in 1:(y-1)){
-            gp=c(gp,rep(yy,domain))
+          #for(yy in 1:(y-1)){
+          #  gp=c(gp,rep(yy,domain))
+          #}
+          #colnames(m)<-c(paste("a",1:(result0()$domain),sep=""),"b",paste(rep(paste("gamma",1:domain,sep=""),(y-1)),gp,sep=""),paste("beta",1:(y-1),sep=""))
+          for(r in 1:domain){
+            gp=c(gp,rep(r,y-1))
           }
-          colnames(m)<-c(paste("a",1:(result0()$domain),sep=""),"b",paste(rep(paste("gamma",1:domain,sep=""),(y-1)),gp,sep=""),paste("beta",1:(y-1),sep=""))
+          colnames(m)<-c(paste("a",1:(result0()$domain),sep=""),"b",paste(rep(paste("gamma",1:(y-1),sep=""),domain),gp,sep=""),paste("beta",1:(y-1),sep=""))
           rownames(m)<-c(paste("Item",1:ncol(indic()),sep=""))
           write.csv(m,file)
         }else if(input$checkGroup1=="cov"){
