@@ -1694,7 +1694,7 @@ reg_DIF_alllbd=function(resp,indic,Group,Method,Unif=F,updateProgress=NULL){
       Sigs=abind(Sigs,Sigs2,along =3)
       bics=c(bics,bics2)
     }
-    #Gamma=array(double((y-1)*domain*item),dim = c((y-1),domain,item))
+    #Gamma=array(double((y-1)*domain*item),dim = c((y-1),domain,item,1))
     Gamma=Gammas[,,,kk,drop=F]
     #Gamma=Gammas[,,,kk]
     Beta=Betas[,,kk]
@@ -1997,8 +1997,14 @@ server <- function(input, output,session) {
       domain=result0()$domain
       y=result0()$y
       m<-cbind(result0()$Amat,result0()$Dmat)
-      for (r in 1:domain){
-        m<-cbind(m,result0()$Gamma[,r,,1])
+      if (y==2){
+        for (r in 1:domain){
+          m<-cbind(m,result0()$Gamma[,r,,1])
+        }
+      } else {
+        for (r in 1:domain){
+          m<-cbind(m,t(result0()$Gamma[,r,,1]))
+        }
       }
       m<-cbind(m,result0()$Beta)
       gp=NULL
@@ -2058,8 +2064,14 @@ server <- function(input, output,session) {
           domain=result0()$domain
           y=result0()$y
           m<-cbind(result0()$Amat,result0()$Dmat)
-          for (r in 1:domain){
-            m<-cbind(m,result0()$Gamma[,r,,1])
+          if (y==2){
+            for (r in 1:domain){
+              m<-cbind(m,result0()$Gamma[,r,,1])
+            }
+          } else {
+            for (r in 1:domain){
+              m<-cbind(m,t(result0()$Gamma[,r,,1]))
+            }
           }
           m<-cbind(m,result0()$Beta)
           gp=NULL
