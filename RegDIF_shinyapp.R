@@ -1996,7 +1996,7 @@ server <- function(input, output,session) {
       y=result0()$y
       m<-cbind(result0()$Amat,result0()$Dmat)
       for (r in 1:domain){
-        m<-cbind(m,t(result0()$Gamma[r,,]))
+        m<-cbind(m,t(result0()$Gamma[,r,]))
       }
       m<-cbind(m,result0()$Beta)
       gp=NULL
@@ -2057,7 +2057,7 @@ server <- function(input, output,session) {
           y=result0()$y
           m<-cbind(result0()$Amat,result0()$Dmat)
           for (r in 1:domain){
-            m<-cbind(m,t(result0()$Gamma[r,,]))
+            m<-cbind(m,t(result0()$Gamma[,r,]))
           }
           m<-cbind(m,result0()$Beta)
           gp=NULL
