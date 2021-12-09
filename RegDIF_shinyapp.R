@@ -870,7 +870,7 @@ sourceCpp(code=Mstep)
       for (yy in 2:y){
         grgamma00[(yy-1),,]=t(starting5new[,(domain+2+(yy-2)*domain):(2*domain+1+(yy-2)*domain)])
       }
-      grbeta00=as.matrix(starting5new[,(2*domain+2+(y-2)*domain):(2*domain+1+(y-2)*domain+m)])
+      grbeta00=as.matrix(starting5new[,(2*domain+2+(y-2)*domain):(2*domain+1+(y-2)*domain+(y-1))])
       rownames(grbeta00) <- c()
       colnames(grbeta00) <- c()
       #Sigma0=array(double(domain*domain*y),dim = c(domain,domain,y))
