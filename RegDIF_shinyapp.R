@@ -1614,7 +1614,7 @@ reg_DIF_alllbd=function(resp,indic,Group,Method,Unif=F,updateProgress=NULL){
     kk=which.min(bics)
     lbd=lbd.vec[kk]
     
-    if (lbd==min(lbd.vec)|lbd==max(lbd.vec)){
+    if ((lbd==min(lbd.vec))|(lbd==max(lbd.vec))){
       if (lbd==min(lbd.vec)){
         lbd.vec2=seq(max(0,min(lbd.vec)-12),min(lbd.vec)-4,4)
         bics2=gics2=rep(0,length(lbd.vec2))
@@ -1694,7 +1694,7 @@ reg_DIF_alllbd=function(resp,indic,Group,Method,Unif=F,updateProgress=NULL){
       Sigs=abind(Sigs,Sigs2,along =3)
       bics=c(bics,bics2)
     }
-    Gamma=Gammas[,,,kk]
+    Gamma=Gammas[,,,kk,drop=F]
     Beta=Betas[,,kk]
     Amat=ADmat[,1:domain,kk]
     Dmat=ADmat[,domain+1,kk]
