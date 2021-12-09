@@ -1694,7 +1694,9 @@ reg_DIF_alllbd=function(resp,indic,Group,Method,Unif=F,updateProgress=NULL){
       Sigs=abind(Sigs,Sigs2,along =3)
       bics=c(bics,bics2)
     }
+    #Gamma=array(double((y-1)*domain*item),dim = c((y-1),domain,item))
     Gamma=Gammas[,,,kk,drop=F]
+    #Gamma=Gammas[,,,kk]
     Beta=Betas[,,kk]
     Amat=ADmat[,1:domain,kk]
     Dmat=ADmat[,domain+1,kk]
@@ -1996,7 +1998,7 @@ server <- function(input, output,session) {
       y=result0()$y
       m<-cbind(result0()$Amat,result0()$Dmat)
       for (r in 1:domain){
-        m<-cbind(m,t(result0()$Gamma[,r,]))
+        m<-cbind(m,t(result0()$Gamma[,r,,1]))
       }
       m<-cbind(m,result0()$Beta)
       gp=NULL
@@ -2057,7 +2059,7 @@ server <- function(input, output,session) {
           y=result0()$y
           m<-cbind(result0()$Amat,result0()$Dmat)
           for (r in 1:domain){
-            m<-cbind(m,t(result0()$Gamma[,r,]))
+            m<-cbind(m,t(result0()$Gamma[,r,,1]))
           }
           m<-cbind(m,result0()$Beta)
           gp=NULL
