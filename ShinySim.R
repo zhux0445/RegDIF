@@ -143,5 +143,17 @@ write.csv(indic,file = "indic4grp.csv", row.names = F)
 
 result0=reg_DIF_alllbd(resp=resp,indic=indic,Group=Group,Method='EM',Unif=T)
 
+m<-cbind(result0$Amat,result0$Dmat)
+for (r in 1:domain){
+  m<-cbind(m,result0$Gamma[,r,,1])
+}
+m<-cbind(m,result0$Beta)
 
 
+#username: uwpmetrics  (or uwpmetrics@gmail.com)
+# password: COE_psychometrics21
+
+#remote desktop
+# pmetrics@uw.edu
+# COE_psychometrics19
+#  pin:123456
