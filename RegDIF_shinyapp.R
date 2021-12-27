@@ -1567,7 +1567,7 @@ reg_DIF_alllbd=function(resp,indic,Group,Method,Unif=F,updateProgress=NULL){
       sim=Reg_EMM_DIF(resp=resp,indic=indic,eta=lbd,Group=Group,Unif=Unif,r=r,y=y,N.vec=N.vec,gra00=gra00,grd00=grd00,grbeta00=grbeta00,grgamma00=grgamma00,Mu.list=Mu.list,Sig.list=Sig.list)
     } 
     if (Method=="Adapt"){
-      sim=Reg_EMM_DIF(resp=resp,indic=indic,eta=lbd,Group=Group,Unif=Unif,r=r,y=y,N.vec=N.vec,gra00=gra00,grd00=grd00,grbeta00=grbeta00,grgamma00=grgamma00,Mu.list=Mu.list,Sig.list=Sig.list)
+      sim=Reg_Adaptive_DIF(resp=resp,indic=indic,eta=lbd,Group=Group,Unif=Unif,r=r,y=y,N.vec=N.vec,gra00=gra00,grd00=grd00,grbeta00=grbeta00,grgamma00=grgamma00,Mu.list=Mu.list,Sig.list=Sig.list)
     }
     #print(proc.time() - ptm)
     bics[k]=sim$bic
@@ -1748,43 +1748,41 @@ LRT_function=function(resp,Group,indic,Unif){
     } else {
       md.refit02 <- multipleGroup(resp, model, group = Group,SE=TRUE,invariance=c('free_means', 'free_var','slopes',colnames(resp)[which(colnames(resp)%in%rownames(dif1.t)==0)]))
     }
-    
-    starting5new=cbind(coef(md.refit02,simplify=T)[[1]]$items[,1:(domain+m-1)])
+    #Gamma=Gamma,Beta=Beta,Amat=Amat,Dmat=Dmat,Mu=Mu,Sig=Sig,domain=domain,y=y
+    est=cbind(coef(md.refit02,simplify=T)[[1]]$items[,1:(domain+m-1)])
     for (yy in 2:y){
-      starting5new=cbind(starting5new,coef(md.noncons0,simplify=T)[[yy]]$items[,domain+1]-coef(md.noncons0,simplify=T)[[1]]$items[,domain+1])
-      
+      est=cbind(est,coef(md.refit02,simplify=T)[[yy]]$items[,domain+1]-coef(md.refit02,simplify=T)[[1]]$items[,domain+1])
     }
-    gra00=as.matrix(starting5new[,1:domain])
-    rownames(gra00) <- c()
-    colnames(gra00) <- c()
-    grd00=matrix(starting5new[,domain+1],J,1)
-    grgamma00=array(0,dim=c((y-1),domain,J))
-    grbeta00=as.matrix(starting5new[,(domain+1+1):(domain+1+1+y-1-1)])
-    rownames(grbeta00) <- c()
-    colnames(grbeta00) <- c()
-    #Sigma0=array(double(domain*domain*y),dim = c(domain,domain,y))
-    Sigma0=matrix(0,domain*y,domain)
-    #Mu0 = matrix(0,domain,y)
-    Mu0 = numeric(domain*y)
+    gra.est=as.matrix(est[,1:domain])
+    grd.est=matrix(est[,domain+1],J,1)
+    grgamma.est=array(0,dim=c((y-1),domain,J))
+    grbeta.est=as.matrix(est[,(domain+1+1):(domain+1+1+y-1-1)])
+    Sigma.est=matrix(0,domain*y,domain)
+    Mu.est = numeric(domain*y)
     for (yy in 1:y){
-      Sigma0[((yy-1)*domain+1):(yy*domain),]=coef(md.noncons0,simplify=T)[[yy]]$cov
-      #Mu0[,yy]=coef(md.noncons0,simplify=T)[[yy]]$means
+      Sigma.est[((yy-1)*domain+1):(yy*domain),]=coef(md.noncons0,simplify=T)[[yy]]$cov
+      Mu.est[((yy-1)*domain+1):(yy*domain)]=coef(md.noncons0,simplify=T)[[yy]]$means
     }
   } else {
     anchors0=c(1:J)
     diff=1
     while(diff>0){
       md.cons0 <- multipleGroup(resp, model, group = Group,SE=TRUE,invariance=c('free_means', 'free_var',colnames(resp)[anchors0]))
-      d=DIF(md.cons0, which.par = c('d'), p.adjust = 'fdr',scheme = 'drop')
+      d=DIF(md.cons0, which.par = c(rownames(indic),'d'), p.adjust = 'fdr',scheme = 'drop')
       anchors=which(d$adj_pvals>0.05)
       diff=length(anchors0)-length(anchors)
       anchors0=anchors
       #anchors=c(1:20)[-which(colnames(resp)%in%rownames(d))]
     }
     md.noncons0 <- multipleGroup(resp, model, group = Group,SE=TRUE,invariance=c('free_means', 'free_var',colnames(resp)[anchors]))
-    dif1=DIF(md.noncons0, which.par = c('d'), p.adjust = 'fdr',scheme = 'add',items2test=c(1:J)[-anchors])
-    dif1.t=dif1[which(dif1$adj_pvals<0.05),]
-    
+    Jt=c(1:J)[-anchors]
+    dif1.t=NULL
+    for (jj in Jt){
+      an=rownames(indic)[which(indic[,jj]==1)]
+      dif1=DIF(md.noncons0, which.par = c(an,'d'), p.adjust = 'fdr',scheme = 'add', items2test=jj)
+      dif1.t=rbind(dif1.t,dif1[which(dif1$adj_pvals<0.05),])
+    }
+      
     #refit
     if (length(rownames(dif1.t))==0){
       md.refit02 <-multipleGroup(resp, model, group = Group,SE=TRUE,invariance=c('free_means', 'free_var',colnames(resp)[1:J]))
@@ -1792,26 +1790,22 @@ LRT_function=function(resp,Group,indic,Unif){
       md.refit02 <- multipleGroup(resp, model, group = Group,SE=TRUE,invariance=c('free_means', 'free_var',colnames(resp)[which(colnames(resp)%in%rownames(dif1.t)==0)]))
     }
     
-    starting5new=cbind(coef(md.refit02,simplify=T)[[1]]$items[,1:(domain+m-1)])
+    est=cbind(coef(md.refit02,simplify=T)[[1]]$items[,1:(domain+m-1)])
     for (yy in 2:y){
-      starting5new=cbind(starting5new,coef(md.noncons0,simplify=T)[[yy]]$items[,domain+1]-coef(md.noncons0,simplify=T)[[1]]$items[,domain+1])
-      
+      est=cbind(starting5new,coef(md.refit02,simplify=T)[[yy]]$items[,1:domain]-coef(md.refit02,simplify=T)[[1]]$items[,1:domain])
     }
-    gra00=as.matrix(starting5new[,1:domain])
-    rownames(gra00) <- c()
-    colnames(gra00) <- c()
-    grd00=matrix(starting5new[,domain+1],J,1)
-    grgamma00=array(0,dim=c((y-1),domain,J))
-    grbeta00=as.matrix(starting5new[,(domain+1+1):(domain+1+1+y-1-1)])
-    rownames(grbeta00) <- c()
-    colnames(grbeta00) <- c()
-    #Sigma0=array(double(domain*domain*y),dim = c(domain,domain,y))
-    Sigma0=matrix(0,domain*y,domain)
-    #Mu0 = matrix(0,domain,y)
-    Mu0 = numeric(domain*y)
+    for (yy in 2:y){
+      est=cbind(starting5new,coef(md.refit02,simplify=T)[[yy]]$items[,domain+1]-coef(md.refit02,simplify=T)[[1]]$items[,domain+1])
+    }
+    gra.est=as.matrix(est[,1:domain])
+    grd.est=matrix(est[,domain+1],J,1)
+    grgamma.est=est[]
+    grbeta.est=as.matrix(est[,(domain+1+1):(domain+1+1+y-1-1)])
+    Sigma.est=matrix(0,domain*y,domain)
+    Mu.est = numeric(domain*y)
     for (yy in 1:y){
-      Sigma0[((yy-1)*domain+1):(yy*domain),]=coef(md.noncons0,simplify=T)[[yy]]$cov
-      #Mu0[,yy]=coef(md.noncons0,simplify=T)[[yy]]$means
+      Sigma.est[((yy-1)*domain+1):(yy*domain),]=coef(md.noncons0,simplify=T)[[yy]]$cov
+      Mu.est[((yy-1)*domain+1):(yy*domain)]=coef(md.noncons0,simplify=T)[[yy]]$means
     }
   }
   
