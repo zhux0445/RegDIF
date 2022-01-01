@@ -1710,7 +1710,7 @@ reg_DIF_alllbd=function(resp,indic,Group,Method,Unif=F,updateProgress=NULL){
 
 
 
-LRT_function=function(resp,indic,Group,Unif=T,updateProgress=NULL){
+LRT_function=function(resp,indic,Group,Unif,updateProgress=NULL){
   if (min(resp)==0){
     resp2=as.matrix(resp)
     resp=resp+1
@@ -2093,10 +2093,10 @@ server <- function(input, output,session) {
       Method="Adapt"
     } 
     if (input$Type == "T") {
-      Unif="T"
+      Unif=T
     } 
     if (input$Type == "F") {
-      Unif="F"
+      Unif=F
     } 
     if (input$method == "LRT") {
       result=LRT_function(u(),indic(),Group(),Unif)
