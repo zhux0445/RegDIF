@@ -9,16 +9,27 @@ Group02=c(rep('G1', N1), rep('G3', N3))
 N=N1+N2+N3
 resp=responses[((rep-1)*N+1):((rep-1)*N+N1+N2+N3),]
 indic=matrix(0,2,20);indic[1,1]=1;indic[2,2]=1;indic[1,3:11]=1;indic[2,12:20]=1 #
-setwd('/Users/ruoyizhu/Desktop/DIF_sims')
+Unif=T
+setwd('/Users/ruoyizhu/Desktop')
+resp=data.matrix(read.csv("/Users/ruoyizhu/Desktop/resp.csv"))
+Group=read.csv("/Users/ruoyizhu/Desktop/Group.csv")[,1]
+indic=data.matrix(read.csv("/Users/ruoyizhu/Desktop/indic.csv"))
+
+
+
 write.csv(resp,file = "resp.csv", row.names = F)
 write.csv(Group,file = "Group.csv", row.names = F)
 write.csv(indic,file = "indic.csv", row.names = F)
 COV <- matrix(c(FALSE, TRUE, TRUE, FALSE), 2) #
 write.csv(COV,file = "COV.csv")
 
+result0=LRT_function(resp,Group,indic,Unif=T)
+result0=LRT_function(resp,Group,indic,Unif=F)
 
-result0=reg_DIF_alllbd(resp=resp,indic=indic,Group=Group,Method='Adapt',Unif=T)
 
+
+result1=reg_DIF_alllbd(resp=data.matrix(resp),indic=indic,Group=Group,Method='Adapt',Unif=T)
+data.matrix(resp)
 
 domain=result0$domain
 y=result0$y
@@ -34,15 +45,26 @@ for(yy in 1:(y-1)){
 colnames(m)<-c(paste("a",1:(result0$domain),sep=""),"d",paste(rep(paste("gamma",1:domain,sep=""),(y-1)),gp,sep=""),paste("beta",1:(y-1),sep=""))
 
 
+domain=result0$domain
+y=result0$y
+m<-cbind(result0$Amat,result0$Dmat)
+if (y==2){
+  for (r in 1:domain){
+    m<-cbind(m,result0$Gamma[,r,])
+  }
+} else {
+  for (r in 1:domain){
+    m<-cbind(m,t(result0$Gamma[,r,]))
+  }
+}
+m<-cbind(m,result0$Beta)
+
 m1<-matrix(result0$Mu)
 
 m2<-result0$Sig
 m=cbind(m1,m2)
 colnames(m)<-c(paste("Mean"),paste("Var dimension",1:(result0$domain),sep=""))
 rownames(m)<-paste("group",rep(1:(result0$y),each=result0$domain)," dimension",rep(1:(result0$domain),result0$y),sep="")
-
-
-
 
 
 
@@ -67,8 +89,6 @@ write.csv(Group,file = "Group.csv", row.names = F)
 write.csv(indic,file = "indic.csv", row.names = F)
 COV <- matrix(c(FALSE, TRUE, TRUE, FALSE), 2) #
 write.csv(COV,file = "COV.csv")
-
-
 
 
 
@@ -157,3 +177,30 @@ m<-cbind(m,result0$Beta)
 # pmetrics@uw.edu
 # COE_psychometrics19
 #  pin:123456
+
+
+
+
+
+LRT_function=function(resp,Group,indic,Unif){ 
+  m=2 ##fixed, 2pl only
+  N=nrow(resp)
+  J=ncol(resp)
+  domain=nrow(indic)
+  y=length(unique(Group)) 
+  y.allgroup=rbind(rep(0,y-1),diag(y-1)) 
+  G=matrix(0,N,y-1)
+  for (yy in 1:y){
+    vec=which(Group==sort(unique(Group))[yy])
+    for (i in 1:length(vec)){
+      G[vec[i],]=y.allgroup[yy,]
+    }
+  }
+  # defalt for no impact (when using mirt to estimate MLE, fix the mean and variance for all groups)
+  COV <- matrix(TRUE,domain,domain); diag(COV)=FALSE
+  model <- mirt.model(t(indic), COV=COV) ##
+  
+  
+  return(list(Gamma=grgamma.est,Beta=grbeta.est,Amat=gra.est,Dmat=grd.est,Mu=Mu.est,Sig=Sigma.est,domain=domain,y=y))
+}
+

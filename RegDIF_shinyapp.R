@@ -1709,7 +1709,16 @@ reg_DIF_alllbd=function(resp,indic,Group,Method,Unif=F,updateProgress=NULL){
 }
 
 
-LRT_function=function(resp,Group,indic,Unif){
+
+LRT_function=function(resp,indic,Group,Unif=T,updateProgress=NULL){
+  if (min(resp)==0){
+    resp2=as.matrix(resp)
+    resp=resp+1
+  } else {
+    resp2=as.matrix(resp)-1
+  }
+  resp=resp2
+
   m=2 ##fixed, 2pl only
   N=nrow(resp)
   J=ncol(resp)
@@ -1726,6 +1735,8 @@ LRT_function=function(resp,Group,indic,Unif){
   # defalt for no impact (when using mirt to estimate MLE, fix the mean and variance for all groups)
   COV <- matrix(TRUE,domain,domain); diag(COV)=FALSE
   model <- mirt.model(t(indic), COV=COV) ##
+
+    #md.noncons0 <- multipleGroup(resp, model, group = Group,SE=TRUE,invariance=c('slopes'))
   rownames(indic)=paste0("a",1:domain)
   if (Unif==T){
     anchors0=c(1:J)
@@ -1754,14 +1765,14 @@ LRT_function=function(resp,Group,indic,Unif){
       est=cbind(est,coef(md.refit02,simplify=T)[[yy]]$items[,domain+1]-coef(md.refit02,simplify=T)[[1]]$items[,domain+1])
     }
     gra.est=as.matrix(est[,1:domain])
-    grd.est=matrix(est[,domain+1],J,1)
+    grd.est=matrix(est[,(domain+1)],J,1)
     grgamma.est=array(0,dim=c((y-1),domain,J))
     grbeta.est=as.matrix(est[,(domain+1+1):(domain+1+1+y-1-1)])
     Sigma.est=matrix(0,domain*y,domain)
     Mu.est = numeric(domain*y)
     for (yy in 1:y){
-      Sigma.est[((yy-1)*domain+1):(yy*domain),]=coef(md.noncons0,simplify=T)[[yy]]$cov
-      Mu.est[((yy-1)*domain+1):(yy*domain)]=coef(md.noncons0,simplify=T)[[yy]]$means
+      Sigma.est[((yy-1)*domain+1):(yy*domain),]=coef(md.refit02,simplify=T)[[yy]]$cov
+      Mu.est[((yy-1)*domain+1):(yy*domain)]=coef(md.refit02,simplify=T)[[yy]]$means
     }
   } else {
     anchors0=c(1:J)
@@ -1782,7 +1793,7 @@ LRT_function=function(resp,Group,indic,Unif){
       dif1=DIF(md.noncons0, which.par = c(an,'d'), p.adjust = 'fdr',scheme = 'add', items2test=jj)
       dif1.t=rbind(dif1.t,dif1[which(dif1$adj_pvals<0.05),])
     }
-      
+    
     #refit
     if (length(rownames(dif1.t))==0){
       md.refit02 <-multipleGroup(resp, model, group = Group,SE=TRUE,invariance=c('free_means', 'free_var',colnames(resp)[1:J]))
@@ -1792,24 +1803,33 @@ LRT_function=function(resp,Group,indic,Unif){
     
     est=cbind(coef(md.refit02,simplify=T)[[1]]$items[,1:(domain+m-1)])
     for (yy in 2:y){
-      est=cbind(starting5new,coef(md.refit02,simplify=T)[[yy]]$items[,1:domain]-coef(md.refit02,simplify=T)[[1]]$items[,1:domain])
+      est=cbind(est,coef(md.refit02,simplify=T)[[yy]]$items[,1:domain]-coef(md.refit02,simplify=T)[[1]]$items[,1:domain])
     }
     for (yy in 2:y){
-      est=cbind(starting5new,coef(md.refit02,simplify=T)[[yy]]$items[,domain+1]-coef(md.refit02,simplify=T)[[1]]$items[,domain+1])
+      est=cbind(est,coef(md.refit02,simplify=T)[[yy]]$items[,domain+1]-coef(md.refit02,simplify=T)[[1]]$items[,(domain+1)])
     }
     gra.est=as.matrix(est[,1:domain])
     grd.est=matrix(est[,domain+1],J,1)
-    grgamma.est=est[]
-    grbeta.est=as.matrix(est[,(domain+1+1):(domain+1+1+y-1-1)])
+    grgamma.est=array(double((y-1)*domain*J),dim = c((y-1),domain,J))
+    for (yy in 1:(y-1)){
+      grgamma.est[yy,,]=t(est[,(domain+1+(yy-1)*domain+1):(domain+1+(yy-1)*domain+domain)])
+    }
+    grbeta.est=as.matrix(est[,(domain+1+(y-1)*domain+1):(domain+1+(y-1)*domain+1+y-1-1)])
     Sigma.est=matrix(0,domain*y,domain)
     Mu.est = numeric(domain*y)
     for (yy in 1:y){
-      Sigma.est[((yy-1)*domain+1):(yy*domain),]=coef(md.noncons0,simplify=T)[[yy]]$cov
-      Mu.est[((yy-1)*domain+1):(yy*domain)]=coef(md.noncons0,simplify=T)[[yy]]$means
+      Sigma.est[((yy-1)*domain+1):(yy*domain),]=coef(md.refit02,simplify=T)[[yy]]$cov
+      Mu.est[((yy-1)*domain+1):(yy*domain)]=coef(md.refit02,simplify=T)[[yy]]$means
     }
   }
+    #gra.est=matrix(0,J,domain)
+    #grd.est=matrix(0,J,1)
+    #grgamma.est=array(0,dim=c((y-1),domain,J))
+    #grbeta.est=matrix(0,J,y-1)
+    #Sigma.est=matrix(0,domain*y,domain)
+    #Mu.est = numeric(domain*y)
   
-  return(list(Gamma=Gamma,Beta=Beta,Amat=Amat,Dmat=Dmat,Mu=Mu,Sig=Sig,domain=domain,y=y))
+  return(list(Gamma=grgamma.est,Beta=grbeta.est,Amat=gra.est,Dmat=grd.est,Mu=Mu.est,Sig= Sigma.est,domain=domain,y=y))
 }
 
 #####shiny app######
@@ -1927,7 +1947,8 @@ ui <- navbarPage("Regularized DIF",
                                           label = "Choose a regulariztion algorithm",
                                           choices = list("lasso EM"='EM', 
                                                          "lasso EMM"='EMM',
-                                                         "Adaptive lasso EM"="Adapt"),
+                                                         "Adaptive lasso EM"="Adapt",
+                                                         "Likelihood Ratio Test"="LRT"),
                                           selected = "EM"),
                               
                             
@@ -2003,10 +2024,7 @@ server <- function(input, output,session) {
   output$tab <- renderUI({
     tagList("Other Functions:", url)
   })
-  url2 <- a("DIF - likelihood ratio test", href="https://www.google.com/",)
-  output$tab2 <- renderUI({
-    tagList(url2)
-  })
+  
   # data matrix
   u<-reactive({req(input$file1)
     df <- data.matrix(read.csv(input$file1$datapath,
@@ -2080,46 +2098,76 @@ server <- function(input, output,session) {
     if (input$Type == "F") {
       Unif="F"
     } 
-    result=reg_DIF_alllbd(u(),indic(),Group(),Method,Unif,updateProgress)
+    if (input$method == "LRT") {
+      result=LRT_function(u(),indic(),Group(),Unif)
+    } else {
+      result=reg_DIF_alllbd(u(),indic(),Group(),Method,Unif,updateProgress)
+    }
     return(result)
   })
   
   output$warn<-renderText({
     input$go1
     isolate({
-      if(result0()$lbd == min(result0()$lbd.vec) || result0()$lbd == max(result0()$lbd.vec)){
-        return("Warning: The optimal penalty parameter may be out of range")
-      }else{
+      if (input$method == "LRT") {
         return(NULL)
-      }})
+      } else {
+        if(result0()$lbd == min(result0()$lbd.vec) || result0()$lbd == max(result0()$lbd.vec)){
+          return("Warning: The optimal penalty parameter may be out of range")
+        }else{
+          return(NULL)
+        }
+      }
+      })
   })
   #(lbd=lbd,Gamma=Gamma,Beta=Beta,Amat=Amat,Dmat=Dmat,Sig=Sig,ICs=ICs)
   output$par1<-renderTable({
     input$go1
     isolate({
-      domain=result0()$domain
-      y=result0()$y
-      m<-cbind(result0()$Amat,result0()$Dmat)
-      if (y==2){
-        for (r in 1:domain){
-          m<-cbind(m,result0()$Gamma[,r,,1])
+      if (input$method == "LRT"){
+        domain=result0()$domain
+        y=result0()$y
+        m<-cbind(result0()$Amat,result0()$Dmat)
+          for (r in 1:domain){
+            m<-cbind(m,t(result0()$Gamma[,r,]))
+          }
+        m<-cbind(m,result0()$Beta)
+        gp=NULL
+        #for(yy in 1:(y-1)){
+        #  gp=c(gp,rep(yy,domain))
+        #}
+        #colnames(m)<-c(paste("a",1:(result0()$domain),sep=""),"b",paste(rep(paste("gamma",1:domain,sep=""),(y-1)),gp,sep=""),paste("beta",1:(y-1),sep=""))
+        #rownames(m)<-c(paste("Item",1:ncol(indic),sep=""))
+        for(r in 1:domain){
+          gp=c(gp,rep(r,y-1))
         }
+        colnames(m)<-c(paste("a",1:(result0()$domain),sep=""),"b",paste(rep(paste("gamma",1:(y-1),sep=""),result0()$domain),gp,sep=""),paste("beta",1:(y-1),sep=""))
+        
       } else {
-        for (r in 1:domain){
-          m<-cbind(m,t(result0()$Gamma[,r,,1]))
+        domain=result0()$domain
+        y=result0()$y
+        m<-cbind(result0()$Amat,result0()$Dmat)
+        if (y==2){
+          for (r in 1:domain){
+            m<-cbind(m,result0()$Gamma[,r,,1])
+          }
+        } else {
+          for (r in 1:domain){
+            m<-cbind(m,t(result0()$Gamma[,r,,1]))
+          }
         }
+        m<-cbind(m,result0()$Beta)
+        gp=NULL
+        #for(yy in 1:(y-1)){
+        #  gp=c(gp,rep(yy,domain))
+        #}
+        #colnames(m)<-c(paste("a",1:(result0()$domain),sep=""),"b",paste(rep(paste("gamma",1:domain,sep=""),(y-1)),gp,sep=""),paste("beta",1:(y-1),sep=""))
+        #rownames(m)<-c(paste("Item",1:ncol(indic),sep=""))
+        for(r in 1:domain){
+          gp=c(gp,rep(r,y-1))
+        }
+        colnames(m)<-c(paste("a",1:(result0()$domain),sep=""),"b",paste(rep(paste("gamma",1:(y-1),sep=""),result0()$domain),gp,sep=""),paste("beta",1:(y-1),sep=""))
       }
-      m<-cbind(m,result0()$Beta)
-      gp=NULL
-      #for(yy in 1:(y-1)){
-      #  gp=c(gp,rep(yy,domain))
-      #}
-      #colnames(m)<-c(paste("a",1:(result0()$domain),sep=""),"b",paste(rep(paste("gamma",1:domain,sep=""),(y-1)),gp,sep=""),paste("beta",1:(y-1),sep=""))
-      #rownames(m)<-c(paste("Item",1:ncol(indic),sep=""))
-      for(r in 1:domain){
-        gp=c(gp,rep(r,y-1))
-      }
-      colnames(m)<-c(paste("a",1:(result0()$domain),sep=""),"b",paste(rep(paste("gamma",1:(y-1),sep=""),result0()$domain),gp,sep=""),paste("beta",1:(y-1),sep=""))
       return(m)
     })
     
@@ -2146,13 +2194,16 @@ server <- function(input, output,session) {
     
   }, rownames = T)
   
-  
   output$plot <- renderPlot({
     input$go1
     isolate({
-    bic=result0()$ICs
-    eta=result0()$lbd.vec
-    plot(eta,bic)
+      if (input$method == "LRT"){
+        return(NULL)
+      } else {
+        bic=result0()$ICs
+        eta=result0()$lbd.vec
+        plot(eta,bic)
+      }
     })
   })
   #Downloadable csv of selected dataset ----
