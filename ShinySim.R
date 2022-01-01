@@ -23,7 +23,9 @@ write.csv(indic,file = "indic.csv", row.names = F)
 COV <- matrix(c(FALSE, TRUE, TRUE, FALSE), 2) #
 write.csv(COV,file = "COV.csv")
 
-result0=LRT_function(resp,Group,indic,Unif=T)
+result0=LRT_function(resp=resp2,Group=Group,indic=indic,Unif=Unif)
+init=DIF_init(resp=resp2,Group=Group,indic=indic,Unif=Unif)
+result01=LRT_function(resp=resp2,Group=Group,indic=indic,Unif=F)
 result0=LRT_function(resp,Group,indic,Unif=F)
 
 
