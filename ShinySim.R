@@ -114,7 +114,7 @@ Group=read.csv("/Users/ruoyizhu/Documents/GitHub/RegDIF/DIF_sims/Group2grp.csv")
 indic=data.matrix(read.csv("/Users/ruoyizhu/Documents/GitHub/RegDIF/DIF_sims/indic.csv"))
 
 
-result0=reg_DIF_alllbd(resp=resp,indic=indic,Group=Group,Method='EMM',Unif=T)
+result0=reg_DIF_alllbd(resp=resp,indic=indic,Group=Group,Method='LRT',Unif=T)
 
 
 
@@ -205,4 +205,8 @@ LRT_function=function(resp,Group,indic,Unif){
   
   return(list(Gamma=grgamma.est,Beta=grbeta.est,Amat=gra.est,Dmat=grd.est,Mu=Mu.est,Sig=Sigma.est,domain=domain,y=y))
 }
+
+
+
+
 
