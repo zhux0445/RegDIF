@@ -1543,7 +1543,7 @@ reg_DIF_alllbd=function(resp,indic,Group,Method,Unif=F,updateProgress=NULL){
   person=nrow(resp)
   item=ncol(resp)
   domain=nrow(indic)
-  y=length(unique(Group)) 
+  #y=length(unique(Group)) 
   lbd.center=10+0.033*mean(N.vec)
   lbd.vec=seq((lbd.center-10),(lbd.center+10),4)
   bics=gics=rep(0,length(lbd.vec))
@@ -1567,7 +1567,7 @@ reg_DIF_alllbd=function(resp,indic,Group,Method,Unif=F,updateProgress=NULL){
       sim=Reg_EMM_DIF(resp=resp,indic=indic,eta=lbd,Group=Group,Unif=Unif,r=r,y=y,N.vec=N.vec,gra00=gra00,grd00=grd00,grbeta00=grbeta00,grgamma00=grgamma00,Mu.list=Mu.list,Sig.list=Sig.list)
     } 
     if (Method=="Adapt"){
-      sim=Reg_Adaptive_DIF(resp=resp,indic=indic,eta=lbd,Group=Group,Unif=Unif,r=r,y=y,N.vec=N.vec,gra00=gra00,grd00=grd00,grbeta00=grbeta00,grgamma00=grgamma00,Mu.list=Mu.list,Sig.list=Sig.list)
+      sim=Reg_Adaptive_DIF(resp=resp,indic=indic,eta=lbd,lam=1,Group=Group,Unif=Unif,r=r,y=y,N.vec=N.vec,gra00=gra00,grd00=grd00,grbeta00=grbeta00,grgamma00=grgamma00,Mu.list=Mu.list,Sig.list=Sig.list)
     }
     #print(proc.time() - ptm)
     bics[k]=sim$bic
