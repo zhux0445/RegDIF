@@ -1616,7 +1616,7 @@ reg_DIF_alllbd=function(resp,indic,Group,Method,Unif=F,updateProgress=NULL){
     
     if ((lbd==min(lbd.vec))|(lbd==max(lbd.vec))){
       if (lbd==min(lbd.vec)){
-        lbd.vec2=seq(max(0,min(lbd.vec)-12),min(lbd.vec)-4,4)
+        lbd.vec2=seq(max(1,min(lbd.vec)-12),max(5,min(lbd.vec)-4),4)
         bics2=gics2=rep(0,length(lbd.vec2))
         ADmat2=array(double(item*(domain+1)*length(lbd.vec2)),dim = c(item,(domain+1),length(lbd.vec2)))
         Gammas2=array(double((y-1)*domain*item*length(lbd.vec2)),dim = c((y-1),domain,item,length(lbd.vec2)))
