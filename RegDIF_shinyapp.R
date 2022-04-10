@@ -2130,11 +2130,11 @@ server <- function(input, output,session) {
         m<-cbind(result0()$Amat,result0()$Dmat)
         if (y==2){
           for (r in 1:domain){
-            m<-cbind(m,result0$Gamma[,r,])
+            m<-cbind(m,result0()$Gamma[,r,])
           }
         } else {
           for (r in 1:domain){
-            m<-cbind(m,t(result0$Gamma[,r,]))
+            m<-cbind(m,t(result0()$Gamma[,r,]))
           }
         }
         m<-cbind(m,result0()$Beta)
