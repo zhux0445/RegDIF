@@ -1,0 +1,13 @@
+name: MBRDIF
+title: MBRDIF
+username:
+account: uwpmetrics
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 5472789
+bundleId: 5487946
+when: 1642661385.71692
+lastSyncTime: 1642661385.71692
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: DIF_sims.zip|EMsteps.R|example_code_functions.R|example_code_NonUnif_DIF.R|lasso_em_shiny.R|LRTcode.R|NonUnifAllSims.R|PowerCal(NonUnif).R|README.md|Reg_DIF_EM.cpp|Reg_DIF_Main_Functions.R|RunningDocumentation.pdf|scovec.cpp|ShinySim.R|test_omp.cpp
