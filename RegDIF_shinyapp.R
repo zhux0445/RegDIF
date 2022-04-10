@@ -2118,7 +2118,7 @@ server <- function(input, output,session) {
           return(NULL)
         }
       }
-      })
+    })
   })
   #(lbd=lbd,Gamma=Gamma,Beta=Beta,Amat=Amat,Dmat=Dmat,Sig=Sig,ICs=ICs)
   output$par1<-renderTable({
@@ -2128,9 +2128,15 @@ server <- function(input, output,session) {
         domain=result0()$domain
         y=result0()$y
         m<-cbind(result0()$Amat,result0()$Dmat)
+        if (y==2){
           for (r in 1:domain){
-            m<-cbind(m,t(t(result0()$Gamma[,r,])))
+            m<-cbind(m,result0$Gamma[,r,])
           }
+        } else {
+          for (r in 1:domain){
+            m<-cbind(m,t(result0$Gamma[,r,]))
+          }
+        }
         m<-cbind(m,result0()$Beta)
         gp=NULL
         #for(yy in 1:(y-1)){
@@ -2182,7 +2188,7 @@ server <- function(input, output,session) {
     })
     
   }, rownames = T)
-   
+  
   output$cov1<-renderTable({
     input$go1
     isolate({
@@ -2218,39 +2224,39 @@ server <- function(input, output,session) {
     content = function(file) {
       if(input$checkGroup1=="all"){
         saveRDS(result0(), file)
-        }else if(input$checkGroup1=="item"){
-          domain=result0()$domain
-          y=result0()$y
-          m<-cbind(result0()$Amat,result0()$Dmat)
-          if (y==2){
-            for (r in 1:domain){
-              m<-cbind(m,result0()$Gamma[,r,,1])
-            }
-          } else {
-            for (r in 1:domain){
-              m<-cbind(m,t(result0()$Gamma[,r,,1]))
-            }
+      }else if(input$checkGroup1=="item"){
+        domain=result0()$domain
+        y=result0()$y
+        m<-cbind(result0()$Amat,result0()$Dmat)
+        if (y==2){
+          for (r in 1:domain){
+            m<-cbind(m,result0()$Gamma[,r,,1])
           }
-          m<-cbind(m,result0()$Beta)
-          gp=NULL
-          #for(yy in 1:(y-1)){
-          #  gp=c(gp,rep(yy,domain))
-          #}
-          #colnames(m)<-c(paste("a",1:(result0()$domain),sep=""),"b",paste(rep(paste("gamma",1:domain,sep=""),(y-1)),gp,sep=""),paste("beta",1:(y-1),sep=""))
-          for(r in 1:domain){
-            gp=c(gp,rep(r,y-1))
+        } else {
+          for (r in 1:domain){
+            m<-cbind(m,t(result0()$Gamma[,r,,1]))
           }
-          colnames(m)<-c(paste("a",1:(result0()$domain),sep=""),"b",paste(rep(paste("gamma",1:(y-1),sep=""),result0()$domain),gp,sep=""),paste("beta",1:(y-1),sep=""))
-          rownames(m)<-c(paste("Item",1:ncol(indic()),sep=""))
-          write.csv(m,file)
-        }else if(input$checkGroup1=="cov"){
-          m1<-matrix(result0()$Mu)
-          m2<-result0()$Sig
-          m=cbind(m1,m2)
-          colnames(m)<-c(paste("Mean"),paste("Var dimension",1:(result0()$domain),sep=""))
-          rownames(m)<-paste("group",rep(1:(result0()$y),each=result0()$domain)," dimension",rep(1:(result0()$domain),result0()$y),sep="")
-          write.csv(m,file)
         }
+        m<-cbind(m,result0()$Beta)
+        gp=NULL
+        #for(yy in 1:(y-1)){
+        #  gp=c(gp,rep(yy,domain))
+        #}
+        #colnames(m)<-c(paste("a",1:(result0()$domain),sep=""),"b",paste(rep(paste("gamma",1:domain,sep=""),(y-1)),gp,sep=""),paste("beta",1:(y-1),sep=""))
+        for(r in 1:domain){
+          gp=c(gp,rep(r,y-1))
+        }
+        colnames(m)<-c(paste("a",1:(result0()$domain),sep=""),"b",paste(rep(paste("gamma",1:(y-1),sep=""),result0()$domain),gp,sep=""),paste("beta",1:(y-1),sep=""))
+        rownames(m)<-c(paste("Item",1:ncol(indic()),sep=""))
+        write.csv(m,file)
+      }else if(input$checkGroup1=="cov"){
+        m1<-matrix(result0()$Mu)
+        m2<-result0()$Sig
+        m=cbind(m1,m2)
+        colnames(m)<-c(paste("Mean"),paste("Var dimension",1:(result0()$domain),sep=""))
+        rownames(m)<-paste("group",rep(1:(result0()$y),each=result0()$domain)," dimension",rep(1:(result0()$domain),result0()$y),sep="")
+        write.csv(m,file)
+      }
     }
   )
 }
