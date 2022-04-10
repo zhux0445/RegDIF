@@ -6,6 +6,7 @@ server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 5472789
 bundleId: 5487946
+url: https://uwpmetrics.shinyapps.io/MBRDIF/
 when: 1642661385.71692
 lastSyncTime: 1642661385.71692
 asMultiple: FALSE
