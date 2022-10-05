@@ -98,26 +98,59 @@ write.csv(COV,file = "COV.csv")
 setwd('/Users/ruoyizhu/Documents/GitHub/RegDIF_SimData')
 params=read.csv("Para1.csv",row.names = 1)
 responses=read.csv("resp1new_SS600.csv",row.names = 1)
-rep=1
-N1=N2=200 
+rep=19
+N1=N2=N3=200 
 Group=c(rep('G1', N1), rep('G2', N2))
 N=N1+N2
-resp=responses[((rep-1)*N+1):((rep-1)*N+N1+N2),]
+resp=responses[c(((rep-1)*N+1):((rep-1)*N+N1),((rep-1)*N+N1+N2+1):((rep-1)*N+N1+N2+N3)),]
 indic=matrix(0,2,20);indic[1,1]=1;indic[2,2]=1;indic[1,3:11]=1;indic[2,12:20]=1 #
 setwd('/Users/ruoyizhu/Desktop/DIF_sims')
-write.csv(resp,file = "resp2grp.csv", row.names = F)
-write.csv(Group,file = "Group2grp.csv", row.names = F)
-write.csv(indic,file = "indic2grp.csv", row.names = F)
+write.csv(resp,file = "resp2grp3.csv", row.names = F)
+write.csv(Group,file = "Group2grp3.csv", row.names = F)
+write.csv(indic,file = "indic2grp3.csv", row.names = F)
+
+resp=data.matrix(read.csv("resp2grp3.csv"))
+Group=read.csv("Group2grp3.csv")[,1]
+indic=data.matrix(read.csv("indic2grp3.csv"))
+
 
 resp=data.matrix(read.csv("/Users/ruoyizhu/Documents/GitHub/RegDIF/DIF_sims/resp2grp.csv"))
 Group=read.csv("/Users/ruoyizhu/Documents/GitHub/RegDIF/DIF_sims/Group2grp.csv")[,1]
 indic=data.matrix(read.csv("/Users/ruoyizhu/Documents/GitHub/RegDIF/DIF_sims/indic.csv"))
 
 
+resp=data.matrix(read.csv("/Users/ruoyizhu/Documents/GitHub/RegDIF/DIF_sims/NonUnif2grp/NonUnif_resp2grp.csv"))
+Group=read.csv("/Users/ruoyizhu/Documents/GitHub/RegDIF/DIF_sims/NonUnif2grp/Group2grp500.csv")[,1]
+indic=data.matrix(read.csv("/Users/ruoyizhu/Documents/GitHub/RegDIF/DIF_sims/NonUnif2grp/indic.csv"))
+
+
 result0=reg_DIF_alllbd(resp=resp,indic=indic,Group=Group,Method='LRT',Unif=T)
 
 result0=LRT_function(resp=resp,indic=indic,Group=Group,Unif=T)
 
+domain=result0$domain
+y=result0$y
+m<-cbind(result0$Amat,result0$Dmat)
+if (y==2){
+  for (r in 1:domain){
+    m<-cbind(m,result0$Gamma[,r,])
+  }
+} else {
+  for (r in 1:domain){
+    m<-cbind(m,t(result0$Gamma[,r,]))
+  }
+}
+m<-cbind(m,result0$Beta)
+gp=NULL
+#for(yy in 1:(y-1)){
+#  gp=c(gp,rep(yy,domain))
+#}
+#colnames(m)<-c(paste("a",1:(result0()$domain),sep=""),"b",paste(rep(paste("gamma",1:domain,sep=""),(y-1)),gp,sep=""),paste("beta",1:(y-1),sep=""))
+#rownames(m)<-c(paste("Item",1:ncol(indic),sep=""))
+for(r in 1:domain){
+  gp=c(gp,rep(r,y-1))
+}
+colnames(m)<-c(paste("a",1:(result0()$domain),sep=""),"b",paste(rep(paste("gamma",1:(y-1),sep=""),result0()$domain),gp,sep=""),paste("beta",1:(y-1),sep=""))
 
 
 
@@ -188,31 +221,10 @@ m<-cbind(m,result0$Beta)
 # COE_psychometrics19
 #  pin:123456
 
+#Miller321!!
 
 
 
-
-LRT_function=function(resp,Group,indic,Unif){ 
-  m=2 ##fixed, 2pl only
-  N=nrow(resp)
-  J=ncol(resp)
-  domain=nrow(indic)
-  y=length(unique(Group)) 
-  y.allgroup=rbind(rep(0,y-1),diag(y-1)) 
-  G=matrix(0,N,y-1)
-  for (yy in 1:y){
-    vec=which(Group==sort(unique(Group))[yy])
-    for (i in 1:length(vec)){
-      G[vec[i],]=y.allgroup[yy,]
-    }
-  }
-  # defalt for no impact (when using mirt to estimate MLE, fix the mean and variance for all groups)
-  COV <- matrix(TRUE,domain,domain); diag(COV)=FALSE
-  model <- mirt.model(t(indic), COV=COV) ##
-  
-  
-  return(list(Gamma=grgamma.est,Beta=grbeta.est,Amat=gra.est,Dmat=grd.est,Mu=Mu.est,Sig=Sigma.est,domain=domain,y=y))
-}
 
 
 
