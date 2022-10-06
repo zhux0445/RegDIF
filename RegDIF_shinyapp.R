@@ -15,6 +15,7 @@ library(RcppParallel)
 library(RcppArmadillo)
 library(RcppEigen)
 library(abind)
+library(shinydashboard)
 
 sumoverk<-'
 // [[Rcpp::depends(RcppArmadillo, RcppEigen)]]
@@ -1911,8 +1912,7 @@ reg_DIF_alllbd=function(resp,indic,Group,Method,Unif=F,updateProgress=NULL){
   Betas=array(double(item*(y-1)*length(lbd.vec)),dim = c(item,(y-1),length(lbd.vec)))
   Mus=matrix(0,domain*y,length(lbd.vec))
   Sigs=array(double(domain*domain*y*length(lbd.vec)),dim = c(domain*y,domain,length(lbd.vec)))
-  for (k in 1:1)
-  {
+  for (k in 1:1){
     if (is.function(updateProgress)) {
       text <- paste0("k=:", k)
       updateProgress(detail = text)
@@ -1921,30 +1921,12 @@ reg_DIF_alllbd=function(resp,indic,Group,Method,Unif=F,updateProgress=NULL){
     #ptm <- proc.time()
     if (Method=="EM"){
       sim=Reg_DIF(resp=resp,indic=indic,eta=lbd,Group=Group,Unif=Unif,r=r,y=y,N.vec=N.vec,gra00=gra00,grd00=grd00,grbeta00=grbeta00,grgamma00=grgamma00,Mu.list=Mu.list,Sig.list=Sig.list)
-      gra00=sim$est[,1:domain]
-      grd00=matrix(sim$est[,domain+1])
-      grbeta00=sim$Beta
-      grgamma00=sim$Gamma
-      Mu.list=sim$means
-      Sig.list=sim$Covs
     } 
     if (Method=="EMM"){
       sim=Reg_EMM_DIF(resp=resp,indic=indic,eta=lbd,Group=Group,Unif=Unif,r=r,y=y,N.vec=N.vec,gra00=gra00,grd00=grd00,grbeta00=grbeta00,grgamma00=grgamma00,Mu.list=Mu.list,Sig.list=Sig.list)
-      gra00=sim$est[,1:domain]
-      grd00=matrix(sim$est[,domain+1])
-      grbeta00=sim$Beta
-      grgamma00=sim$Gamma
-      Mu.list=sim$means
-      Sig.list=sim$Covs
     } 
     if (Method=="Adapt"){
       sim=Reg_Adaptive_DIF(resp=resp,indic=indic,eta=lbd,lam=1,Group=Group,Unif=Unif,r=r,y=y,N.vec=N.vec,gra00=gra00,grd00=grd00,grbeta00=grbeta00,grgamma00=grgamma00,Mu.list=Mu.list,Sig.list=Sig.list)
-      gra00=sim$est[,1:domain]
-      grd00=matrix(sim$est[,domain+1])
-      grbeta00=sim$Beta
-      grgamma00=sim$Gamma
-      Mu.list=sim$means
-      Sig.list=sim$Covs
     }
     if (Method=="GVEMM"){
       y.allgroup=rbind(rep(0,y-1),diag(y-1)) 
@@ -1964,6 +1946,13 @@ reg_DIF_alllbd=function(resp,indic,Group,Method,Unif=F,updateProgress=NULL){
     ADmat[,,k]=sim$est
     Mus[,k]=sim$means
     Sigs[,,k]=sim$Covs
+    
+    gra00=sim$est[,1:domain]
+    grd00=matrix(sim$est[,domain+1])
+    grbeta00=sim$Beta
+    grgamma00=sim$Gamma
+    Mu.list=sim$means
+    Sig.list=sim$Covs
   }
   for (k in 2:length(lbd.vec))
   {
@@ -2041,7 +2030,7 @@ reg_DIF_alllbd=function(resp,indic,Group,Method,Unif=F,updateProgress=NULL){
                 Groupind[vec[i],]=y.allgroup[yy,]
               }
             }
-            sim=Reg_VEMM_DIF(resp=resp2,indic=indic,lbd=lbd,eta=matrix(0,person,item),eps=matrix(0,person,item),Group=Group,Unif=Unif,domain=domain,y,G=Groupind,N.vec=N.vec,gra00=gra00,grd00=grd00,grbeta00=grbeta00,grgamma00=grgamma00,Mu.list=Mu.list,Sig.list=Sig.list,cons=1)
+            sim=Reg_VEMM_DIF(resp=resp2,indic=indic,lbd=lbd,eta=eta,eps=eps,Group=Group,Unif=Unif,domain=domain,y,G=Groupind,N.vec=N.vec,gra00=gra00,grd00=grd00,grbeta00=grbeta00,grgamma00=grgamma00,Mu.list=Mu.list,Sig.list=Sig.list,cons=1)
           }
           #print(proc.time() - ptm)
           bics2[k]=sim$bic
@@ -2087,7 +2076,7 @@ reg_DIF_alllbd=function(resp,indic,Group,Method,Unif=F,updateProgress=NULL){
                 Groupind[vec[i],]=y.allgroup[yy,]
               }
             }
-            sim=Reg_VEMM_DIF(resp=resp2,indic=indic,lbd=lbd,eta=matrix(0,person,item),eps=matrix(0,person,item),Group=Group,Unif=Unif,domain=domain,y,G=Groupind,N.vec=N.vec,gra00=gra00,grd00=grd00,grbeta00=grbeta00,grgamma00=grgamma00,Mu.list=Mu.list,Sig.list=Sig.list,cons=1)
+            sim=Reg_VEMM_DIF(resp=resp2,indic=indic,lbd=lbd,eta=eta,eps=eps,Group=Group,Unif=Unif,domain=domain,y,G=Groupind,N.vec=N.vec,gra00=gra00,grd00=grd00,grbeta00=grbeta00,grgamma00=grgamma00,Mu.list=Mu.list,Sig.list=Sig.list,cons=1)
           }
           #print(proc.time() - ptm)
           bics2[k]=sim$bic
