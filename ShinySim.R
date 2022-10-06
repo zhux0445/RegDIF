@@ -28,6 +28,9 @@ init=DIF_init(resp=resp2,Group=Group,indic=indic,Unif=Unif)
 result01=LRT_function(resp=resp2,Group=Group,indic=indic,Unif=F)
 result0=LRT_function(resp,Group,indic,Unif=F)
 
+result0=vemm_dif(u=resp,G=G,y=y,domain=domain,new_a0=gra00,new_b0=grd00,new_beta0=grbeta00,new_gamma0=grgamma00,Sigma0=Sigma0,eta=eta,indic=indic,lbd=lbd)
+
+
 
 
 result1=reg_DIF_alllbd(resp=data.matrix(resp),indic=indic,Group=Group,Method='LRT',Unif=T)
