@@ -2238,189 +2238,182 @@ LRT_function=function(resp,indic,Group,Unif,updateProgress=NULL){
 #####shiny app######
 options(shiny.maxRequestSize = 30*1024^2)
 # Define UI for data upload app ----
-ui <- navbarPage("Regularized DIF",
-                 
-                 # App title ----
-                 tabPanel("EM DIF",
-                          
-                          # Sidebar layout with input and output definitions ----
-                          sidebarLayout(
-                            
-                            # Sidebar panel for inputs ----
-                            sidebarPanel(
-                              ############################
-                              # Input: Data file u ----
-                              ############################
-                              fileInput("file1", "Choose Data CSV File",
-                                        multiple = TRUE,
-                                        accept = c("text/csv",
-                                                   "text/comma-separated-values,text/plain",
-                                                   ".csv")),
-                              
-                              # Horizontal line ----
-                              tags$hr(),
-                              
-                              # Input: Checkbox if file has header ----
-                              checkboxInput("header1", "Header", TRUE),
-                              
-                              # Input: Select separator ----
-                              radioButtons("sep1", "Separator",
-                                           choices = c(Comma = ",",
-                                                       Semicolon = ";",
-                                                       Tab = "\t"),
-                                           selected = ","),
-                              # Horizontal line ----
-                              tags$hr(),
-                              
-                              # Input: Select number of rows to display ----
-                              radioButtons("disp1", "Display",
-                                           choices = c(Head = "head",
-                                                       All = "all"),
-                                           selected = "head"),
-                              
-                              # Horizontal line ----
-                              tags$hr(),
-                              
-                              ############################
-                              # Input: Data file Group ----
-                              ############################
-                              fileInput("file2", "Choose group indicator CSV File",
-                                        multiple = TRUE,
-                                        accept = c("text/csv",
-                                                   "text/comma-separated-values,text/plain",
-                                                   ".csv")),
-                              # Horizontal line ----
-                              tags$hr(),
-                              # Input: Checkbox if file has header ----
-                              checkboxInput("header2", "Header", TRUE),
-                              
-                              # Input: Select separator ----
-                              radioButtons("sep2", "Separator",
-                                           choices = c(Comma = ",",
-                                                       Semicolon = ";",
-                                                       Tab = "\t"),
-                                           selected = ","),
-                              
-                              
-                              # Horizontal line ----
-                              tags$hr(),
-                              
-                              # Input: Select number of rows to display ----
-                              radioButtons("disp2", "Display",
-                                           choices = c(Head = "head",
-                                                       All = "all"),
-                                           selected = "head"),
-                              
-                              # Horizontal line ----
-                              tags$hr(),
-                              
-                             
-                              
-                              
-                              ############################
-                              # Input: Data file indic ----
-                              ############################
-                              fileInput("file4", "Choose loading indicator CSV file",
-                                        multiple = TRUE,
-                                        accept = c("text/csv",
-                                                   "text/comma-separated-values,text/plain",
-                                                   ".csv")),
-                              
-                              # Horizontal line ----
-                              tags$hr(),
-                              
-                              # Input: Checkbox if file has header ----
-                              checkboxInput("header4", "Header", TRUE),
-                              
-                              # Input: Select separator ----
-                              radioButtons("sep4", "Separator",
-                                           choices = c(Comma = ",",
-                                                       Semicolon = ";",
-                                                       Tab = "\t"),
-                                           selected = ","),
-                              
-                              
-                              # Horizontal line ----
-                              tags$hr(),
-                              
-                              
-                              
-                              #Input: Select Reg_DIF methods ----
-                              selectInput("method", 
-                                          label = "Choose a regulariztion algorithm",
-                                          choices = list("lasso EM"='EM', 
-                                                         "lasso EMM"='EMM',
-                                                         "Adaptive lasso EM"="Adapt",
-                                                         "lasso GVEMM"="GVEMM",
-                                                         "Likelihood Ratio Test"="LRT"),
-                                          selected = "EM"),
-                              
-                            
-                              #Input: Select information criteria ----
-                              selectInput("Type", 
-                                          label = "Choose a DIF type",
-                                          choices = list("Uniform"='T', 
-                                                         "Non-uniform"='F'),
-                                          selected = "T"),
-                              
-                              
-                              
-                              
-                              # Horizontal line ----
-                              tags$hr(),
-                              actionButton("go1", "Run"),
-                              
-                              
-                              # Horizontal line ----
-                              tags$hr(),
-                              radioButtons("checkGroup1", "Download Results",
-                                           choices = list("All Results" = "all",
-                                                          "Item Parameters" = "item",
-                                                          "Covariance Matrix" = "cov"),
-                                           selected = "all"),
-                              # Button
-                              downloadButton("downloadData", "Download Results")
-                              
-                            ),
-                            
-                            # Main panel for displaying outputs ----
-                            mainPanel(
-                              
-                              uiOutput("tab"),
-                              uiOutput("tab2"),
-                              
-                              h2("Data"),
-                              # Output: Data file ----
-                              tableOutput("contents1"),
-                              
-                              h2("Group Indicator"),
-                              # Output: Data file ----
-                              tableOutput("contents2"),
-                              
-                              h2("Loading indicator"),
-                              # Output: Data file ----
-                              tableOutput("contents4"),
-                              
-                              #warning
-                              h3(span(textOutput("warn"),style="color:red")),
-                              
-                              h2("Item Parameter Results"),
-                              tableOutput("par1"),
-                              
-                              h2("Mean Vector"),
-                              tableOutput("mean1"),
-                              
-                              h2("Covariance Matrix"),
-                              tableOutput("cov1"),
-                              
-                              
-                              h2("Information Criteria"),
-                              plotOutput("plot")
-                              
-                            )
-                            
-                          )
-                 ))
+
+ui <- dashboardPage(skin="purple",
+  dashboardHeader(title = "Regularized DIF"),
+  dashboardSidebar(sidebarMenu(
+    ############################
+    # Input: Data file u ----
+    ############################
+    fileInput("file1", "Choose Data CSV File",
+              multiple = TRUE,
+              accept = c("text/csv",
+                         "text/comma-separated-values,text/plain",
+                         ".csv")),
+    
+    # Horizontal line ----
+    tags$hr(),
+    
+    # Input: Checkbox if file has header ----
+    checkboxInput("header1", "Header", TRUE),
+    
+    # Input: Select separator ----
+    radioButtons("sep1", "Separator",
+                 choices = c(Comma = ",",
+                             Semicolon = ";",
+                             Tab = "\t"),
+                 selected = ","),
+    # Horizontal line ----
+    tags$hr(),
+    
+    # Input: Select number of rows to display ----
+    radioButtons("disp1", "Display",
+                 choices = c(Head = "head",
+                             All = "all"),
+                 selected = "head"),
+    
+    # Horizontal line ----
+    tags$hr(),
+    
+    ############################
+    # Input: Data file Group ----
+    ############################
+    fileInput("file2", "Choose group indicator CSV File",
+              multiple = TRUE,
+              accept = c("text/csv",
+                         "text/comma-separated-values,text/plain",
+                         ".csv")),
+    # Horizontal line ----
+    tags$hr(),
+    # Input: Checkbox if file has header ----
+    checkboxInput("header2", "Header", TRUE),
+    
+    # Input: Select separator ----
+    radioButtons("sep2", "Separator",
+                 choices = c(Comma = ",",
+                             Semicolon = ";",
+                             Tab = "\t"),
+                 selected = ","),
+    
+    
+    # Horizontal line ----
+    tags$hr(),
+    
+    # Input: Select number of rows to display ----
+    radioButtons("disp2", "Display",
+                 choices = c(Head = "head",
+                             All = "all"),
+                 selected = "head"),
+    
+    # Horizontal line ----
+    tags$hr(),
+    
+    
+    
+    
+    ############################
+    # Input: Data file indic ----
+    ############################
+    fileInput("file4", "Choose loading indicator CSV file",
+              multiple = TRUE,
+              accept = c("text/csv",
+                         "text/comma-separated-values,text/plain",
+                         ".csv")),
+    
+    # Horizontal line ----
+    tags$hr(),
+    
+    # Input: Checkbox if file has header ----
+    checkboxInput("header4", "Header", TRUE),
+    
+    # Input: Select separator ----
+    radioButtons("sep4", "Separator",
+                 choices = c(Comma = ",",
+                             Semicolon = ";",
+                             Tab = "\t"),
+                 selected = ","),
+    
+    
+    # Horizontal line ----
+    tags$hr(),
+    
+    
+    
+    #Input: Select Reg_DIF methods ----
+    selectInput("method", 
+                label = "Choose a regulariztion algorithm",
+                choices = list("lasso EM"='EM', 
+                               "lasso EMM"='EMM',
+                               "Adaptive lasso EM"="Adapt",
+                               "lasso GVEMM"="GVEMM",
+                               "Likelihood Ratio Test"="LRT"),
+                selected = "EM"),
+    
+    
+    #Input: Select information criteria ----
+    selectInput("Type", 
+                label = "Choose a DIF type",
+                choices = list("Uniform"='T', 
+                               "Non-uniform"='F'),
+                selected = "T"),
+    
+    
+    
+    
+    # Horizontal line ----
+    tags$hr(),
+    actionButton("go1", "Run"),
+    
+    
+    # Horizontal line ----
+    tags$hr(),
+    radioButtons("checkGroup1", "Download Results",
+                 choices = list("All Results" = "all",
+                                "Item Parameters" = "item",
+                                "Covariance Matrix" = "cov"),
+                 selected = "all"),
+    # Button
+    downloadButton("downloadData", "Download Results")
+    
+  )),
+  dashboardBody(tags$style(".skin-purple .sidebar .shiny-download-link { color: #444; }"),
+    mainPanel(
+      
+      uiOutput("tab"),
+      uiOutput("tab2"),
+      
+      h2("Data"),
+      # Output: Data file ----
+      tableOutput("contents1"),
+      
+      h2("Group Indicator"),
+      # Output: Data file ----
+      tableOutput("contents2"),
+      
+      h2("Loading indicator"),
+      # Output: Data file ----
+      tableOutput("contents4"),
+      
+      #warning
+      h3(span(textOutput("warn"),style="color:red")),
+      
+      h2("Item Parameter Results"),
+      tableOutput("par1"),
+      
+      h2("Mean Vector"),
+      tableOutput("mean1"),
+      
+      h2("Covariance Matrix"),
+      tableOutput("cov1"),
+      
+      
+      fluidRow(
+        box(title="Information Criteria",status="primary",plotOutput("plot",width = "100%", height = 450))
+      )
+    )
+  )
+)
+
 
 # Define server logic to read selected file ----
 server <- function(input, output,session) {
