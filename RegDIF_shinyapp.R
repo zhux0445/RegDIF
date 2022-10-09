@@ -2406,10 +2406,10 @@ ui <- dashboardPage(skin="purple",
       h2("Covariance Matrix"),
       tableOutput("cov1"),
       
-      
-      fluidRow(
-        box(title="Information Criteria",status="primary",plotOutput("plot",width = "100%", height = 450))
-      )
+      h2("Information Criteria"),
+    ),
+    fluidRow(
+      box(status="primary",plotOutput("plot",width = "100%", height = "300px"))
     )
   )
 )
