@@ -1259,36 +1259,18 @@ Reg_EMM_DIF <- function(resp,Group,indic,eta,Unif=F,eps =1e-3,max.tol=1e-7,r,y,N
     #update Sigma hat
     Sig.hat.allgrp=Sig.est
     for (yy in 1:y){
-      if (r>1){
-        Sig.hat.allgrp[((yy-1)*r+1):((yy-1)*r+r),]=eigenMapMatMult(t(X-cbind(rep(Mu.est[((yy-1)*r+1)],G),rep(Mu.est[((yy-1)*r+r)],G))),((X-cbind(rep(Mu.est[((yy-1)*r+1)],G),rep(Mu.est[((yy-1)*r+r)],G)))*ng[(yy*G+1):(yy*G+G)]))/N.vec[yy]
-        } else {
-          Mu.esty=Mu.est[((yy-1)*r+1):((yy-1)*r+r)]
-          Mu.esty.rep=as.matrix((lapply(Mu.esty, rep,G))[[1]])
-        Sig.hat.allgrp[((yy-1)*r+1):((yy-1)*r+r),]=eigenMapMatMult(t(X-Mu.esty.rep),((X-Mu.esty.rep)*ng[(yy*G+1):(yy*G+G)]))/N.vec[yy]
-      }
+      Sig.hat.allgrp[((yy-1)*r+1):((yy-1)*r+r),]=eigenMapMatMult(t(X-cbind(rep(Mu.est[((yy-1)*r+1)],G),rep(Mu.est[((yy-1)*r+r)],G))),((X-cbind(rep(Mu.est[((yy-1)*r+1)],G),rep(Mu.est[((yy-1)*r+r)],G)))*ng[(yy*G+1):(yy*G+G)]))/N.vec[yy]
     }
     
     #scale 
     #mu.hat.mat=matrix(rep(mu.hat,G),G,r,byrow = T)
-    if (r>1){
-      Tau=sqrt(diag(Sig.hat.allgrp[1:r,]))
-      Tau.mat=matrix(rep(Tau,G),G,r,byrow = T)
-    } else {
-      Tau=sqrt(Sig.hat.allgrp[1,])
-      Tau.mat=matrix(rep(Tau,G),G,r,byrow = T)
-    }
-    
+    Tau=sqrt(diag(Sig.hat.allgrp[1:r,]))
+    Tau.mat=matrix(rep(Tau,G),G,r,byrow = T)
     #q_g_star
     #X=(X-mu.hat.mat)/Tau.mat
     Xstar=X/Tau.mat
     for (yy in 1:y){
-      if (r>1){
-        Sig.est[((yy-1)*r+1):((yy-1)*r+r),]=eigenMapMatMult(t(Xstar-cbind(rep(Mu.est[((yy-1)*r+1)],G),rep(Mu.est[((yy-1)*r+r)],G))),((Xstar-cbind(rep(Mu.est[((yy-1)*r+1)],G),rep(Mu.est[((yy-1)*r+r)],G)))*ng[(yy*G+1):(yy*G+G)]))/N.vec[yy]
-      } else {
-        Mu.esty=Mu.est[((yy-1)*r+1):((yy-1)*r+r)]
-        Mu.esty.rep=as.matrix((lapply(Mu.esty, rep,G))[[1]])
-        Sig.est[((yy-1)*r+1):((yy-1)*r+r),]=eigenMapMatMult(t(Xstar-Mu.esty.rep),((Xstar-Mu.esty.rep)*ng[(yy*G+1):(yy*G+G)]))/N.vec[yy]
-      }
+      Sig.est[((yy-1)*r+1):((yy-1)*r+r),]=eigenMapMatMult(t(Xstar-cbind(rep(Mu.est[((yy-1)*r+1)],G),rep(Mu.est[((yy-1)*r+r)],G))),((Xstar-cbind(rep(Mu.est[((yy-1)*r+1)],G),rep(Mu.est[((yy-1)*r+r)],G)))*ng[(yy*G+1):(yy*G+G)]))/N.vec[yy]
     }
     
     for (j in 1:J){
@@ -1322,7 +1304,10 @@ Reg_EMM_DIF <- function(resp,Group,indic,eta,Unif=F,eps =1e-3,max.tol=1e-7,r,y,N
     df.beta <- abs(betaold-grbeta)
     df.gamma <- abs(gammaold-grgamma)
     iter <- iter+1
-    #print(c(iter,max(df.a), max(df.d), max(df.beta), max(df.gamma)))
+    print(c(iter,max(df.a), max(df.d), max(df.beta), max(df.gamma)))
+    print(gra)
+    print(grd)
+    print(grbeta)
   }
   # AIC BIC
   Mu.est.mat=matrix(Mu.est,y,r,byrow = T)
