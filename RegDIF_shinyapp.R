@@ -509,7 +509,7 @@ List Mstep(int j, arma::rowvec ng, arma::mat rgk, arma::mat gra, arma::mat grd, 
     }
     arma::rowvec add=minusgrad*inv(FI);
     d=d+add(0);
-    a(find(a!=0))=a(find(a!=0))+add.subvec(1,len);
+    a(find(a!=0))=a(find(a!=0))+add.subvec(1,len).t();
     if (len2>0){
       arma::mat gam0=gam;
       gam0(find(gam!=0))=gam(find(gam!=0))+add.subvec(len+1,len+len2).t();
@@ -770,7 +770,7 @@ List Mstepadapt(int j, arma::rowvec ng, arma::mat rgk, arma::mat gra, arma::mat 
     }
     arma::rowvec add=minusgrad*inv(FI);
     d=d+add(0);
-    a(find(a!=0))=a(find(a!=0))+add.subvec(1,len);
+    a(find(a!=0))=a(find(a!=0))+add.subvec(1,len).t();
     if (len2>0){
       arma::mat gam0=gam;
       gam0(find(gam!=0))=gam(find(gam!=0))+add.subvec(len+1,len+len2).t();
